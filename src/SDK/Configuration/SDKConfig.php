@@ -2,7 +2,7 @@
 
 namespace Descope\SDK\Configuration;
 
-require 'vendor/autoload.php';
+require '../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -28,7 +28,7 @@ final class SDKConfig {
     private function getJWKSets()
     {
         try {
-            // Fetch JWK public key from Descope API - do we need to worry about key rotation?
+            // Fetch JWK public key from Descope API
             $url = 'https://api.descope.com/v2/keys/' . $projectId;
             $res = $client->request('GET', $url);
             $jwkSets = json_decode($res->getBody(), true);

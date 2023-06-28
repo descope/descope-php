@@ -1,6 +1,6 @@
 <?php
-
-require 'vendor/autoload.php';
+namespace Descope\SDK;
+require '../vendor/autoload.php';
 
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
@@ -23,23 +23,13 @@ class DescopeSDK {
     }
 
     /**
-     * Verify if the JWT is valid.
+     * Verify if the JWT is valid and not expired.
      *
      */
     public function verify($token) 
     {   
         $verifier = new Verifier($config);
         return $verifier->verify($token);
-    }
-
-    /**
-     * Verify if the JWT is expired.
-     *
-     */
-    public function tokenExpired($token) 
-    {
-        $verifier = new Verifier($config);
-        return $verifier->tokenExpired($token);
     }
 
     /**

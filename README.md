@@ -31,24 +31,32 @@ DESCOPE_PROJECT_ID=<Descope Project ID>
 In order to use the SDK you will need to initialize a `DescopeSDK` object with your Descope Project ID you defined in your `.env` file, like this:
 
 ```
-require 'vendor/autoload.php';
-use Descope\SDK\DescopeSDK;
-
-$descopeSDK = new DescopeSDK([
-    'projectId' => $_ENV['DESCOPE_PROJECT_ID']
-]);
+DESCOPE_PROJECT_ID="<Descope Project ID>"
 ```
 
 This SDK will easily allow you to handle Descope JWT tokens with the following built in functions:
 
-1. `DescopeSDK->verify()` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid or not
-2. `DescopeSDK->tokenExpired()` - will return **TRUE** or **FALSE**, depending on if the JWT is expired or not
-3. `DescopeSDK->getClaims()` - will return all of the claims from the JWT in an array format
+1. `DescopeSDK->verify()` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid and not expired
+2. `DescopeSDK->getClaims()` - will return all of the claims from the JWT in an array format
 
-## Code Samples
+## Unit Testing
+
+The PHP directory includes unit testing, that uses PHPUnit
+
+## Other Code Samples
 
 1. [PHP Sample App]()
 2. [WordPress Plugin](https://github.com/descope-sample-apps/wordpress-plugin)
+
+## Running the PHP Sample App
+
+Run this command to install the necessary dependencies and start the sample app:
+
+```
+php -S localhost:3000 -t sample/
+```
+
+The app should now be accessible at http://localhost:3000/ from your web browser.
 
 ## Feedback
 

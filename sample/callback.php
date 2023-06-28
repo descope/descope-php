@@ -6,7 +6,7 @@
 </head>
 <body>
     <?php
-    require 'vendor/autoload.php';
+    require '../vendor/autoload.php';
     use Descope\SDK\DescopeSDK;
 
     $descopeSDK = new DescopeSDK([
@@ -14,8 +14,8 @@
     ]);
     
     if ($descopeSDK->verify()) {
-        // $userInfo = $descopeSDK->getUser();
         echo "Valid session token!";
+        $userInfo = $descopeSDK->getUser();
     } else {
         echo "Session token does not have valid";
         header('Location: index.php');
@@ -24,7 +24,7 @@
 
     // Set user information into session
     session_start();
-    $_SESSION['user'] = "username here";
+    $_SESSION['user'] = $userInfo->name;
 
     // Redirect to dashboard
     header('Location: dashboard.php');

@@ -2,7 +2,7 @@
 
 namespace Descope\SDK\Token;
 
-require 'vendor/autoload.php';
+require '../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -31,25 +31,10 @@ final class Verifier {
     }
 
     /**
-     * Returns true or false if the token signature is valid.
+     * Returns true if the JWT signature is valid and not expired.
      *
      */
     public function verify($token)
-    {
-        try {
-            $extractor = new Extractor($config);
-            $jws = $extractor->parseToken($token);
-            return true;
-        } catch (TokenException $te) {
-            return false;
-        }
-    }
-
-    /**
-     * Validate if JWT is expired. Returns true if expired, false if not.
-     *
-     */
-    public function tokenExpired($token) 
     {
         try {
             $extractor = new Extractor($config);
@@ -61,12 +46,11 @@ final class Verifier {
     
                 if (isset($payload->exp) && $payload->exp < time()) {
                     return true;
-                } else {
-                    return false;
                 }
             }
+            return false;
         } catch (TokenException $te) {
-            return true;
+            return false;
         }
     }
 }
