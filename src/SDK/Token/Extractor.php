@@ -47,10 +47,14 @@ final class Extractor {
     }
 
     public function getUserDetails($refreshToken) {
+        $client = new GuzzleHttp\Client();
+        
         try {
             $url = 'https://api.descope.com/v1/auth/me';
-            // Add headers
-            $res = $client->request('GET', $url);
+            $header = 'Bearer ' . $refreshToken;
+            $res = $client->request('GET', $url, [
+                'headers' => ['Authorization' => $header]
+            ]);
             $jwkSets = json_decode($res->getBody(), true);
             return $jwkSets;
         } catch (RequestException $re) {
