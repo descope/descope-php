@@ -17,8 +17,30 @@
 
         const onSuccess = (e) => {
             sdk.refresh()
+            const sessionToken = e.detail.sessionJwt;
+            const projectId = e.target.getAttribute("project-id");
+            const refreshToken = e.detail.refreshJwt;
+
+            var formData = new FormData();
+            formData.append("sessionToken", sessionToken);
+            formData.append("projectId", projectId);
+            formData.append("refreshToken", refreshToken);
+
+            var xmlHttp = new XMLHttpRequest();
+            let getUrl = window.location;
+            let baseUrl = getUrl.protocol + "//" + getUrl.host;
+
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    window.location = `${baseUrl}/callback.php`;
+                }
+            };
             
-            window.location.href = "/callback.php"
+            xmlHttp.open(
+                "post",
+                `${baseUrl}/callback.php`
+            );
+            xmlHttp.send(formData);
         }
 
         const onError = (err) => console.log(err);

@@ -2,23 +2,27 @@
 
 namespace Descope\SDK\Configuration;
 
-require '../../vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 
 final class SDKConfig {
-    private $client;
-    private $projectId;
-    private $jwkSets;
+    public $client;
+    public $projectId;
+    public $jwkSets;
 
-    public function __construct($projectId)
+    public function __construct(array $config)
     {
         $this->client = new Client();
-        $this->projectId = $projectId;
+        if (isset($config['projectId'])) {
+            $this->projectId = $config['projectId'];
+        } else {
+            throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
+        }
 
-        $this->$jwkSets = getJWKSets();
+        $this->jwkSets = $this->getJWKSets();
     }
 
     /**
@@ -29,8 +33,8 @@ final class SDKConfig {
     {
         try {
             // Fetch JWK public key from Descope API
-            $url = 'https://api.descope.com/v2/keys/' . $projectId;
-            $res = $client->request('GET', $url);
+            $url = 'https://api.descope.com/v2/keys/' . $this->projectId;
+            $res = $this->client->request('GET', $url);
             $jwkSets = json_decode($res->getBody(), true);
             return $jwkSets;
         } catch (RequestException $re) {

@@ -9,22 +9,27 @@
     require '../vendor/autoload.php';
     use Descope\SDK\DescopeSDK;
 
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv->load();
+
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
     ]);
     
-    if ($descopeSDK->verify()) {
-        echo "Valid session token!";
-        $userInfo = $descopeSDK->getUser();
+    echo($_POST['sessionToken']);
+
+    if ($descopeSDK->verify($_POST['sessionToken'])) {
+        $userInfo = $descopeSDK->getUser($_ENV['DESCOPE_PROJECT_ID'] . ":" . $_POST['refreshToken']);
     } else {
-        echo "Session token does not have valid";
         header('Location: index.php');
         exit;
     }
 
     // Set user information into session
     session_start();
-    $_SESSION['user'] = $userInfo->name;
+    if (isset($userInfo)) {
+        $_SESSION["user"] = $userInfo;
+    }
 
     // Redirect to dashboard
     header('Location: dashboard.php');

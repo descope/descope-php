@@ -2,7 +2,7 @@
 
 namespace Descope\SDK\Token;
 
-require '../../vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -15,6 +15,7 @@ use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Exception\TokenException;
+use Descope\SDK\Configuration\SDKConfig;
 
 final class Extractor {
     private SDKConfig $config;
@@ -27,7 +28,7 @@ final class Extractor {
      */
     public function __construct($config)
     {
-        $this->$config = $config;
+        $this->config = $config;
     }
 
     /**
@@ -46,9 +47,13 @@ final class Extractor {
         return $claims;
     }
 
+    /**
+     * Return all user information using /auth/me API endpoint.
+     *
+     * @return json
+     */
     public function getUserDetails($refreshToken) {
-        $client = new GuzzleHttp\Client();
-        
+        $client = $this->config->client;
         try {
             $url = 'https://api.descope.com/v1/auth/me';
             $header = 'Bearer ' . $refreshToken;
@@ -58,7 +63,7 @@ final class Extractor {
             $jwkSets = json_decode($res->getBody(), true);
             return $jwkSets;
         } catch (RequestException $re) {
-            return $re;
+            return $re->getMessage();
         }
     }
 
@@ -70,7 +75,7 @@ final class Extractor {
     public function parseToken($sessionToken)
     {
         try {
-            $jwkSets = $config->$jwkSets;
+            $jwkSets = $this->config->jwkSets;
             $jwkSet = JWKSet::createFromKeyData($jwkSets);
 
             $jwsVerifier = new JWSVerifier(

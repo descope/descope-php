@@ -15,11 +15,9 @@ class DescopeSDK {
      * @param SDKConfig $config Base configuration options for the SDK.
      *
      */
-    public function __construct($projectId)
+    public function __construct(array $config)
     {
-        $this->$config = new SDKConfig([
-            'projectId' => $projectId
-        ]);
+        $this->config = new SDKConfig($config);
     }
 
     /**
@@ -28,7 +26,7 @@ class DescopeSDK {
      */
     public function verify($token) 
     {   
-        $verifier = new Verifier($config);
+        $verifier = new Verifier($this->config);
         return $verifier->verify($token);
     }
 
@@ -38,8 +36,8 @@ class DescopeSDK {
      */
     public function getClaims($token)
     {
-        $extractor = new Extractor($config);
-        return $verifier->getClaims($token);
+        $extractor = new Extractor($this->config);
+        return $extractor->getClaims($token);
     }
 
     /**
@@ -47,7 +45,7 @@ class DescopeSDK {
      *
      */
     public function getUser($refreshToken) {
-        $extractor = new Extractor($config);
-        return $verifier->getUserDetails($refreshToken);
+        $extractor = new Extractor($this->config);
+        return $extractor->getUserDetails($refreshToken);
     }
 }

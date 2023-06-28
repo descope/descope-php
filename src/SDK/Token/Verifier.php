@@ -2,7 +2,7 @@
 
 namespace Descope\SDK\Token;
 
-require '../../vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -15,6 +15,7 @@ use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
+use Descope\SDK\Configuration\SDKConfig;
 
 final class Verifier {
     private SDKConfig $config;
@@ -27,7 +28,7 @@ final class Verifier {
      */
     public function __construct($config)
     {
-        $this->$config = $config;
+        $this->config = $config;
     }
 
     /**
@@ -37,20 +38,21 @@ final class Verifier {
     public function verify($token)
     {
         try {
-            $extractor = new Extractor($config);
+            $extractor = new Extractor($this->config);
             $jws = $extractor->parseToken($token);
 
             // If JWT signature is valid
             if (isset($jws)) {
-                $payload = JsonConverter::decode($jws->getPayload());
-    
+                $payload = json_decode($jws->getPayload());
+
+                // Check to make sure JWT is not expired
                 if (isset($payload->exp) && $payload->exp < time()) {
                     return true;
                 }
             }
             return false;
         } catch (TokenException $te) {
-            return false;
+            throw TokenException::MSG_SIGNATURE_INVALID;
         }
     }
 }

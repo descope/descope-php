@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION["user"])) {
     header('Location: login.php');
     exit();
 }
@@ -16,11 +16,14 @@ $user = $_SESSION['user'];
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+    <div class="header">
+        <button class="btn btn-light logout-button" onclick="location.href='logout.php'">Logout</button>
+    </div>
     <div class="container">
         <div class="py-5 text-center">
-            <h1>Welcome, <?php echo $user['nickname'] ?>!</h1>
-            <p>Your email: <?php echo $user['email'] ?></p>
-            <img class="rounded-circle" src="<?php echo $user['picture'] ?>">
+            <h1>Welcome, <?php echo $user["name"] ?>!</h1>
+            <p>Your email: <?php echo $user["email"] ?></p>
+            <img class="rounded-circle" src="<?php echo $user["picture"] ?>">
         </div>
     </div>
 </body>
