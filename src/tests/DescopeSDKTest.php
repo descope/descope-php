@@ -1,5 +1,7 @@
 <?php
 
+echo "Hello!" . getcwd();
+
 require './vendor/autoload.php';
 
 use PHPUnit\Framework\TestCase;

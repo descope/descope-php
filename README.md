@@ -14,10 +14,12 @@ The Descope SDK for PHP provides convenient access to Descope authentication. Yo
 
 ### Installation
 
+> **Note**: Pending our release on Packagist, you will have to install the PHP SDK using the following instructions. Once the SDK is published, this README will be updated.
+
 Install the package with `Composer`:
 
 ```
-composer require descope/descope-php
+composer install
 ```
 
 You'll need to set up a `.env` file in the root directory with your Descope Project ID, which you can get from the [Console](https://app.descope.com/settings/project) like this:
