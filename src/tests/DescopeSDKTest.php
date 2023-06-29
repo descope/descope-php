@@ -1,6 +1,6 @@
 <?php
 
-require '../vendor/autoload.php';
+require './vendor/autoload.php';
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
@@ -11,7 +11,7 @@ final class DescopeSDKTest extends TestCase
 
     protected function setUp(): void
     {
-        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../..');
         $dotenv->load();
 
         $descopeSDK = new DescopeSDK([

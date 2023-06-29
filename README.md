@@ -49,7 +49,13 @@ This SDK will easily allow you to handle Descope JWT tokens with the following b
 
 ## Unit Testing
 
-The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the DescopeSDKTest.php file, and run to validate whether or not the functions are operating properly.
+The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the `src/tests/DescopeSDKTest.php` file, and run to validate whether or not the functions are operating properly.
+
+To run the tests, run this command:
+
+```
+./vendor/bin/phpunit --verbose src/tests/DescopeSDKTest.php
+```
 
 ## Other Code Samples
 
