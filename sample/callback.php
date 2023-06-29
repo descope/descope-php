@@ -12,10 +12,15 @@
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
     $dotenv->load();
 
+    if (!isset($_ENV['DESCOPE_PROJECT_ID'])) {
+        echo "Descope Project ID not present. Please check .env file.";
+        exit(1);
+    }
+
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
     ]);
-    
+
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
         session_start();
 

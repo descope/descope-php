@@ -1,4 +1,19 @@
 {
+  "name": "descope/descope-php",
+  "type": "library",
+  "description": "Authentication for PHP 8.1+",
+  "keywords": [
+    "drag-and-drop",
+    "authentication"
+  ],
+  "homepage": "https://github.com/descope/php-sdk",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Kevin Gao",
+      "email": "kevin@descope.com"
+    }
+  ],
   "require": {
     "web-token/jwt-framework": "2.2.11",
     "guzzlehttp/guzzle": "^7.0",
