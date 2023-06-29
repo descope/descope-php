@@ -41,13 +41,15 @@ $descopeSDK = new DescopeSDK([
 
 This SDK will easily allow you to handle Descope JWT tokens with the following built in functions:
 
-1. `DescopeSDK->verify()` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired
-2. `DescopeSDK->getClaims()` - will return all of the claims from the JWT in an array format
-3. `DescopeSDK->getUser()` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token
+1. `DescopeSDK->verify($sessionToken)` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired
+2. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format
+3. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token
+
+> **Note**: To use verify() and getClaims(), you will need to pass in your session token into the function argument. To use getUserDetails() to will need to pass in your refresh token.
 
 ## Unit Testing
 
-The PHP directory includes unit testing, that uses PHPUnit
+The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the DescopeSDKTest.php file, and run to validate whether or not the functions are operating properly.
 
 ## Other Code Samples
 

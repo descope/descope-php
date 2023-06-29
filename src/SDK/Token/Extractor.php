@@ -56,7 +56,7 @@ final class Extractor {
         $client = $this->config->client;
         try {
             $url = 'https://api.descope.com/v1/auth/me';
-            $header = 'Bearer ' . $refreshToken;
+            $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
             $res = $client->request('GET', $url, [
                 'headers' => ['Authorization' => $header]
             ]);

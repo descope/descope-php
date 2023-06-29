@@ -44,7 +44,7 @@ class DescopeSDK {
      * TODO: Returns the user details, using the refresh token. 
      *
      */
-    public function getUser($refreshToken) {
+    public function getUserDetails($refreshToken) {
         $extractor = new Extractor($this->config);
         return $extractor->getUserDetails($refreshToken);
     }

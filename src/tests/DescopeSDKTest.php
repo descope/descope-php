@@ -1,5 +1,7 @@
 <?php
 
+require '../vendor/autoload.php';
+
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 
@@ -9,6 +11,9 @@ final class DescopeSDKTest extends TestCase
 
     protected function setUp(): void
     {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv->load();
+
         $descopeSDK = new DescopeSDK([
             'projectId' => $_ENV['DESCOPE_PROJECT_ID']
         ]);
@@ -30,5 +35,14 @@ final class DescopeSDKTest extends TestCase
 
         $token = '...';
         $this->assertFalse($this->descopeSDK->getClaims($token));
+    }
+
+    public function testUserDetails(): void
+    {
+        $token = '...';
+        $this->assertTrue($this->descopeSDK->getUser($token));
+
+        $token = '...';
+        $this->assertFalse($this->descopeSDK->getUser($token));
     }
 }

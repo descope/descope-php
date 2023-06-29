@@ -1,14 +1,15 @@
 <?php
 session_start();
-var_dump($_SESSION);
+print_r($_SESSION["user"]);
 if (!isset($_SESSION["user"])) {
     session_destroy();
-    // header('Location: login.php');
+    header('Location: login.php');
     exit();
 }
 
 // Assume user data was saved in $_SESSION['user'] after successful login
-$user = unserialize($_SESSION['user']);
+$user = unserialize($_SESSION["user"]);
+print_r($user);
 ?>
 
 <!DOCTYPE html>

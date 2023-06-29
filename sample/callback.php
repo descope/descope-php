@@ -16,19 +16,20 @@
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
     ]);
 
-    $sessionToken = $_POST["sessionToken"];
-
-    if (isset($sessionToken) && $descopeSDK->verify($sessionToken)) {
-        // $userInfo = $descopeSDK->getUser($_ENV['DESCOPE_PROJECT_ID'] . ":" . $_POST['refreshToken']);
-
-        // Set user name into session variable
+    if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
+        // Set username into session variable
         session_start();
-        $_SESSION["user"] = $_POST["userDetails"];
-        $_SESSION["sessionToken"] = $sessionToken;
+
+        $_SESSION["user"] = json_decode($_POST["userDetails"]);
+        $_SESSION["sessionToken"] = $_POST["sessionToken"];
+    } else {
+        // Redirect to login page
+        header('Location: login.php');
+        exit();
     }
     
     // Redirect to dashboard
-    header('Location: dashboard.php');
+    // header('Location: dashboard.php');
     ?>
 </body>
 </html>
