@@ -17,15 +17,60 @@ The Descope SDK for PHP provides convenient access to Descope authentication. Yo
 Install the package with `Composer`:
 
 ```
+composer require descope/descope-php
+```
 
+You'll need to set up a `.env` file in the root directory with your Descope Project ID, which you can get from the [Console](https://app.descope.com/settings/project) like this:
+
+```
+DESCOPE_PROJECT_ID=<Descope Project ID>
 ```
 
 ## Using the SDK
 
-## Code Samples
+In order to use the SDK you will need to initialize a `DescopeSDK` object with your Descope Project ID you defined in your `.env` file, like this:
 
-1. [PHP Sample App]()
+```
+require 'vendor/autoload.php';
+use Descope\SDK\DescopeSDK;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+]);
+```
+
+This SDK will easily allow you to handle Descope JWT tokens with the following built in functions:
+
+1. `DescopeSDK->verify($sessionToken)` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired
+2. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format
+3. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token
+
+> **Note**: To use verify() and getClaims(), you will need to pass in your session token into the function argument. To use getUserDetails() to will need to pass in your refresh token.
+
+## Unit Testing
+
+The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the `src/tests/DescopeSDKTest.php` file, and run to validate whether or not the functions are operating properly.
+
+To run the tests, run this command:
+
+```
+./vendor/bin/phpunit --verbose src/tests/DescopeSDKTest.php
+```
+
+## Other Code Samples
+
+1. [PHP Sample App](https://github.com/descope/php-sdk/sample/)
 2. [WordPress Plugin](https://github.com/descope-sample-apps/wordpress-plugin)
+
+## Running the PHP Sample App
+
+Run this command, from the root directory, to install the necessary dependencies and start the sample app:
+
+```
+php -S localhost:3000 -t sample/
+```
+
+The app should now be accessible at http://localhost:3000/ from your web browser.
 
 ## Feedback
 
@@ -35,6 +80,6 @@ We appreciate feedback and contribution to this repository!
 
 ### Raise an issue
 
-To provide feedback or report a bug, please [raise an issue on our issue tracker](https://github.com/descope/passport-descope/issues).
+To provide feedback or report a bug, please [raise an issue on our issue tracker](https://github.com/descope/php-sdk/issues).
 
 This project is licensed under the MIT license. See the <a href="./LICENSE"> LICENSE</a> file for more info.</p>
