@@ -15,27 +15,21 @@
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
     ]);
-
+    
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
-        // Set username into session variable
         session_start();
 
-        $_SESSION["user"] = json_decode($_POST["userDetails"]);
+        $_SESSION["user"] = json_decode($_POST["userDetails"], true);
         $_SESSION["sessionToken"] = $_POST["sessionToken"];
-    } 
-    // else {
-    //     // Redirect to login page
-    //     header('Location: login.php');
-    //     exit();
-    // }
 
-    session_start();
-
-    $_SESSION["user"] = json_decode($_POST["userDetails"], true);
-    $_SESSION["sessionToken"] = $_POST["sessionToken"];
-    
-    // Redirect to dashboard
-    header('Location: dashboard.php');
+        // Redirect to dashboard
+        header('Location: dashboard.php');
+        exit();
+    } else {
+        // Redirect to login page
+        header('Location: login.php');
+        exit();
+    }
     ?>
 </body>
 </html>

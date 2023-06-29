@@ -18,9 +18,10 @@
         const onSuccess = (e) => {
             sdk.refresh()
             
-            const sessionToken = sdk.getSessionToken();
             const user = getUserDetails().then((user) => {
                 var formData = new FormData();
+                const sessionToken = sdk.getSessionToken();
+                
                 formData.append("sessionToken", sessionToken);
                 formData.append("projectId", e.target.getAttribute("project-id"));
                 formData.append("userDetails", JSON.stringify(user.data));
