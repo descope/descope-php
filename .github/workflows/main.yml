@@ -1,0 +1,67 @@
+name: PHP SDK CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        tools: composer, cs2pr
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run PHP CodeSniffer
+      run: composer run-script phpcs -- --report=checkstyle | cs2pr
+
+    - name: Run PHPUnit tests
+      run: composer run-script phpunit
+
+    - name: License Check
+      uses: fabasoad/yaml-json-xml-converter-action@v2.0.0
+      with:
+        path: 'LICENSE'
+        from: 'txt'
+        to: 'json'
+        
+    - name: Bump version and push tag
+      id: bump_version
+      uses: ChristianKienle/semver-increment@v1.0.1
+      with:
+        version: "${{ steps.get_current_version.outputs.version }}"
+        versioning_scheme: "semantic"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.bump_version.outputs.new_version }}
+        release_name: Release ${{ steps.bump_version.outputs.new_version }}
+        draft: false
+        prerelease: false
+
+    - name: Store version
+      id: store_version
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "${{ steps.bump_version.outputs.new_version }}"
+        prerelease: false
+        title: "New Release"
+        files: |
+          file1.txt
+          file2.txt
