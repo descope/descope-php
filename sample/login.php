@@ -3,26 +3,12 @@
 <head>
     <title>Login with Descope</title>
 
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f2f2f2;
-        }
-        #container {
-            width: 100%;
-            max-width: 400px;
-        }
-    </style>
-
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 
     <script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>
     <script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>
     <script type="text/javascript" src="../static/descope.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
     <div id="container"></div>
     <script>

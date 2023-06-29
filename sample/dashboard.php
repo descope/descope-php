@@ -61,7 +61,7 @@ $sessionToken = $_SESSION["sessionToken"];
         <p>Your email: <?php echo ($user["email"]) ?></p>
         <img class="rounded-circle" src="<?php echo ($user["picture"]) ?>">
         <div class="token-box">
-            <p>Your session token: <?php echo ($sessionToken) ?></p>
+            <p>Your Session Token: <?php echo ($sessionToken) ?></p>
         </div>
     </div>
 </body>

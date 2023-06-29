@@ -11,33 +11,7 @@ if (isset($_SESSION["user"])) {
 <head>
     <title>Welcome to PHP SDK Sample App</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f2f2f2;
-        }
-        h1 {
-            margin-bottom: 30px;
-        }
-        .dashboard-button {
-            padding: 10px 20px;
-            font-size: 1.2em;
-            background-color: #008CBA;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .dashboard-button:hover {
-            background-color: #007B9E;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>Welcome to PHP SDK Sample App</h1>
