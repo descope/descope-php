@@ -64,7 +64,7 @@ To run the tests, run this command:
 
 ## Running the PHP Sample App
 
-Run this command to install the necessary dependencies and start the sample app:
+Run this command, from the root directory, to install the necessary dependencies and start the sample app:
 
 ```
 php -S localhost:3000 -t sample/
