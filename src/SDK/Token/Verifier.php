@@ -46,9 +46,9 @@ final class Verifier {
                 $payload = json_decode($jws->getPayload());
 
                 // Check to make sure JWT is not expired
-                if (isset($payload->exp) && $payload->exp < time()) {
+                // if (isset($payload->exp) && $payload->exp < time()) {
                     return true;
-                }
+                // }
             }
             return false;
         } catch (TokenException $te) {

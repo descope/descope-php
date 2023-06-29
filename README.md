@@ -57,11 +57,6 @@ To run the tests, run this command:
 ./vendor/bin/phpunit --verbose src/tests/DescopeSDKTest.php
 ```
 
-## Other Code Samples
-
-1. [PHP Sample App](https://github.com/descope/php-sdk/sample/)
-2. [WordPress Plugin](https://github.com/descope-sample-apps/wordpress-plugin)
-
 ## Running the PHP Sample App
 
 Run this command, from the root directory, to install the necessary dependencies and start the sample app:
@@ -71,6 +66,12 @@ php -S localhost:3000 -t sample/
 ```
 
 The app should now be accessible at http://localhost:3000/ from your web browser.
+
+This sample app showcases a Descope Flow using the WebJS SDK and PHP sessions to retain user information across multiple pages. It also showcases initializing the SDK and using it to validate the session token from formData sent from `login.php`.
+
+## Other Code Samples
+
+1. [WordPress Plugin](https://github.com/descope-sample-apps/wordpress-plugin)
 
 ## Feedback
 
