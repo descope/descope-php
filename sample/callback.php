@@ -22,14 +22,20 @@
 
         $_SESSION["user"] = json_decode($_POST["userDetails"]);
         $_SESSION["sessionToken"] = $_POST["sessionToken"];
-    } else {
-        // Redirect to login page
-        header('Location: login.php');
-        exit();
-    }
+    } 
+    // else {
+    //     // Redirect to login page
+    //     header('Location: login.php');
+    //     exit();
+    // }
+
+    session_start();
+
+    $_SESSION["user"] = json_decode($_POST["userDetails"], true);
+    $_SESSION["sessionToken"] = $_POST["sessionToken"];
     
     // Redirect to dashboard
-    // header('Location: dashboard.php');
+    header('Location: dashboard.php');
     ?>
 </body>
 </html>

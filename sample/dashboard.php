@@ -1,15 +1,14 @@
 <?php
 session_start();
-print_r($_SESSION["user"]);
 if (!isset($_SESSION["user"])) {
     session_destroy();
     header('Location: login.php');
     exit();
 }
 
-// Assume user data was saved in $_SESSION['user'] after successful login
-$user = unserialize($_SESSION["user"]);
-print_r($user);
+// Get user details and session token from session variables
+$user = $_SESSION["user"];
+$sessionToken = $_SESSION["sessionToken"];
 ?>
 
 <!DOCTYPE html>
@@ -27,6 +26,7 @@ print_r($user);
             <h1>Welcome, <?php echo ($user["name"]) ?>!</h1>
             <p>Your email: <?php echo ($user["email"]) ?></p>
             <img class="rounded-circle" src="<?php echo ($user["picture"]) ?>">
+            <p>Your session token: <?php echo ($sessionToken) ?></p>
         </div>
     </div>
 </body>

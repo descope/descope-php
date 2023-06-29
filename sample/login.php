@@ -23,7 +23,7 @@
                 var formData = new FormData();
                 formData.append("sessionToken", sessionToken);
                 formData.append("projectId", e.target.getAttribute("project-id"));
-                formData.append("userDetails", user.data);
+                formData.append("userDetails", JSON.stringify(user.data));
 
                 var xmlHttp = new XMLHttpRequest();
                 let getUrl = window.location;
