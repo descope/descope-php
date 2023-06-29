@@ -59,7 +59,11 @@ To run the tests, run this command:
 
 ## Running the PHP Sample App
 
-Run this command, from the root directory, to install the necessary dependencies and start the sample app:
+In the `sample/static/descope.js`, replace the **projectId** with your Descope Project ID, which you can find in the [Descope Console](https://app.descope.com/settings/project).
+
+If you haven't already, make sure you run the composer command listed above, to install the necessary SDK packages.
+
+Then, run this command from the root directory, to start the sample app:
 
 ```
 php -S localhost:3000 -t sample/
