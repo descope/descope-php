@@ -12,48 +12,60 @@
 </head>
     <div id="container"></div>
     <script>
-        sdk.refresh()
-        const container = document.getElementById("container")
-        
-        container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="sign-up-or-in"></descope-wc>';
-        const wcElement = document.getElementsByTagName('descope-wc')[0]
+        function sendFormData(sessionToken, userDetails) {
+            var formData = new FormData();
+            formData.append("sessionToken", sessionToken);
+            formData.append("userDetails", JSON.stringify(userDetails));
 
-        const onSuccess = (e) => {
-            sdk.refresh()
-            
-            const user = getUserDetails().then((user) => {
-                var formData = new FormData();
-                const sessionToken = sdk.getSessionToken();
+            var xmlHttp = new XMLHttpRequest();
+            let getUrl = window.location;
+            let baseUrl = getUrl.protocol + "//" + getUrl.host;
 
-                formData.append("sessionToken", sessionToken);
-                formData.append("projectId", e.target.getAttribute("project-id"));
-                formData.append("userDetails", JSON.stringify(user.data));
-
-                var xmlHttp = new XMLHttpRequest();
-                let getUrl = window.location;
-                let baseUrl = getUrl.protocol + "//" + getUrl.host;
-
-                xmlHttp.onreadystatechange = function () {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                        window.location = `${baseUrl}/dashboard.php`;
-                    }
-                };
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    window.location = `${baseUrl}/dashboard.php`;
+                }
+            };
                 
-                xmlHttp.open("post", `${baseUrl}/callback.php`);
-                xmlHttp.send(formData);
-            })
-
-            async function getUserDetails() {
-                const user = await sdk.me();
-                return user;
-            }
+            xmlHttp.open("post", `${baseUrl}/callback.php`);
+            xmlHttp.send(formData);
         }
 
-        const onError = (err) => console.log(err);
+        async function getUserDetails() {
+            const user = await sdk.me();
+            return user;
+        }
+        
+        const refreshToken = sdk.getRefreshToken();
+        const validRefreshToken = refreshToken && !sdk.isJwtExpired(refreshToken);
 
-        if (wcElement) {
-            wcElement.addEventListener('success', onSuccess)
-            wcElement.addEventListener('error', onError)
+        if (validRefreshToken) {
+            console.log("Valid refresh token found. Logging in...");
+            sdk.refresh();
+            const user = getUserDetails().then((user) => {
+                const sessionToken = sdk.getSessionToken();
+                sendFormData(sessionToken, user.data);
+            });
+        } else {
+            const container = document.getElementById("container")
+            container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="sign-up-or-in"></descope-wc>';
+            const wcElement = document.getElementsByTagName('descope-wc')[0]
+
+            const onSuccess = (e) => {
+                sdk.refresh()
+                
+                const user = getUserDetails().then((user) => {
+                    const sessionToken = sdk.getSessionToken();
+                    sendFormData(sessionToken, user.data);
+                });
+            }
+
+            const onError = (err) => console.log(err);
+
+            if (wcElement) {
+                wcElement.addEventListener('success', onSuccess)
+                wcElement.addEventListener('error', onError)
+            }
         }
     </script>
 </head>
