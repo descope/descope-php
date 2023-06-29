@@ -1,12 +1,14 @@
 <?php
 session_start();
+var_dump($_SESSION);
 if (!isset($_SESSION["user"])) {
-    header('Location: login.php');
+    session_destroy();
+    // header('Location: login.php');
     exit();
 }
 
 // Assume user data was saved in $_SESSION['user'] after successful login
-$user = $_SESSION['user'];
+$user = unserialize($_SESSION['user']);
 ?>
 
 <!DOCTYPE html>
@@ -21,9 +23,9 @@ $user = $_SESSION['user'];
     </div>
     <div class="container">
         <div class="py-5 text-center">
-            <h1>Welcome, <?php echo $user["name"] ?>!</h1>
-            <p>Your email: <?php echo $user["email"] ?></p>
-            <img class="rounded-circle" src="<?php echo $user["picture"] ?>">
+            <h1>Welcome, <?php echo ($user["name"]) ?>!</h1>
+            <p>Your email: <?php echo ($user["email"]) ?></p>
+            <img class="rounded-circle" src="<?php echo ($user["picture"]) ?>">
         </div>
     </div>
 </body>

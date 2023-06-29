@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (isset($_SESSION['user'])) {
+if (isset($_SESSION["DS_SESSION"])) {
     header('Location: dashboard.php');
     exit();
 }
@@ -83,8 +83,7 @@ if (isset($_SESSION['user'])) {
         <h1 class="title">PHP SDK Sample App</h1>
 
         <div class="layout row">
-            <a class="link" href="/dashboard.php">Home</a>
-            <a id="loginOrDashboard" class="link" href=""></a>
+            <a class="link" href="/dashboard.php">Dashboard</a>
         </div>
         <script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>
         <script src="https://unpkg.com/@descope/web-js-sdk@latest/dist/index.umd.js"></script>
