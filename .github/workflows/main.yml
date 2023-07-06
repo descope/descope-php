@@ -1,0 +1,61 @@
+name: PHP SDK CI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          tools: composer, cs2pr
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHP CodeSniffer
+        run: vendor/bin/phpcs --standard=PSR2 --extensions=php .
+
+      - name: Run PHPUnit tests
+        run: composer run-script test
+
+      - name: Check License
+        run: composer run-script license-check
+
+      - name: Bump version and push tag
+        id: bump_version
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version.outputs.new_tag }}
+          release_name: Release ${{ steps.bump_version.outputs.new_tag }}
+          draft: false
+          prerelease: false
+
+      - name: Update Packagist
+        run: |
+          curl -XPOST -H 'content-type:application/json' 'https://packagist.org/api/update-package?username=gaokevin1&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}' -d '
+          {
+            "repository": {
+              "url": "https://github.com/descope/descope-php"
+            }
+          }'

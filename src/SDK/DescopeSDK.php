@@ -1,12 +1,14 @@
 <?php
 namespace Descope\SDK;
-require '../vendor/autoload.php';
+
+require __DIR__ . '/../../vendor/autoload.php';
 
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
 
-class DescopeSDK {
+class DescopeSDK
+{
     private SDKConfig $config;
 
     /**
@@ -24,8 +26,8 @@ class DescopeSDK {
      * Verify if the JWT is valid and not expired.
      *
      */
-    public function verify($token) 
-    {   
+    public function verify($token)
+    {
         $verifier = new Verifier($this->config);
         return $verifier->verify($token);
     }
@@ -41,10 +43,11 @@ class DescopeSDK {
     }
 
     /**
-     * TODO: Returns the user details, using the refresh token. 
+     * TODO: Returns the user details, using the refresh token.
      *
      */
-    public function getUserDetails($refreshToken) {
+    public function getUserDetails($refreshToken)
+    {
         $extractor = new Extractor($this->config);
         return $extractor->getUserDetails($refreshToken);
     }
