@@ -2,7 +2,7 @@
 
 namespace Descope\SDK\Token;
 
-require '../vendor/autoload.php';
+require __DIR__ . '/../../../vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;

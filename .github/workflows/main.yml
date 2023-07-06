@@ -29,15 +29,16 @@ jobs:
       - name: Run PHPUnit tests
         run: composer run-script test
 
-      - name: Check license
-        uses: licensee/licensee-action@main
+      - name: Check License
+        run: composer run-script license-check
 
       - name: Bump version and push tag
         id: bump_version
-        uses: ChristianKienle/semver-increment@v1.0.1
-        with:
-          version: "${{ steps.get_current_version.outputs.version }}"
-          versioning_scheme: "semantic"
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
 
       - name: Create Release
         id: create_release
@@ -45,22 +46,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.bump_version.outputs.new_version }}
-          release_name: Release ${{ steps.bump_version.outputs.new_version }}
+          tag_name: ${{ steps.bump_version.outputs.new_tag }}
+          release_name: Release ${{ steps.bump_version.outputs.new_tag }}
           draft: false
           prerelease: false
-
-      - name: Store version
-        id: store_version
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${{ steps.bump_version.outputs.new_version }}"
-          prerelease: false
-          title: "New Release"
-          files: |
-            file1.txt
-            file2.txt
 
       - name: Update Packagist
         run: |
