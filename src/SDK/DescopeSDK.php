@@ -1,8 +1,6 @@
 <?php
 namespace Descope\SDK;
 
-require __DIR__ . '/../../vendor/autoload.php';
-
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
