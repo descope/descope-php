@@ -17,7 +17,8 @@ use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
 
-final class Verifier {
+final class Verifier
+{
     private SDKConfig $config;
 
     /**

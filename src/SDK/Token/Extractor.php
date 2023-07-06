@@ -17,7 +17,8 @@ use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Exception\TokenException;
 use Descope\SDK\Configuration\SDKConfig;
 
-final class Extractor {
+final class Extractor
+{
     private SDKConfig $config;
 
     /**
@@ -52,7 +53,8 @@ final class Extractor {
      *
      * @return json
      */
-    public function getUserDetails($refreshToken) {
+    public function getUserDetails($refreshToken)
+    {
         $client = $this->config->client;
         try {
             $url = 'https://api.descope.com/v1/auth/me';
@@ -68,7 +70,7 @@ final class Extractor {
     }
 
     /**
-     * Parse a JWT string, returning the JWS Object with all of the claims if valid signature. 
+     * Parse a JWT string, returning the JWS Object with all of the claims if valid signature.
      *
      * @throws TokenException if signature verification fails or parsing fails.
      */

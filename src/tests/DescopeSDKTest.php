@@ -1,7 +1,5 @@
 <?php
 
-require './vendor/autoload.php';
-
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 
@@ -19,7 +17,7 @@ final class DescopeSDKTest extends TestCase
         ]);
     }
 
-    public function testVerify(): void
+    public function testVerify($token): void
     {
         $token = '...';
         $this->assertTrue($this->descopeSDK->verify($token));

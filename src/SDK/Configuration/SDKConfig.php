@@ -8,7 +8,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 
-final class SDKConfig {
+final class SDKConfig
+{
     public $client;
     public $projectId;
     public $jwkSets;
