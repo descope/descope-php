@@ -8,4 +8,6 @@ if (!file_exists($license_file)) {
 }
 
 echo "License file exists.\n";
+
 exit(0);
+
