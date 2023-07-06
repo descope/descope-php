@@ -53,7 +53,7 @@ jobs:
 
       - name: Update Packagist
         run: |
-          curl -XPOST -H 'content-type:application/json' 'https://packagist.org/api/update-package?username=gaokevin1&apiToken=${{ secrets.packagist_api_token }}' -d '
+          curl -XPOST -H 'content-type:application/json' 'https://packagist.org/api/update-package?username=gaokevin1&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}' -d '
           {
             "repository": {
               "url": "https://github.com/descope/descope-php"
