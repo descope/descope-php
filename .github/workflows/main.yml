@@ -32,8 +32,7 @@ jobs:
           minor-wording: "MINOR"
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
-      - name: cat package.json
-        run: cat ./package.json
+
       - name: Output Step
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
