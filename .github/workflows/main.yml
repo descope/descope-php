@@ -1,4 +1,4 @@
-name: PHP SDK CI
+name: PHP SDK CI Tests
 
 on:
   push:
@@ -25,7 +25,6 @@ jobs:
 
       - name: Run PHP CodeSniffer
         run: vendor/bin/phpcs --standard=PSR2 --extensions=php src
-
 
       - name: Run PHPUnit tests
         run: composer run-script test

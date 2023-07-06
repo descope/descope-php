@@ -11,11 +11,8 @@ final class DescopeSDKTest extends TestCase
 
     protected function setUp(): void
     {
-        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../..');
-        $dotenv->load();
-
         $descopeSDK = new DescopeSDK([
-            'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+            'projectId' => "<Descope Project ID>"
         ]);
     }
 

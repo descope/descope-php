@@ -1,9 +1,9 @@
-name: PHP SDK Staged Changes
+name: Composer, Linter, Tests and License Check
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    types: [opened, reopened, synchronize]
 
 jobs:
   staged-changes:
@@ -25,7 +25,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Run PHP CodeSniffer
-        run: vendor/bin/phpcs --standard=PSR2 --extensions=php .
+        run: vendor/bin/phpcs --standard=PSR2 --extensions=php src
 
       - name: Run PHPUnit tests
         run: composer run-script test
