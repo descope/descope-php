@@ -32,3 +32,39 @@ jobs:
 
       - name: Check License
         run: composer run-script license-check
+
+        - name: Configure Git
+        run: git config --global user.email "actions@github.com" && git config --global user.name "GitHub Actions"
+
+      - name: Determine Release Type
+        id: determine_release_type
+        run: |
+          COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
+          if echo "$COMMIT_MESSAGE" | grep -qiE "major release"; then
+            echo "::set-output name=release_type::major"
+          elif echo "$COMMIT_MESSAGE" | grep -qiE "minor release"; then
+            echo "::set-output name=release_type::minor"
+          else
+            echo "::set-output name=release_type::none"
+          fi
+
+      - name: Bump Version and Create Release
+        id: bump_version_and_release
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: ${{ steps.determine_release_type.outputs.release_type }}
+        if: steps.determine_release_type.outputs.release_type != 'none'
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version_and_release.outputs.new_tag }}
+          release_name: Release ${{ steps.bump_version_and_release.outputs.new_tag }}
+          draft: false
+          prerelease: false
+
