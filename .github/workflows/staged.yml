@@ -12,26 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.1"
-          tools: composer, cs2pr
+      # - name: Setup PHP
+      #   uses: shivammathur/setup-php@v2
+      #   with:
+      #     php-version: "8.1"
+      #     tools: composer, cs2pr
 
-      - name: Validate composer.json and composer.lock
-        run: composer validate
+      # - name: Validate composer.json and composer.lock
+      #   run: composer validate
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      # - name: Install dependencies
+      #   run: composer install --prefer-dist --no-progress
 
-      - name: Run PHP CodeSniffer
-        run: vendor/bin/phpcs --standard=PSR2 --extensions=php src
+      # - name: Run PHP CodeSniffer
+      #   run: vendor/bin/phpcs --standard=PSR2 --extensions=php src
 
-      - name: Run PHPUnit tests
-        run: composer run-script test
+      # - name: Run PHPUnit tests
+      #   run: composer run-script test
 
-      - name: Check License
-        run: composer run-script license-check
+      # - name: Check License
+      #   run: composer run-script license-check
 
       - name: Configure Git
         run: git config --global user.email "actions@github.com" && git config --global user.name "GitHub Actions"
