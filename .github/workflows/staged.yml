@@ -40,9 +40,9 @@ jobs:
         id: determine_release_type
         run: |
           COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
-          if echo "$COMMIT_MESSAGE" | grep -qiE "major release"; then
+          if echo "$COMMIT_MESSAGE" | grep -qiE "(?i)major release"; then
             echo "::set-output name=release_type::major"
-          elif echo "$COMMIT_MESSAGE" | grep -qiE "minor release"; then
+          elif echo "$COMMIT_MESSAGE" | grep -qiE "(?i)minor release"; then
             echo "::set-output name=release_type::minor"
           else
             echo "::set-output name=release_type::none"
