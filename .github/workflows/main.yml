@@ -2,47 +2,47 @@ name: PHP SDK CI Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
-
-    if: contains(github.event.head_commit.message, 'RELEASE')
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-          ref: ${{ github.ref }}
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Get token
-        id: get_token
-        uses: tibdex/github-app-token@v1
-        with:
-          private_key: ${{ secrets.APP_PEM }}
-          app_id: ${{ secrets.APP_ID }}
+      - name: Configure Git
+        run: git config --global user.email "actions@github.com" && git config --global user.name "GitHub Actions"
 
-      - name: Automated Version Bump
-        id: version-bump
-        uses: phips28/gh-action-bump-version@master
-        with:
-          tag-prefix: release/v
-          major-wording: "MAJOR"
-          minor-wording: "MINOR"
-        env:
-          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
-
-      - name: Output Step
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
-
-      - name: Update Packagist
+      - name: Determine Release Type
+        id: determine_release_type
         run: |
-          curl -XPOST -H 'content-type:application/json' 'https://packagist.org/api/update-package?username=gaokevin1&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}' -d '
-          {
-            "repository": {
-              "url": "https://github.com/descope/descope-php"
-            }
-          }'
+          COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
+          if echo "$COMMIT_MESSAGE" | grep -qiE "major release"; then
+            echo "::set-output name=release_type::major"
+          elif echo "$COMMIT_MESSAGE" | grep -qiE "minor release"; then
+            echo "::set-output name=release_type::minor"
+          else
+            echo "::set-output name=release_type::none"
+          fi
+
+      - name: Bump Version and Create Release
+        id: bump_version_and_release
+        uses: anothrNick/github-tag-action@1.26.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: ${{ steps.determine_release_type.outputs.release_type }}
+        if: steps.determine_release_type.outputs.release_type != 'none'
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version_and_release.outputs.new_tag }}
+          release_name: Release ${{ steps.bump_version_and_release.outputs.new_tag }}
+          draft: false
+          prerelease: false
