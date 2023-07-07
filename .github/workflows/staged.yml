@@ -41,11 +41,11 @@ jobs:
         run: |
           COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
           if echo "$COMMIT_MESSAGE" | grep -qiE "(?i)major release"; then
-            echo "::set-output name=release_type::major"
+            echo "RELEASE_TYPE=major" >> $GITHUB_ENV
           elif echo "$COMMIT_MESSAGE" | grep -qiE "(?i)minor release"; then
-            echo "::set-output name=release_type::minor"
+            echo "RELEASE_TYPE=minor" >> $GITHUB_ENV
           else
-            echo "::set-output name=release_type::none"
+            echo "RELEASE_TYPE=none" >> $GITHUB_ENV
           fi
 
       - name: Bump Version and Create Release
@@ -54,8 +54,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          DEFAULT_BUMP: ${{ steps.determine_release_type.outputs.release_type }}
-        if: steps.determine_release_type.outputs.release_type != 'none'
+          DEFAULT_BUMP: ${{ env.RELEASE_TYPE }}
+        if: env.RELEASE_TYPE == 'major' || env.RELEASE_TYPE == 'minor'
 
       - name: Create Release
         id: create_release
