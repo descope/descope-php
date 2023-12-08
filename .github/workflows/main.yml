@@ -1,0 +1,48 @@
+name: PHP SDK CI Tests
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    if: contains(github.event.head_commit.message, 'RELEASE')
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          ref: ${{ github.ref }}
+
+      - name: Get token
+        id: get_token
+        uses: tibdex/github-app-token@v1
+        with:
+          private_key: ${{ secrets.RELEASE_APP_PEM }}
+          app_id: ${{ secrets.RELEASE_APP_ID }}
+
+      - name: Automated Version Bump
+        id: version-bump
+        uses: phips28/gh-action-bump-version@master
+        with:
+          tag-prefix: release/v
+          major-wording: "MAJOR"
+          minor-wording: "MINOR"
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Output Step
+        env:
+          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
+        run: echo "new tag $NEW_TAG"
+
+      - name: Update Packagist
+        run: |
+          curl -XPOST -H 'content-type:application/json' 'https://packagist.org/api/update-package?username=gaokevin1&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}' -d '
+          {
+            "repository": {
+              "url": "https://github.com/descope/descope-php"
+            }
+          }'

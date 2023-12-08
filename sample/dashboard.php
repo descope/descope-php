@@ -59,7 +59,9 @@ $sessionToken = $_SESSION["sessionToken"];
     <div class="container">
         <h1>Welcome, <?php echo ($user["name"]) ?>!</h1>
         <p>Your email: <?php echo ($user["email"]) ?></p>
-        <img class="rounded-circle" src="<?php if (isset($user["picture"])) echo ($user["picture"]) ?>">
+        <img class="rounded-circle" src="<?php if (isset($user["picture"])) {
+            echo ($user["picture"]);
+                                         } ?>">
         <div class="token-box">
             <p>Your Session Token: <?php echo ($sessionToken) ?></p>
         </div>

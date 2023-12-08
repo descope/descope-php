@@ -2,8 +2,6 @@
 
 namespace Descope\SDK\Token;
 
-require '../vendor/autoload.php';
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
@@ -17,7 +15,8 @@ use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
 
-final class Verifier {
+final class Verifier
+{
     private SDKConfig $config;
 
     /**
