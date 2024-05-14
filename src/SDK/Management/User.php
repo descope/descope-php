@@ -1,5 +1,3 @@
-To convert the provided Python user management functions to PHP for the Descope SDK, you can follow this structure. Below is the equivalent PHP class:
-
 <?php
 
 namespace Descope\Management;
@@ -10,6 +8,7 @@ use Descope\Common\LoginOptions;
 use Descope\Management\Common\AssociatedTenant;
 use Descope\Endpoints\MgmtV1;
 use Descope\Management\Common\Sort;
+use Descope\Management\UserPwd;
 
 class UserObj {
     public function __construct(
@@ -28,7 +27,7 @@ class UserObj {
         public ?bool $verifiedPhone = null,
         public ?array $additionalLoginIds = null,
         public ?array $ssoAppIds = null,
-        public ?string $password = null
+        public ?UserPassword $password = null
     ) {}
 }
 
@@ -55,7 +54,8 @@ class User {
         ?bool $verifiedPhone = null,
         ?string $inviteUrl = null,
         ?array $additionalLoginIds = null,
-        ?array $ssoAppIds = null
+        ?array $ssoAppIds = null,
+        ?UserPassword $password = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
@@ -82,7 +82,8 @@ class User {
                 null,
                 null,
                 $additionalLoginIds,
-                $ssoAppIds
+                $ssoAppIds,
+                $password
             ),
             ['pswd' => $this->auth->managementKey]
         );
@@ -105,7 +106,8 @@ class User {
         ?bool $verifiedPhone = null,
         ?string $inviteUrl = null,
         ?array $additionalLoginIds = null,
-        ?array $ssoAppIds = null
+        ?array $ssoAppIds = null,
+        ?UserPassword $password = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
@@ -132,7 +134,8 @@ class User {
                 null,
                 null,
                 $additionalLoginIds,
-                $ssoAppIds
+                $ssoAppIds,
+                $password
             ),
             ['pswd' => $this->auth->managementKey]
         );
@@ -157,7 +160,8 @@ class User {
         ?bool $sendMail = null,
         ?bool $sendSms = null,
         ?array $additionalLoginIds = null,
-        ?array $ssoAppIds = null
+        ?array $ssoAppIds = null,
+        ?UserPassword $password = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
@@ -184,7 +188,8 @@ class User {
                 $sendMail,
                 $sendSms,
                 $additionalLoginIds,
-                $ssoAppIds
+                $ssoAppIds,
+                $password
             ),
             ['pswd' => $this->auth->managementKey]
         );
@@ -225,7 +230,8 @@ class User {
         ?bool $verifiedEmail = null,
         ?bool $verifiedPhone = null,
         ?array $additionalLoginIds = null,
-        ?array $ssoAppIds = null
+        ?array $ssoAppIds = null,
+        ?UserPassword $password = null
     ): void {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
@@ -249,7 +255,7 @@ class User {
                 $verifiedPhone,
                 $additionalLoginIds,
                 $ssoAppIds,
-                null
+                $password
             ),
             ['pswd' => $this->auth->managementKey]
         );
@@ -288,7 +294,9 @@ class User {
     }
 
     public function loadByUserId(string $userId): array {
-        $response = $this->auth->doGet(
+        $response = $this->auth->doGet
+
+(
             MgmtV1::USER_LOAD_PATH,
             ['userId' => $userId],
             ['pswd' => $this->auth->managementKey]
@@ -296,9 +304,7 @@ class User {
         return json_decode($response->getBody(), true);
     }
 
-    public function logoutUser
-
-(string $loginId): void {
+    public function logoutUser(string $loginId): void {
         $this->auth->doPost(
             MgmtV1::USER_LOGOUT_PATH,
             ['loginId' => $loginId],
@@ -524,15 +530,15 @@ class User {
     public function addSsoApps(string $loginId, array $ssoAppIds): array {
         $response = $this->auth->doPost(
             MgmtV1::USER_ADD_SSO_APPS,
+
+
             ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
             ['pswd' => $this->auth->managementKey]
         );
         return json_decode($response->getBody(), true);
     }
 
-    public function
-
- removeSsoApps(string $loginId, array $ssoAppIds): array {
+    public function removeSsoApps(string $loginId, array $ssoAppIds): array {
         $response = $this->auth->doPost(
             MgmtV1::USER_REMOVE_SSO_APPS,
             ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
@@ -586,26 +592,26 @@ class User {
         return json_decode($response->getBody(), true);
     }
 
-    public function setTemporaryPassword(string $loginId, string $password): void {
+    public function setTemporaryPassword(string $loginId, UserPassword $password): void {
         $this->auth->doPost(
             MgmtV1::USER_SET_TEMPORARY_PASSWORD_PATH,
-            ['loginId' => $loginId, 'password' => $password, 'setActive' => false],
+            array_merge(['loginId' => $loginId, 'setActive' => false], $password->toArray()),
             ['pswd' => $this->auth->managementKey]
         );
     }
 
-    public function setActivePassword(string $loginId, string $password): void {
+    public function setActivePassword(string $loginId, UserPassword $password): void {
         $this->auth->doPost(
             MgmtV1::USER_SET_ACTIVE_PASSWORD_PATH,
-            ['loginId' => $loginId, 'password' => $password, 'setActive' => true],
+            array_merge(['loginId' => $loginId, 'setActive' => true], $password->toArray()),
             ['pswd' => $this->auth->managementKey]
         );
     }
 
-    public function setPassword(string $loginId, string $password, ?bool $setActive = false): void {
+    public function setPassword(string $loginId, UserPassword $password, ?bool $setActive = false): void {
         $this->auth->doPost(
             MgmtV1::USER_SET_PASSWORD_PATH,
-            ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
+            array_merge(['loginId' => $loginId, 'setActive' => $setActive], $password->toArray()),
             ['pswd' => $this->auth->managementKey]
         );
     }
@@ -704,7 +710,8 @@ class User {
         ?bool $sendMail,
         ?bool $sendSms,
         ?array $additionalLoginIds,
-        ?array $ssoAppIds
+        ?array $ssoAppIds,
+        ?UserPassword $password
     ): array {
         $body = self::composeUpdateBody(
             $loginId,
@@ -723,7 +730,7 @@ class User {
             $verifiedPhone,
             $additionalLoginIds,
             $ssoAppIds,
-            null
+            $password
         );
         $body['invite'] = $invite;
         if ($inviteUrl !== null) {
@@ -748,7 +755,9 @@ class User {
             $user->middleName,
             $user->familyName,
             $user->roleNames ?? [],
-            $user->userTenants ?? [],
+            $user->userTenants
+
+ ?? [],
             false,
             $user->picture,
             $user->customAttributes,
@@ -759,9 +768,7 @@ class User {
             $user->password
         ), $users);
 
-        $body = ['users' => $
-
-usersBody, 'invite' => true];
+        $body = ['users' => $usersBody, 'invite' => true];
         if ($inviteUrl !== null) {
             $body['inviteUrl'] = $inviteUrl;
         }
@@ -791,7 +798,7 @@ usersBody, 'invite' => true];
         ?bool $verifiedPhone = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?string $password = null
+        ?UserPassword $password = null
     ): array {
         $res = [
             'loginId' => $loginId,
@@ -822,7 +829,7 @@ usersBody, 'invite' => true];
             $res['verifiedPhone'] = $verifiedPhone;
         }
         if ($password !== null) {
-            $res['password'] = $password;
+            $res['password'] = $password->toArray();
         }
         return $res;
     }

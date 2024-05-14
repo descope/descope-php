@@ -1,81 +1,127 @@
 <?php
 
+namespace Descope\Management;
+
+use DateTime;
+use Descope\Auth;
+use Descope\Exception\AuthException;
+use Descope\Management\Common\MgmtV1;
+
 class Audit
 {
-    private $auth;
+    private Auth $auth;
 
-    public function __construct($auth)
+    public function __construct(Auth $auth)
     {
         $this->auth = $auth;
     }
 
-    public function search(array $params = [])
-    {
-        // Adjust date parameters for API compatibility
-        if (isset($params['from_ts'])) {
-            $params['from'] = $params['from_ts']->getTimestamp() * 1000;
-            unset($params['from_ts']);
+    public function search(
+        ?array $userIds = null,
+        ?array $actions = null,
+        ?array $excludedActions = null,
+        ?array $devices = null,
+        ?array $methods = null,
+        ?array $geos = null,
+        ?array $remoteAddresses = null,
+        ?array $loginIds = null,
+        ?array $tenants = null,
+        bool $noTenants = false,
+        ?string $text = null,
+        ?DateTime $fromTs = null,
+        ?DateTime $toTs = null
+    ): array {
+        $body = ['noTenants' => $noTenants];
+        if ($userIds !== null) {
+            $body['userIds'] = $userIds;
         }
-        if (isset($params['to_ts'])) {
-            $params['to'] = $params['to_ts']->getTimestamp() * 1000;
-            unset($params['to_ts']);
+        if ($actions !== null) {
+            $body['actions'] = $actions;
+        }
+        if ($excludedActions !== null) {
+            $body['excludedActions'] = $excludedActions;
+        }
+        if ($devices !== null) {
+            $body['devices'] = $devices;
+        }
+        if ($methods !== null) {
+            $body['methods'] = $methods;
+        }
+        if ($geos !== null) {
+            $body['geos'] = $geos;
+        }
+        if ($remoteAddresses !== null) {
+            $body['remoteAddresses'] = $remoteAddresses;
+        }
+        if ($loginIds !== null) {
+            $body['externalIds'] = $loginIds;
+        }
+        if ($tenants !== null) {
+            $body['tenants'] = $tenants;
+        }
+        if ($text !== null) {
+            $body['text'] = $text;
+        }
+        if ($fromTs !== null) {
+            $body['from'] = $fromTs->getTimestamp() * 1000;
+        }
+        if ($toTs !== null) {
+            $body['to'] = $toTs->getTimestamp() * 1000;
         }
 
-        // Optional parameters filtering
-        $filterableParams = ['userIds', 'actions', 'excludedActions', 'devices', 'methods', 'geos', 'remoteAddresses', 'loginIds', 'tenants', 'noTenants', 'text'];
-        foreach ($filterableParams as $param) {
-            if (isset($params[$param])) {
-                $body[$param] = $params[$param];
-            }
-        }
-
-        $response = $this->auth->doPost('audit/search', $body);
-        return $this->convertAuditRecords($response['audits']);
+        $response = $this->auth->doPost(
+            MgmtV1::AUDIT_SEARCH,
+            $body,
+            ['pswd' => $this->auth->managementKey]
+        );
+        $responseBody = json_decode($response->getBody(), true);
+        return [
+            'audits' => array_map([$this, 'convertAuditRecord'], $responseBody['audits'])
+        ];
     }
 
-    public function createEvent($action, $type, $actorId, $tenantId, $userId = null, $data = null)
-    {
+    public function createEvent(
+        string $action,
+        string $type,
+        string $actorId,
+        string $tenantId,
+        ?string $userId = null,
+        ?array $data = null
+    ): void {
         $body = [
             'action' => $action,
             'type' => $type,
             'actorId' => $actorId,
-            'tenantId' => $tenantId
+            'tenantId' => $tenantId,
         ];
-
         if ($userId !== null) {
             $body['userId'] = $userId;
         }
-
         if ($data !== null) {
             $body['data'] = $data;
         }
 
-        $this->auth->doPost('audit/create_event', $body);
+        $this->auth->doPost(
+            MgmtV1::AUDIT_CREATE_EVENT,
+            $body,
+            ['pswd' => $this->auth->managementKey]
+        );
     }
 
-    private function convertAuditRecords($audits)
+    private function convertAuditRecord(array $a): array
     {
-        $converted = [];
-        foreach ($audits as $audit) {
-            $converted[] = [
-                'projectId' => $audit['projectId'] ?? '',
-                'userId' => $audit['userId'] ?? '',
-                'action' => $audit['action'] ?? '',
-                'occurred' => $this->formatTimestamp($audit['occurred'] ?? 0),
-                'device' => $audit['device'] ?? '',
-                'method' => $audit['method'] ?? '',
-                'geo' => $audit['geo'] ?? '',
-                'remoteAddress' => $audit['remoteAddress'] ?? '',
-                'loginIds' => $audit['externalIds'] ?? [],
-                'tenants' => $audit['tenants'] ?? [],
-                'data' => $audit['data'] ?? [],
-            ];
-        }
-        return $converted;
-    }
-
-    private function formatTimestamp($timestamp)
-    {
-        return date('Y-m-d H:i:s', $timestamp / 1000);
+        return [
+            'projectId' => $a['projectId'] ?? '',
+            'userId' => $a['userId'] ?? '',
+            'action' => $a['action'] ?? '',
+            'occurred' => (new DateTime())->setTimestamp(floatval($a['occurred'] ?? 0) / 1000),
+            'device' => $a['device'] ?? '',
+            'method' => $a['method'] ?? '',
+            'geo' => $a['geo'] ?? '',
+            'remoteAddress' => $a['remoteAddress'] ?? '',
+            'loginIds' => $a['externalIds'] ?? [],
+            'tenants' => $a['tenants'] ?? [],
+            'data' => $a['data'] ?? [],
+        ];
     }
 }
