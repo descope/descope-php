@@ -2,13 +2,13 @@
 
 namespace Descope\SDK\Management;
 
-use Descope\Exception\AuthException;
-use Descope\Common\DeliveryMethod;
-use Descope\Common\LoginOptions;
-use Descope\Management\Common\AssociatedTenant;
-use Descope\Endpoints\MgmtV1;
-use Descope\Management\Common\Sort;
-use Descope\Management\UserPwd;
+use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Common\DeliveryMethod;
+use Descope\SDK\Common\LoginOptions;
+use Descope\SDK\Management\Common\AssociatedTenant;
+use Descope\SDK\Management\Common\MgmtV1;
+use Descope\SDK\Management\UserPwd;
+use Descope\SDK\API
 
 class UserObj {
     public function __construct(
@@ -32,10 +32,10 @@ class UserObj {
 }
 
 class User {
-    private Auth $auth;
+    private API $api;
 
-    public function __construct(Auth $auth) {
-        $this->auth = $auth;
+    public function __construct(Auth $api) {
+        $this->auth = $api;
     }
 
     public function create(

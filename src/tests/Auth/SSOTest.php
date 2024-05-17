@@ -3,23 +3,20 @@
 namespace Descope\SDK\Tests\Auth;
 
 use PHPUnit\Framework\TestCase;
-use Descope\SDK\DescopeSDK;
 use Descope\SDK\Auth\SSO;
 use Descope\Exception\AuthException;
+use Descope\SDK\API;
+use Psr\Http\Message\ResponseInterface;
 
 final class SSOTest extends TestCase
 {
-    private $descopeSDK;
+    private $authMock;
     private $sso;
 
     protected function setUp(): void
     {
-        $projectId = 'project-id';
-        $managementKey = 'management-key';
-        $descopeSDK = new DescopeSDK([
-            'projectId' => $projectId
-        ]);
-        $this->sso = new SSO($this->descopeSDK->getAuth());
+        $this->authMock = $this->createMock(API::class);
+        $this->sso = new SSO($this->authMock);
     }
 
     public function testSSOSignIn(): void
@@ -38,10 +35,12 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        // Mock the HTTP client response
-        $mockResponse = $this->createMock(\Psr\Http\Message\ResponseInterface::class);
+        $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(json_encode($response));
-        $this->descopeSDK->getAuth()->method('doPost')->willReturn($mockResponse);
+
+        $this->authMock->expects($this->once())
+            ->method('doPost')
+            ->willReturn($mockResponse);
 
         $result = $this->sso->signIn($tenant, $redirectUrl, $prompt, $stepup, $mfa, $customClaims, $ssoAppId);
 
@@ -61,12 +60,14 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        // Mock the HTTP client response
-        $mockResponse = $this->createMock(\Psr\Http\Message\ResponseInterface::class);
+        $mockResponse = $this->createMock(ResponseInterface::class);
         $mockResponse->method('getBody')->willReturn(json_encode($response));
-        $this->descopeSDK->getAuth()->method('doPost')->willReturn($mockResponse);
 
-        $result = $this->sso->ssoExchangeToken($code);
+        $this->authMock->expects($this->once())
+            ->method('doPost')
+            ->willReturn($mockResponse);
+
+        $result = $this->sso->exchangeToken($code);
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('jwt', $result);

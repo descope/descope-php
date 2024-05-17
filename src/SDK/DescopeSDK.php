@@ -5,12 +5,17 @@ namespace Descope\SDK;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
+use Descope\SDK\Auth\Password;
+use Descope\SDK\Auth\SSO;
+use Descope\SDK\Auth\Management\User;
+use Descope\SDK\Auth\Management\Audit;
 
 class DescopeSDK
 {
     private SDKConfig $config;
-
-    
+    private Password $password;
+    private SSO $sso;
+    private Management $management;
 
     /**
      * Constructor for DescopeSDK class.
@@ -21,6 +26,10 @@ class DescopeSDK
     public function __construct(array $config)
     {
         $this->config = new SDKConfig($config);
+        $auth = new API($this->config);
+        $this->password = new Password($auth);
+        $this->sso = new SSO($auth);
+        $this->management = new Management($auth);
     }
 
     /**
@@ -71,5 +80,29 @@ class DescopeSDK
     {
         $extractor = new Extractor($this->config);
         return $extractor->getUserDetails($refreshToken);
+    }
+
+    /**
+     * Get the Password component.
+     */
+    public function password(): Password
+    {
+        return $this->password;
+    }
+
+    /**
+     * Get the SSO component.
+     */
+    public function sso(): SSO
+    {
+        return $this->sso;
+    }
+
+    /**
+     * Get the Management component.
+     */
+    public function management(): Management
+    {
+        return $this->management;
     }
 }

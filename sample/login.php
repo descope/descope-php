@@ -28,7 +28,6 @@
             };
                 
             xmlHttp.open("post", `${baseUrl}/callback.php`);
-            console.log("HERE IS THE SESSION TOKEN", sessionToken);
             xmlHttp.send(formData);
         }
 
