@@ -20,7 +20,6 @@
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
     ]);
-
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
         session_start();
 

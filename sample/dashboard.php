@@ -2,13 +2,15 @@
 session_start();
 if (!isset($_SESSION["user"])) {
     session_destroy();
-    header('Location: login.php');
+    // header('Location: login.php');
     exit();
 }
 
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
+
+
 ?>
 
 <!DOCTYPE html>

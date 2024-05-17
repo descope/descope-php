@@ -1,6 +1,6 @@
 <?php
 
-namespace Descope\Management\Common;
+namespace Descope\SDK;
 
 use Descope\Exception\AuthException;
 

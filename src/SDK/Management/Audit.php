@@ -1,6 +1,6 @@
 <?php
 
-namespace Descope\Management;
+namespace Descope\SDK\Management;
 
 use DateTime;
 use Descope\Auth;

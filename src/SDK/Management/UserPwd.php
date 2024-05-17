@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Descope\SDK\Auth;
+namespace Descope\SDK\Management;
 
 // TODO: Implement UserPasswordPHPass class
 class UserPasswordPHPass

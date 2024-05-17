@@ -1,4 +1,5 @@
 <?php
+
 namespace Descope\SDK;
 
 use Descope\SDK\Token\Extractor;
@@ -8,6 +9,8 @@ use Descope\SDK\Configuration\SDKConfig;
 class DescopeSDK
 {
     private SDKConfig $config;
+
+    
 
     /**
      * Constructor for DescopeSDK class.
@@ -24,10 +27,30 @@ class DescopeSDK
      * Verify if the JWT is valid and not expired.
      *
      */
-    public function verify($token)
+    public function verify($sessionToken)
     {
         $verifier = new Verifier($this->config);
-        return $verifier->verify($token);
+        return $verifier->verify($sessionToken);
+    }
+
+    /**
+     * Refresh session token with refresh token.
+     *
+     */
+    public function refreshSession($refreshToken)
+    {
+        $verifier = new Verifier($this->config);
+        return $verifier->refreshSession($refreshToken);
+    }
+
+    /**
+     * Verify if the JWT is valid and not expired.
+     *
+     */
+    public function verifyAndRefreshSession($sessionToken, $refreshToken)
+    {
+        $verifier = new Verifier($this->config);
+        return $verifier->verifyAndRefreshSession($sessionToken, $refreshToken);
     }
 
     /**

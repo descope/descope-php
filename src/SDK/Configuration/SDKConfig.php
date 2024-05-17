@@ -10,6 +10,7 @@ final class SDKConfig
 {
     public $client;
     public $projectId;
+    public $managementKey;
     public $jwkSets;
 
     public function __construct(array $config)
@@ -20,6 +21,8 @@ final class SDKConfig
         } else {
             throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
         }
+
+        if (isset($config['managementKey'])) ? $this->managementKey = $config['managementKey'] : $this->managementKey = '';
 
         $this->jwkSets = $this->getJWKSets();
     }

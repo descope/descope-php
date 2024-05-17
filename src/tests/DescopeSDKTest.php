@@ -12,14 +12,15 @@ final class DescopeSDKTest extends TestCase
     protected function setUp(): void
     {
         $descopeSDK = new DescopeSDK([
-            'projectId' => "<Descope Project ID>"
+            'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+            'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY']
         ]);
     }
 
     public function testVerify(): void
     {
-        $token = '...';
-        // $this->assertTrue($this->descopeSDK->verify($token));
+        $token = '';
+        $this->assertTrue($this->descopeSDK->verify($token));
     }
 
     public function getClaims(): void

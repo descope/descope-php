@@ -28,6 +28,7 @@
             };
                 
             xmlHttp.open("post", `${baseUrl}/callback.php`);
+            console.log("HERE IS THE SESSION TOKEN", sessionToken);
             xmlHttp.send(formData);
         }
 
@@ -52,7 +53,7 @@
             const wcElement = document.getElementsByTagName('descope-wc')[0]
 
             const onSuccess = (e) => {
-                sdk.refresh()
+                sdk.refresh();
                 
                 const user = getUserDetails().then((user) => {
                     const sessionToken = sdk.getSessionToken();
