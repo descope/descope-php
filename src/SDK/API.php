@@ -6,12 +6,13 @@ namespace Descope\SDK;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use Descope\Exception\AuthException;
-use Descope\Common\EndpointsV1;
+use Descope\SDK\Exception\AuthException;
+use Descope\SDK\EndpointsV1;
 
 class API
 {
     private $httpClient;
+    private $projectId;
     private $managementKey;
 
     /**
@@ -21,10 +22,9 @@ class API
      */
     public function __construct(string $projectId, ?string $managementKey)
     {
-        
         $this->httpClient = new Client();
         $this->projectId = $projectId;
-        $managementKey ? $this->managementKey = $managementKey : $this->managementKey = '';
+        $this->managementKey = $managementKey ?? '';
     }
 
     /**
@@ -32,21 +32,34 @@ class API
      *
      * @param string $uri URI endpoint.
      * @param array $body Request body.
-     * @param string|null $authToken Authentication token.
-     * @return \Psr\Http\Message\ResponseInterface Response from the server.
+     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
-    public function doPost(string $uri, array $body, boolean $useManagementKey): \Psr\Http\Message\ResponseInterface
+    public function doPost(string $uri, array $body, bool $useManagementKey): array
     {
-        $authToken = $useManagementKey ? ($this->config->getProjectId():$this->config->getManagementKey()) : $this->config->getProjectId();
+        $authToken = $this->getAuthToken($useManagementKey);
+        $jsonBody = json_encode($body);
         try {
             $response = $this->httpClient->post($uri, [
                 'headers' => $this->getHeaders($authToken),
-                'json' => $body,
+                'body' => $jsonBody,
             ]);
+
+            // Ensure the response is an object with getBody method
+            if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
+                throw new AuthException(500, 'internal error', 'Invalid response from API');
+            }
+
             return $response;
         } catch (RequestException $e) {
-            throw new AuthException($e->getResponse()->getStatusCode(), 'request error', $e->getMessage());
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+            return [
+                'statusCode' => $statusCode,
+                'response' => $responseBody,
+            ];
         }
     }
 
@@ -54,21 +67,28 @@ class API
      * Sends a GET request to the specified URI with an optional auth token.
      *
      * @param string $uri URI endpoint.
-     * @param string|null $authToken Authentication token.
-     * @return \Psr\Http\Message\ResponseInterface Response from the server.
+     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
-    public function doGet(string $uri, boolean $useManagementKey): \Psr\Http\Message\ResponseInterface
+    public function doGet(string $uri, bool $useManagementKey): array
     {
-        $authToken = $useManagementKey ? ($this->config->getProjectId():$this->config->getManagementKey()) : $this->config->getProjectId();
-
+        $authToken = $this->getAuthToken($useManagementKey);
         try {
             $response = $this->httpClient->get($uri, [
                 'headers' => $this->getHeaders($authToken),
             ]);
-            return $response;
+
+            $responseData = json_decode($response->getBody()->getContents(), true);
+            return $this->generateJwtResponse($responseData, $responseData['refreshToken'] ?? null, $responseData['sessionToken'] ?? null);
         } catch (RequestException $e) {
-            throw new AuthException($e->getResponse()->getStatusCode(), 'request error', $e->getMessage());
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+            return [
+                'statusCode' => $statusCode,
+                'response' => $responseBody,
+            ];
         }
     }
 
@@ -77,20 +97,15 @@ class API
      *
      * @param array $resp Response data.
      * @param string|null $refreshToken Refresh token.
-     * @param string|null $sessionToken Session token.
+     * @param string|null $audience Audience.
      * @return array JWT response array.
      */
-    public function generateJwtResponse(array $resp, ?string $refreshToken, ?string $sessionToken): array
+    public function generateJwtResponse(array $responseBody, ?string $refreshCookie, ?string $audience): array
     {
-        $jwtResponse = [
-            'jwt' => $resp['jwt'] ?? null,
-            'refreshToken' => $refreshToken,
-            'sessionToken' => $sessionToken,
-        ];
+        $jwtResponse = $this->generateAuthInfo($responseBody, $refreshCookie, true, $audience);
 
-        if (isset($resp['user'])) {
-            $jwtResponse['user'] = $resp['user'];
-        }
+        $jwtResponse['user'] = $responseBody['user'] ?? [];
+        $jwtResponse['firstSeen'] = $responseBody['firstSeen'] ?? true;
 
         return $jwtResponse;
     }
@@ -107,9 +122,54 @@ class API
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
-        
+
         $headers['Authorization'] = "Bearer $authToken";
 
         return $headers;
+    }
+
+    /**
+     * Constructs the auth token based on whether the management key is used.
+     *
+     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @return string The constructed auth token.
+     */
+    private function getAuthToken(bool $useManagementKey): string
+    {
+        if ($useManagementKey && !empty($this->managementKey)) {
+            return $this->projectId . ':' . $this->managementKey;
+        }
+        return $this->projectId;
+    }
+
+    private function generateAuthInfo(array $responseBody, ?string $refreshToken, bool $userJwt, ?string $audience): array
+    {
+        $jwtResponse = [];
+        $stJwt = $responseBody['sessionJwt'] ?? '';
+
+        if ($stJwt) {
+            $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME] = $this->verify($stJwt, $audience);
+        }
+        
+        $rtJwt = $responseBody['refreshJwt'] ?? '';
+
+        if ($refreshToken) {
+            $jwtResponse[EndpointsV1::REFRESH_SESSION_TOKEN_NAME] = $this->verify($refreshToken, $audience);
+        } elseif ($rtJwt) {
+            $jwtResponse[EndpointsV1::REFRESH_SESSION_TOKEN_NAME] = $this->verify($rtJwt, $audience);
+        }
+
+        $jwtResponse = $this->adjustProperties($jwtResponse, $userJwt);
+
+        if ($userJwt) {
+            $jwtResponse[EndpointsV1::COOKIE_DATA_NAME] = [
+                'exp' => $responseBody['cookieExpiration'] ?? 0,
+                'maxAge' => $responseBody['cookieMaxAge'] ?? 0,
+                'domain' => $responseBody['cookieDomain'] ?? '',
+                'path' => $responseBody['cookiePath'] ?? '/',
+            ];
+        }
+
+        return $jwtResponse;
     }
 }

@@ -14,7 +14,7 @@ use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
-use Descope\Common\EndpointsV1;
+use Descope\SDK\EndpointsV1;
 
 final class Verifier
 {
@@ -38,8 +38,7 @@ final class Verifier
      * @return boolean Token signature is valid and not expired.
      * @throws AuthException If the refresh operation fails.
      */
-     */
-    public function verify($sessionToken)
+    public function verify($sessionToken, ?string $audience = null)
     {
         try {
             $extractor = new Extractor($this->config);
@@ -51,6 +50,9 @@ final class Verifier
 
                 // Check to make sure JWT is not expired
                 if (isset($payload->exp) && time() < $payload->exp) {
+                    if ($audience && (!isset($payload->aud) || $payload->aud !== $audience)) {
+                        return false;
+                    }
                     return true;
                 }
             }

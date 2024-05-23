@@ -2,7 +2,7 @@
 
 namespace Descope\SDK;
 
-use Descope\Exception\AuthException;
+use Descope\SDK\Exception\AuthException;
 
 const DEFAULT_URL_PREFIX = "https://api";
 const DEFAULT_DOMAIN = "descope.com";

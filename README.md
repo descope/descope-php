@@ -24,6 +24,7 @@ You'll need to set up a `.env` file in the root directory with your Descope Proj
 
 ```
 DESCOPE_PROJECT_ID=<Descope Project ID>
+DESCOPE_MANAGEMENT_KEY=<Descope Management Key>
 ```
 
 ## Using the SDK
@@ -54,7 +55,7 @@ The PHP directory includes unit testing using PHPUnit. You can insert values for
 To run the tests, run this command:
 
 ```
-./vendor/bin/phpunit --verbose src/tests/DescopeSDKTest.php
+./vendor/bin/phpunit --bootstrap bootstrap.php --verbose src/tests/DescopeSDKTest.php
 ```
 
 ## Running the PHP Sample App

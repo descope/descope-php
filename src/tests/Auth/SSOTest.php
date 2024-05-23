@@ -4,19 +4,20 @@ namespace Descope\SDK\Tests\Auth;
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\Auth\SSO;
-use Descope\Exception\AuthException;
 use Descope\SDK\API;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use Descope\SDK\Exception\AuthException;
 
 final class SSOTest extends TestCase
 {
-    private $authMock;
+    private $apiMock;
     private $sso;
 
     protected function setUp(): void
     {
-        $this->authMock = $this->createMock(API::class);
-        $this->sso = new SSO($this->authMock);
+        $this->apiMock = $this->createMock(API::class);
+        $this->sso = new SSO($this->apiMock);
     }
 
     public function testSSOSignIn(): void
@@ -35,10 +36,13 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn(json_encode($response));
+        $mockStream = $this->createMock(StreamInterface::class);
+        $mockStream->method('getContents')->willReturn(json_encode($response));
 
-        $this->authMock->expects($this->once())
+        $mockResponse = $this->createMock(ResponseInterface::class);
+        $mockResponse->method('getBody')->willReturn($mockStream);
+
+        $this->apiMock->expects($this->once())
             ->method('doPost')
             ->willReturn($mockResponse);
 
@@ -60,10 +64,13 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn(json_encode($response));
+        $mockStream = $this->createMock(StreamInterface::class);
+        $mockStream->method('getContents')->willReturn(json_encode($response));
 
-        $this->authMock->expects($this->once())
+        $mockResponse = $this->createMock(ResponseInterface::class);
+        $mockResponse->method('getBody')->willReturn($mockStream);
+
+        $this->apiMock->expects($this->once())
             ->method('doPost')
             ->willReturn($mockResponse);
 

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Descope\SDK\Auth;
 
 use Descope\SDK\Exception\AuthException;
-use Descope\SDK\Common\EndpointsV1;
+use Descope\SDK\EndpointsV1;
+use Descope\SDK\API;
 
 class SSO
 {
@@ -14,9 +15,9 @@ class SSO
     /**
      * Constructor for SSO class.
      *
-     * @param API $auth Auth object for making authenticated requests.
+     * @param API $api API object for making authenticated requests.
      */
-    public function __construct($api)
+    public function __construct(API $api)
     {
         $this->api = $api;
     }
@@ -49,9 +50,9 @@ class SSO
             $requestParams['ssoAppId'] = $ssoAppId;
         }
 
-        $response = $this->auth->doPost($uri, $requestParams);
+        $response = $this->api->doPost($uri, $requestParams);
 
-        return json_decode($response->getBody(), true);
+        return json_decode((string) $response->getBody(), true);
     }
 
     /**
@@ -65,9 +66,9 @@ class SSO
         $uri = EndpointsV1::SSO_EXCHANGE_TOKEN_PATH;
         $body = ['code' => $code];
 
-        $response = $this->auth->doPost($uri, $body);
+        $response = $this->api->doPost($uri, $body);
 
-        return json_decode($response->getBody(), true);
+        return json_decode((string) $response->getBody(), true);
     }
 
     /**

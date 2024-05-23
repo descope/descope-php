@@ -13,9 +13,9 @@ use Descope\SDK\Auth\Management\Audit;
 class DescopeSDK
 {
     private SDKConfig $config;
-    private Password $password;
-    private SSO $sso;
-    private Management $management;
+    public Password $password;
+    public SSO $sso;
+    public Management $management;
 
     /**
      * Constructor for DescopeSDK class.
@@ -25,11 +25,20 @@ class DescopeSDK
      */
     public function __construct(array $config)
     {
+        if (!isset($config['projectId'])) {
+            throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
+        }
+
         $this->config = new SDKConfig($config);
-        $auth = new API($this->config);
-        $this->password = new Password($auth);
-        $this->sso = new SSO($auth);
-        $this->management = new Management($auth);
+
+        $api = new API($config['projectId'], $config['managementKey'] ?? '');
+        // If OPTIONAL management key was provided in $config
+        if (!empty($config[1])) {
+            $this->management = new Management($api);
+        }
+
+        $this->password = new Password($api);
+        $this->sso = new SSO($api);
     }
 
     /**

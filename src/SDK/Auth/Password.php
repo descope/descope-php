@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace Descope\SDK\Auth;
 
 use Descope\SDK\Exception\AuthException;
-use Descope\SDK\Common\EndpointsV1;
+use Descope\SDK\EndpointsV1;
+use Descope\SDK\API;
 
 class Password
 {
-    private $auth;
+    private $api;
 
     /**
      * Constructor for Password class.
      *
-     * @param Auth $auth Auth object for making authenticated requests.
+     * @param API $api Auth object for making authenticated requests.
      */
-    public function __construct($auth)
+    public function __construct(API $api)
     {
-        $this->auth = $auth;
+        $this->api = $api;
     }
 
     /**
@@ -30,7 +31,7 @@ class Password
      * @return array JWT response array.
      * @throws AuthException If login ID or password is empty.
      */
-    public function signUp(string $loginId, string $password, ?array $user = null): array
+    public function signUp(string $loginId, string $password, ?array $user = null, ?array $loginOptions = null): array
     {
         if (empty($loginId)) {
             throw new AuthException(400, 'invalid argument', 'login_id cannot be empty');
@@ -41,11 +42,10 @@ class Password
         }
 
         $uri = EndpointsV1::SIGN_UP_PASSWORD_PATH;
-        $body = $this->composeSignupBody($loginId, $password, $user);
-        $response = $this->auth->doPost($uri, $body);
-
-        $resp = json_decode($response->getBody(), true);
-        return $this->auth->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
+        $body = $this->composeSignupBody($loginId, $password, $user, $loginOptions);
+        $response = $this->api->doPost($uri, $body, false);
+        $resp = json_decode($response, true);
+        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
     }
 
     /**
@@ -67,10 +67,10 @@ class Password
         }
 
         $uri = EndpointsV1::SIGN_IN_PASSWORD_PATH;
-        $response = $this->auth->doPost($uri, ['loginId' => $loginId, 'password' => $password]);
+        $response = $this->api->doPost($uri, ['loginId' => $loginId, 'password' => $password], false);
 
         $resp = json_decode($response->getBody(), true);
-        return $this->auth->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
+        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
     }
 
     /**
@@ -97,7 +97,7 @@ class Password
             $body['templateOptions'] = $templateOptions;
         }
 
-        $response = $this->auth->doPost($uri, $body);
+        $response = $this->api->doPost($uri, $body, false);
         return json_decode($response->getBody(), true);
     }
 
@@ -106,7 +106,6 @@ class Password
      *
      * @param string $loginId Login ID of the user.
      * @param string $newPassword New password for the user.
-     * @param string $refreshToken Refresh token for authentication.
      * @throws AuthException If login ID, new password, or refresh token is empty.
      */
     public function update(string $loginId, string $newPassword, string $refreshToken): void
@@ -124,7 +123,7 @@ class Password
         }
 
         $uri = EndpointsV1::UPDATE_PASSWORD_PATH;
-        $this->auth->doPost($uri, ['loginId' => $loginId, 'newPassword' => $newPassword], null, $refreshToken);
+        $this->api->doPost($uri, ['loginId' => $loginId, 'newPassword' => $newPassword], true);
     }
 
     /**
@@ -151,14 +150,14 @@ class Password
         }
 
         $uri = EndpointsV1::REPLACE_PASSWORD_PATH;
-        $response = $this->auth->doPost($uri, [
+        $response = $this->api->doPost($uri, [
             'loginId' => $loginId,
             'oldPassword' => $oldPassword,
             'newPassword' => $newPassword,
         ]);
 
         $resp = json_decode($response->getBody(), true);
-        return $this->auth->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
+        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), true);
     }
 
     /**
@@ -168,7 +167,7 @@ class Password
      */
     public function getPolicy(): array
     {
-        $response = $this->auth->doGet(EndpointsV1::PASSWORD_POLICY_PATH);
+        $response = $this->api->doGet(EndpointsV1::PASSWORD_POLICY_PATH);
         return json_decode($response->getBody(), true);
     }
 
@@ -178,13 +177,17 @@ class Password
      * @param string $loginId Login ID for the new user.
      * @param string $password Password for the new user.
      * @param array|null $user Optional user details.
+     * @param array|null $loginOptions Optional login options.
      * @return array Body array for the signup request.
      */
-    private function composeSignupBody(string $loginId, string $password, ?array $user): array
+    private function composeSignupBody(string $loginId, string $password, ?array $user, ?array $loginOptions): array
     {
         $body = ['loginId' => $loginId, 'password' => $password];
         if ($user !== null) {
             $body['user'] = $user;
+        }
+        if ($loginOptions !== null) {
+            $body['loginOptions'] = $loginOptions;
         }
         return $body;
     }
