@@ -44,8 +44,8 @@ class Password
         $uri = EndpointsV1::SIGN_UP_PASSWORD_PATH;
         $body = $this->composeSignupBody($loginId, $password, $user, $loginOptions);
         $response = $this->api->doPost($uri, $body, false);
-        $resp = json_decode($response, true);
-        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
+        print("Hello");
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
     }
 
     /**
@@ -68,9 +68,7 @@ class Password
 
         $uri = EndpointsV1::SIGN_IN_PASSWORD_PATH;
         $response = $this->api->doPost($uri, ['loginId' => $loginId, 'password' => $password], false);
-
-        $resp = json_decode($response->getBody(), true);
-        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), null);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
     }
 
     /**

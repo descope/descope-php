@@ -8,12 +8,21 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Descope\SDK\Exception\AuthException;
 use Descope\SDK\EndpointsV1;
+use Descope\SDK\Token\Verifier;
 
 class API
 {
     private $httpClient;
     private $projectId;
     private $managementKey;
+
+    const SESSION_TOKEN_NAME = 'sessionToken';
+    const REFRESH_SESSION_TOKEN_NAME = 'refreshSessionToken';
+    const COOKIE_DATA_NAME = 'cookieData';
+
+    const SESSION_COOKIE_NAME = "DS";
+    const REFRESH_SESSION_COOKIE_NAME = "DSR";
+    const REDIRECT_LOCATION_COOKIE_NAME = "Location";
 
     /**
      * Constructor for API class.
@@ -45,17 +54,18 @@ class API
                 'headers' => $this->getHeaders($authToken),
                 'body' => $jsonBody,
             ]);
-
+            
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
                 throw new AuthException(500, 'internal error', 'Invalid response from API');
             }
-
-            return $response;
+            $resp = json_decode($response->getBody()->getContents(), true);
+            return $resp;
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+            echo "RequestException: " . $e->getMessage() . "\n";
+            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody\n";
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
@@ -79,8 +89,13 @@ class API
                 'headers' => $this->getHeaders($authToken),
             ]);
 
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            return $this->generateJwtResponse($responseData, $responseData['refreshToken'] ?? null, $responseData['sessionToken'] ?? null);
+            // Ensure the response is an object with getBody method
+            if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
+                throw new AuthException(500, 'internal error', 'Invalid response from API');
+            }
+            $resp = json_decode($response->getBody()->getContents(), true);
+            
+            return $resp;
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
@@ -100,9 +115,9 @@ class API
      * @param string|null $audience Audience.
      * @return array JWT response array.
      */
-    public function generateJwtResponse(array $responseBody, ?string $refreshCookie, ?string $audience): array
+    public function generateJwtResponse(array $responseBody, ?string $refreshToken, ?string $audience): array
     {
-        $jwtResponse = $this->generateAuthInfo($responseBody, $refreshCookie, true, $audience);
+        $jwtResponse = $this->generateAuthInfo($responseBody, $refreshToken, true, $audience);
 
         $jwtResponse['user'] = $responseBody['user'] ?? [];
         $jwtResponse['firstSeen'] = $responseBody['firstSeen'] ?? true;
@@ -148,21 +163,19 @@ class API
         $stJwt = $responseBody['sessionJwt'] ?? '';
 
         if ($stJwt) {
-            $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME] = $this->verify($stJwt, $audience);
+            $jwtResponse[self::SESSION_TOKEN_NAME] = $stJwt;
         }
         
         $rtJwt = $responseBody['refreshJwt'] ?? '';
 
-        if ($refreshToken) {
-            $jwtResponse[EndpointsV1::REFRESH_SESSION_TOKEN_NAME] = $this->verify($refreshToken, $audience);
-        } elseif ($rtJwt) {
-            $jwtResponse[EndpointsV1::REFRESH_SESSION_TOKEN_NAME] = $this->verify($rtJwt, $audience);
+        if ($rtJwt) {
+            $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME] = $rtJwt;
         }
 
         $jwtResponse = $this->adjustProperties($jwtResponse, $userJwt);
 
         if ($userJwt) {
-            $jwtResponse[EndpointsV1::COOKIE_DATA_NAME] = [
+            $jwtResponse[self::COOKIE_DATA_NAME] = [
                 'exp' => $responseBody['cookieExpiration'] ?? 0,
                 'maxAge' => $responseBody['cookieMaxAge'] ?? 0,
                 'domain' => $responseBody['cookieDomain'] ?? '',
