@@ -41,10 +41,10 @@ class Password
             throw new AuthException(400, 'invalid argument', 'password cannot be empty');
         }
 
-        $uri = EndpointsV1::SIGN_UP_PASSWORD_PATH;
         $body = $this->composeSignupBody($loginId, $password, $user, $loginOptions);
+
+        $uri = EndpointsV1::SIGN_UP_PASSWORD_PATH;
         $response = $this->api->doPost($uri, $body, false);
-        print("Hello");
         return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
     }
 
@@ -86,7 +86,6 @@ class Password
             throw new AuthException(400, 'invalid argument', 'login_id cannot be empty');
         }
 
-        $uri = EndpointsV1::SEND_RESET_PASSWORD_PATH;
         $body = [
             'loginId' => $loginId,
             'redirectUrl' => $redirectUrl,
@@ -95,8 +94,9 @@ class Password
             $body['templateOptions'] = $templateOptions;
         }
 
+        $uri = EndpointsV1::SEND_RESET_PASSWORD_PATH;
         $response = $this->api->doPost($uri, $body, false);
-        return json_decode($response->getBody(), true);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
     }
 
     /**
@@ -121,7 +121,7 @@ class Password
         }
 
         $uri = EndpointsV1::UPDATE_PASSWORD_PATH;
-        $this->api->doPost($uri, ['loginId' => $loginId, 'newPassword' => $newPassword], true);
+        $this->api->doPost($uri, ['loginId' => $loginId, 'newPassword' => $newPassword], false, $refreshToken);
     }
 
     /**

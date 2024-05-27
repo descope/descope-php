@@ -45,10 +45,18 @@ class API
      * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
-    public function doPost(string $uri, array $body, bool $useManagementKey): array
+    public function doPost(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
-        $authToken = $this->getAuthToken($useManagementKey);
+        $authToken = "";
+
+        if ($refreshToken) {
+            $authToken = $this->getAuthToken(false, $refreshToken);
+        } else {
+            $authToken = $this->getAuthToken($useManagementKey, '');
+        }
+
         $jsonBody = json_encode($body);
+
         try {
             $response = $this->httpClient->post($uri, [
                 'headers' => $this->getHeaders($authToken),
@@ -115,7 +123,7 @@ class API
      * @param string|null $audience Audience.
      * @return array JWT response array.
      */
-    public function generateJwtResponse(array $responseBody, ?string $refreshToken, ?string $audience): array
+    public function generateJwtResponse(array $responseBody, ?string $refreshToken = null, ?string $audience = null): array
     {
         $jwtResponse = $this->generateAuthInfo($responseBody, $refreshToken, true, $audience);
 
@@ -149,11 +157,16 @@ class API
      * @param bool $useManagementKey Whether to use the management key for authentication.
      * @return string The constructed auth token.
      */
-    private function getAuthToken(bool $useManagementKey): string
-    {
+    private function getAuthToken(bool $useManagementKey, ?string $refreshToken = null): string
+    {   
         if ($useManagementKey && !empty($this->managementKey)) {
             return $this->projectId . ':' . $this->managementKey;
         }
+
+        if ($refreshToken) {
+            return $this->projectId . ':' . $refreshToken;
+        }
+
         return $this->projectId;
     }
 
@@ -168,7 +181,9 @@ class API
         
         $rtJwt = $responseBody['refreshJwt'] ?? '';
 
-        if ($rtJwt) {
+        if ($refreshToken) {
+            $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME] = $refreshToken;
+        } elseif ($rtJwt) {
             $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME] = $rtJwt;
         }
 
@@ -181,6 +196,42 @@ class API
                 'domain' => $responseBody['cookieDomain'] ?? '',
                 'path' => $responseBody['cookiePath'] ?? '/',
             ];
+        }
+
+        return $jwtResponse;
+    }
+
+    private function adjustProperties(array $jwtResponse, bool $userJwt): array
+    {
+        if (isset($jwtResponse[self::SESSION_TOKEN_NAME])) {
+            $jwtResponse['permissions'] = $jwtResponse[self::SESSION_TOKEN_NAME]['permissions'] ?? [];
+            $jwtResponse['roles'] = $jwtResponse[self::SESSION_TOKEN_NAME]['roles'] ?? [];
+            $jwtResponse['tenants'] = $jwtResponse[self::SESSION_TOKEN_NAME]['tenants'] ?? [];
+        } elseif (isset($jwtResponse[self::REFRESH_SESSION_TOKEN_NAME])) {
+            $jwtResponse['permissions'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['permissions'] ?? [];
+            $jwtResponse['roles'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['roles'] ?? [];
+            $jwtResponse['tenants'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['tenants'] ?? [];
+        } else {
+            $jwtResponse['permissions'] = $jwtResponse['permissions'] ?? [];
+            $jwtResponse['roles'] = $jwtResponse['roles'] ?? [];
+            $jwtResponse['tenants'] = $jwtResponse['tenants'] ?? [];
+        }
+
+        $issuer = $jwtResponse[self::SESSION_TOKEN_NAME]['iss'] ?? 
+                  $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['iss'] ?? 
+                  $jwtResponse['iss'] ?? '';
+
+        $issuerParts = explode("/", $issuer);
+        $jwtResponse['projectId'] = end($issuerParts);
+
+        $sub = $jwtResponse[self::SESSION_TOKEN_NAME]['sub'] ?? 
+               $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['sub'] ?? 
+               $jwtResponse['sub'] ?? '';
+
+        if ($userJwt) {
+            $jwtResponse['userId'] = $sub;
+        } else {
+            $jwtResponse['keyId'] = $sub;
         }
 
         return $jwtResponse;

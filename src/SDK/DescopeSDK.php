@@ -7,6 +7,7 @@ use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
+use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
 
@@ -33,7 +34,7 @@ class DescopeSDK
 
         $api = new API($config['projectId'], $config['managementKey'] ?? '');
         // If OPTIONAL management key was provided in $config
-        if (!empty($config[1])) {
+        if (!empty($config['managementKey'])) {
             $this->management = new Management($api);
         }
 

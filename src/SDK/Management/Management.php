@@ -6,7 +6,7 @@ use Descope\SDK\API;
 
 class Management
 {
-    private User $user;
+    public User $user;
 
     /**
      * Constructor for Management class.
