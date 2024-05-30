@@ -2,6 +2,7 @@
 
 namespace Descope\SDK;
 
+use Descope\SDK\API;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
@@ -10,6 +11,7 @@ use Descope\SDK\Auth\SSO;
 use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
+use Descope\SDK\EndpointsV1;
 
 class DescopeSDK
 {
@@ -17,6 +19,7 @@ class DescopeSDK
     public Password $password;
     public SSO $sso;
     public Management $management;
+    public API $api;
 
     /**
      * Constructor for DescopeSDK class.
@@ -32,14 +35,14 @@ class DescopeSDK
 
         $this->config = new SDKConfig($config);
 
-        $api = new API($config['projectId'], $config['managementKey'] ?? '');
+        $this->api = new API($config['projectId'], $config['managementKey'] ?? '');
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
-            $this->management = new Management($api);
+            $this->management = new Management($this->api);
         }
 
-        $this->password = new Password($api);
-        $this->sso = new SSO($api);
+        $this->password = new Password($this->api);
+        $this->sso = new SSO($this->api);
     }
 
     /**
@@ -83,13 +86,52 @@ class DescopeSDK
     }
 
     /**
-     * TODO: Returns the user details, using the refresh token.
+     * Returns the user details, using the refresh token.
      *
+     * @param string $refreshToken The refresh token of the user.
+     * @return void
+     * @throws AuthException if the logout operation fails.
      */
-    public function getUserDetails($refreshToken)
+    public function getUserDetails(string $refreshToken)
     {
-        $extractor = new Extractor($this->config);
-        return $extractor->getUserDetails($refreshToken);
+        $this->api->doPost(
+            EndpointsV1::ME_PATH,
+            [],
+            false,
+            $refreshToken
+        );
+    }
+
+    /**
+     * Logout a user from all devices.
+     *
+     * @param string $refreshToken The refresh token of the user.
+     * @return void
+     * @throws AuthException if the logout operation fails.
+    */
+    public function logout(string $refreshToken): void {
+        $this->api->doPost(
+            EndpointsV1::LOGOUT_PATH,
+            [],
+            false,
+            $refreshToken
+        );
+    }
+
+    /**
+     * Logout a user from all devices.
+     *
+     * @param string $refreshToken The refresh token of the user.
+     * @return void
+     * @throws AuthException if the logout operation fails.
+    */
+    public function logoutAll(string $refreshToken): void {
+        $this->api->doPost(
+            EndpointsV1::LOGOUT_ALL_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**

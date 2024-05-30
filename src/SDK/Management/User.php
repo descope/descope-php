@@ -46,8 +46,6 @@ class User {
         ?string $givenName = null,
         ?string $middleName = null,
         ?string $familyName = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null,
         ?string $picture = null,
         ?array $customAttributes = null,
         ?bool $verifiedEmail = null,
@@ -55,11 +53,13 @@ class User {
         ?string $inviteUrl = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?UserPassword $password = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null,
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
-        
+
         $response = $this->api->doPost(
             MgmtV1::USER_CREATE_PATH,
             $this->composeCreateBody(
@@ -98,8 +98,6 @@ class User {
         ?string $givenName = null,
         ?string $middleName = null,
         ?string $familyName = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null,
         ?string $picture = null,
         ?array $customAttributes = null,
         ?bool $verifiedEmail = null,
@@ -107,11 +105,13 @@ class User {
         ?string $inviteUrl = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?UserPassword $password = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
-        
+
         $response = $this->api->doPost(
             MgmtV1::USER_CREATE_PATH,
             $this->composeCreateBody(
@@ -150,8 +150,6 @@ class User {
         ?string $givenName = null,
         ?string $middleName = null,
         ?string $familyName = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null,
         ?string $picture = null,
         ?array $customAttributes = null,
         ?bool $verifiedEmail = null,
@@ -161,11 +159,13 @@ class User {
         ?bool $sendSms = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?UserPassword $password = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
-        
+
         $response = $this->api->doPost(
             MgmtV1::USER_CREATE_PATH,
             $this->composeCreateBody(
@@ -223,15 +223,15 @@ class User {
         ?string $givenName = null,
         ?string $middleName = null,
         ?string $familyName = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null,
         ?string $picture = null,
         ?array $customAttributes = null,
         ?bool $verifiedEmail = null,
         ?bool $verifiedPhone = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?UserPassword $password = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null
     ): void {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
@@ -261,6 +261,13 @@ class User {
         );
     }
 
+    /**
+     * Delete an existing user by login ID. IMPORTANT: This action is irreversible. Use carefully.
+     *
+     * @param string $loginId The login ID from the user's JWT.
+     * @return void
+     * @throws AuthException if the delete operation fails.
+    */
     public function delete(string $loginId): void {
         $this->api->doPost(
             MgmtV1::USER_DELETE_PATH,
@@ -269,6 +276,13 @@ class User {
         );
     }
 
+    /**
+     * Delete an existing user by user ID. IMPORTANT: This action is irreversible. Use carefully.
+     *
+     * @param string $userId The user ID from the user's JWT.
+     * @return void
+     * @throws AuthException if the delete operation fails.
+    */
     public function deleteByUserId(string $userId): void {
         $this->api->doPost(
             MgmtV1::USER_DELETE_PATH,
@@ -276,6 +290,7 @@ class User {
             true
         );
     }
+
 
     public function deleteAllTestUsers(): void {
         $this->api->doDelete(
@@ -300,22 +315,25 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function logoutUser(string $loginId): void {
-        $this->api->doPost(
-            MgmtV1::USER_LOGOUT_PATH,
-            ['loginId' => $loginId],
-            true
-        );
-    }
-
-    public function logoutUserByUserId(string $userId): void {
-        $this->api->doPost(
-            MgmtV1::USER_LOGOUT_PATH,
-            ['userId' => $userId],
-            true
-        );
-    }
-
+    /**
+     * Search all users.
+     *
+     * @param array|null $tenantIds Optional list of tenant IDs to filter by.
+     * @param array|null $roleNames Optional list of role names to filter by.
+     * @param int $limit Optional limit of the number of users returned. Leave empty for default.
+     * @param int $page Optional pagination control. Pages start at 0 and must be non-negative.
+     * @param bool $testUsersOnly Optional filter only test users.
+     * @param bool $withTestUser Optional include test users in search.
+     * @param array|null $customAttributes Optional search for an attribute with a given value.
+     * @param array|null $statuses Optional list of statuses to search for ("enabled", "disabled", "invited").
+     * @param array|null $emails Optional list of emails to search for.
+     * @param array|null $phones Optional list of phones to search for.
+     * @param array|null $ssoAppIds Optional list of SSO application IDs to filter by.
+     * @param array|null $sort Optional list of fields to sort by.
+     * @param string|null $text Optional string, allows free text search among all user's attributes.
+     * @return array Return dict in the format {"users": []}. "users" contains a list of all of the found users and their information.
+     * @throws AuthException if search operation fails.
+     */
     public function searchAll(
         ?array $tenantIds = null,
         ?array $roleNames = null,
@@ -331,15 +349,20 @@ class User {
         ?array $sort = null,
         ?string $text = null
     ): array {
+        // Initialize arrays if they are null
         $tenantIds = $tenantIds ?? [];
         $roleNames = $roleNames ?? [];
 
         if ($limit < 0) {
-            throw new AuthException(400, 'limit must be non-negative');
+            throw new AuthException(
+                400, 'ERROR_TYPE_INVALID_ARGUMENT', 'limit must be non-negative'
+            );
         }
 
         if ($page < 0) {
-            throw new AuthException(400, 'page must be non-negative');
+            throw new AuthException(
+                400, 'ERROR_TYPE_INVALID_ARGUMENT', 'page must be non-negative'
+            );
         }
 
         $body = [
@@ -349,10 +372,18 @@ class User {
             'page' => $page,
             'testUsersOnly' => $testUsersOnly,
             'withTestUser' => $withTestUser,
+            'customAttributes' => $customAttributes ?? (object)[],
         ];
 
+        $allowedStatuses = ['enabled', 'disabled', 'invited'];
         if ($statuses !== null) {
-            $body['statuses'] = $statuses;
+            foreach ($statuses as $status) {
+                if (!in_array($status, $allowedStatuses)) {
+                    throw new AuthException(
+                        400, 'ERROR_TYPE_INVALID_ARGUMENT', "The status '$status' is invalid. Allowed values are: " . implode(", ", $allowedStatuses)
+                    );
+                }
+            }
         }
 
         if ($emails !== null) {
@@ -365,7 +396,7 @@ class User {
 
         if ($customAttributes !== null) {
             $body['customAttributes'] = $customAttributes;
-        }
+        } 
 
         if ($ssoAppIds !== null) {
             $body['ssoAppIds'] = $ssoAppIds;
@@ -376,25 +407,61 @@ class User {
         }
 
         if ($sort !== null) {
-            $body['sort'] = array_map(fn($s) => ['field' => $s->field, 'desc' => $s->desc], $sort);
+            $body['sort'] = $this->sortToArray($sort);
         }
 
-        $response = $this->api->doPost(
-            MgmtV1::USERS_SEARCH_PATH,
-            $body,
-            true
-        );
-        return $this->api->generateJwtResponse($response);
+        $jsonBody = json_encode($body);
+        print($jsonBody);
+
+        try {
+            $response = $this->api->doPost(
+                MgmtV1::USERS_SEARCH_PATH,
+                $body,
+                true
+            );
+
+            return $this->api->generateJwtResponse($response);
+        } catch (RequestException $e) {
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
+        }
     }
 
+    private function sortToArray(array $sort): array {
+        $sortArray = [];
+        foreach ($sort as $sortField) {
+            if (is_array($sortField) && isset($sortField['field']) && isset($sortField['order'])) {
+                $sortArray[] = [
+                    'field' => $sortField['field'],
+                    'order' => $sortField['order']
+                ];
+            }
+        }
+        return $sortArray;
+    }
+
+    /**
+     * Retrieve the provider token for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $provider The name of the provider.
+     * @return array The provider token details.
+     */
     public function getProviderToken(string $loginId, string $provider): array {
         $response = $this->api->doGet(
-            MgmtV1::USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider,
+            MgmtV1::USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider. "&withRefreshToken=true",
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Activate a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return array The activation status.
+     */
     public function activate(string $loginId): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_STATUS_PATH,
@@ -404,6 +471,12 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Deactivate a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return array The deactivation status.
+     */
     public function deactivate(string $loginId): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_STATUS_PATH,
@@ -413,7 +486,14 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function updateLoginId(string $loginId, ?string $newLoginId = null): array {
+    /**
+     * Update the login ID of a user.
+     *
+     * @param string $loginId The current login ID of the user.
+     * @param string $newLoginId The new login ID for the user.
+     * @return array The updated user details.
+     */
+    public function updateLoginId(string $loginId, string $newLoginId): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_LOGIN_ID_PATH,
             ['loginId' => $loginId, 'newLoginId' => $newLoginId],
@@ -422,7 +502,15 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function updateEmail(string $loginId, ?string $email = null, ?bool $verified = null): array {
+    /**
+     * Update the email address of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $email The new email address.
+     * @param bool $verified Whether the email is verified.
+     * @return array The updated user details.
+     */
+    public function updateEmail(string $loginId, string $email, bool $verified): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_EMAIL_PATH,
             ['loginId' => $loginId, 'email' => $email, 'verified' => $verified],
@@ -431,7 +519,15 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function updatePhone(string $loginId, ?string $phone = null, ?bool $verified = null): array {
+    /**
+     * Update the phone number of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $phone The new phone number.
+     * @param bool $verified Whether the phone number is verified.
+     * @return array The updated user details.
+     */
+    public function updatePhone(string $loginId, string $phone, bool $verified): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_PHONE_PATH,
             ['loginId' => $loginId, 'phone' => $phone, 'verified' => $verified],
@@ -440,35 +536,44 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Update the display name of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $displayName The new display name.
+     * @param string|null $givenName The given name (optional).
+     * @param string|null $middleName The middle name (optional).
+     * @param string|null $familyName The family name (optional).
+     * @return array The updated user details.
+     */
     public function updateDisplayName(
         string $loginId,
-        ?string $displayName = null,
+        string $displayName,
         ?string $givenName = null,
         ?string $middleName = null,
         ?string $familyName = null
     ): array {
-        $bdy = ['loginId' => $loginId];
-        if ($displayName !== null) {
-            $bdy['displayName'] = $displayName;
-        }
-        if ($givenName !== null) {
-            $bdy['givenName'] = $givenName;
-        }
-        if ($middleName !== null) {
-            $bdy['middleName'] = $middleName;
-        }
-        if ($familyName !== null) {
-            $bdy['familyName'] = $familyName;
-        }
+        $body = ['loginId' => $loginId, 'displayName' => $displayName];
+        if ($givenName !== null) $body['givenName'] = $givenName;
+        if ($middleName !== null) $body['middleName'] = $middleName;
+        if ($familyName !== null) $body['familyName'] = $familyName;
+
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_NAME_PATH,
-            $bdy,
+            $body,
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
-    public function updatePicture(string $loginId, ?string $picture = null): array {
+    /**
+     * Update the profile picture of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $picture The new profile picture URL.
+     * @return array The updated user details.
+     */
+    public function updatePicture(string $loginId, string $picture): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_PICTURE_PATH,
             ['loginId' => $loginId, 'picture' => $picture],
@@ -477,15 +582,30 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function updateCustomAttribute(string $loginId, string $attributeKey, $attributeVal): array {
+    /**
+     * Update a custom attribute for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $attributeKey The key of the custom attribute.
+     * @param mixed $attributeValue The value of the custom attribute.
+     * @return array The updated user details.
+     */
+    public function updateCustomAttribute(string $loginId, string $attributeKey, $attributeValue): array {
         $response = $this->api->doPost(
             MgmtV1::USER_UPDATE_CUSTOM_ATTRIBUTE_PATH,
-            ['loginId' => $loginId, 'attributeKey' => $attributeKey, 'attributeValue' => $attributeVal],
+            ['loginId' => $loginId, 'attributeKey' => $attributeKey, 'attributeValue' => $attributeValue],
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Set roles for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $roleNames The list of role names to set.
+     * @return array The updated user details.
+     */
     public function setRoles(string $loginId, array $roleNames): array {
         $response = $this->api->doPost(
             MgmtV1::USER_SET_ROLE_PATH,
@@ -495,6 +615,13 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Add roles to a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $roleNames The list of role names to add.
+     * @return array The updated user details.
+     */
     public function addRoles(string $loginId, array $roleNames): array {
         $response = $this->api->doPost(
             MgmtV1::USER_ADD_ROLE_PATH,
@@ -504,6 +631,13 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Remove roles from a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $roleNames The list of role names to remove.
+     * @return array The updated user details.
+     */
     public function removeRoles(string $loginId, array $roleNames): array {
         $response = $this->api->doPost(
             MgmtV1::USER_REMOVE_ROLE_PATH,
@@ -513,6 +647,13 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Set SSO applications for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $ssoAppIds The list of SSO application IDs to set.
+     * @return array The updated user details.
+     */
     public function setSsoApps(string $loginId, array $ssoAppIds): array {
         $response = $this->api->doPost(
             MgmtV1::USER_SET_SSO_APPS,
@@ -522,17 +663,29 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Add SSO applications to a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $ssoAppIds The list of SSO application IDs to add.
+     * @return array The updated user details.
+     */
     public function addSsoApps(string $loginId, array $ssoAppIds): array {
         $response = $this->api->doPost(
             MgmtV1::USER_ADD_SSO_APPS,
-
-
             ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Remove SSO applications from a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param array $ssoAppIds The list of SSO application IDs to remove.
+     * @return array The updated user details.
+     */
     public function removeSsoApps(string $loginId, array $ssoAppIds): array {
         $response = $this->api->doPost(
             MgmtV1::USER_REMOVE_SSO_APPS,
@@ -542,75 +695,44 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    public function addTenant(string $loginId, string $tenantId): array {
+    /**
+     * Update the tenant ID of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $tenantId The new tenant ID.
+     * @return array The updated user details.
+     */
+    public function updateTenant(string $loginId, string $tenantId): array {
         $response = $this->api->doPost(
-            MgmtV1::USER_ADD_TENANT_PATH,
+            MgmtV1::USER_UPDATE_TENANT_PATH,
             ['loginId' => $loginId, 'tenantId' => $tenantId],
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
-    public function removeTenant(string $loginId, string $tenantId): array {
-        $response = $this->api->doPost(
-            MgmtV1::USER_REMOVE_TENANT_PATH,
-            ['loginId' => $loginId, 'tenantId' => $tenantId],
-            true
-        );
-        return $this->api->generateJwtResponse($response);
-    }
-
-    public function setTenantRoles(string $loginId, string $tenantId, array $roleNames): array {
-        $response = $this->api->doPost(
-            MgmtV1::USER_SET_ROLE_PATH,
-            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
-            true
-        );
-        return $this->api->generateJwtResponse($response);
-    }
-
-    public function addTenantRoles(string $loginId, string $tenantId, array $roleNames): array {
-        $response = $this->api->doPost(
-            MgmtV1::USER_ADD_ROLE_PATH,
-            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
-            true
-        );
-        return $this->api->generateJwtResponse($response);
-    }
-
-    public function removeTenantRoles(string $loginId, string $tenantId, array $roleNames): array {
-        $response = $this->api->doPost(
-            MgmtV1::USER_REMOVE_ROLE_PATH,
-            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
-            true
-        );
-        return $this->api->generateJwtResponse($response);
-    }
-
-    public function setTemporaryPassword(string $loginId, UserPassword $password): void {
+    /**
+     * Update the user's password.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $password The new password.
+     * @param bool $setActive Whether to set the user as active.
+     * @return void
+     */
+    public function updatePassword(string $loginId, string $password, bool $setActive): void {
         $this->api->doPost(
-            MgmtV1::USER_SET_TEMPORARY_PASSWORD_PATH,
-            array_merge(['loginId' => $loginId, 'setActive' => false], $password->toArray()),
+            MgmtV1::USER_UPDATE_PASSWORD_PATH,
+            ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
             true
         );
     }
 
-    public function setActivePassword(string $loginId, UserPassword $password): void {
-        $this->api->doPost(
-            MgmtV1::USER_SET_ACTIVE_PASSWORD_PATH,
-            array_merge(['loginId' => $loginId, 'setActive' => true], $password->toArray()),
-            true
-        );
-    }
-
-    public function setPassword(string $loginId, UserPassword $password, ?bool $setActive = false): void {
-        $this->api->doPost(
-            MgmtV1::USER_SET_PASSWORD_PATH,
-            array_merge(['loginId' => $loginId, 'setActive' => $setActive], $password->toArray()),
-            true
-        );
-    }
-
+    /**
+     * Expire the user's password.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return void
+     */
     public function expirePassword(string $loginId): void {
         $this->api->doPost(
             MgmtV1::USER_EXPIRE_PASSWORD_PATH,
@@ -619,6 +741,12 @@ class User {
         );
     }
 
+    /**
+     * Remove all passkeys for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return void
+     */
     public function removeAllPasskeys(string $loginId): void {
         $this->api->doPost(
             MgmtV1::USER_REMOVE_ALL_PASSKEYS_PATH,
@@ -627,55 +755,98 @@ class User {
         );
     }
 
-    public function generateOtpForTestUser(DeliveryMethod $method, string $loginId, ?LoginOptions $loginOptions = null): array {
+    /**
+     * Generate an OTP for a test user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $method The delivery method for the OTP.
+     * @param array|null $loginOptions Optional login options.
+     * @return array The generated OTP details.
+     */
+    public function generateOtpForTestUser(string $loginId, string $method, ?array $loginOptions = null): array {
         $response = $this->api->doPost(
             MgmtV1::USER_GENERATE_OTP_FOR_TEST_PATH,
             [
                 'loginId' => $loginId,
-                'deliveryMethod' => $method->value,
-                'loginOptions' => $loginOptions ? $loginOptions->toArray() : []
+                'deliveryMethod' => $method,
+                'loginOptions' => $loginOptions ?: []
             ],
             true
         );
-        return $this->api->generateJwtResponse($response);
+        return json_decode($response->getBody(), true);
     }
 
-    public function generateMagicLinkForTestUser(DeliveryMethod $method, string $loginId, string $uri, ?LoginOptions $loginOptions = null): array {
+    /**
+     * Generate a magic link for a test user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $method The delivery method for the magic link.
+     * @param string $uri The URI for the magic link.
+     * @param array|null $loginOptions Optional login options.
+     * @return array The generated magic link details.
+     */
+    public function generateMagicLinkForTestUser(string $loginId, string $method, string $uri, ?array $loginOptions = null): array {
         $response = $this->api->doPost(
             MgmtV1::USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH,
             [
                 'loginId' => $loginId,
-                'deliveryMethod' => $method->value,
+                'deliveryMethod' => $method,
                 'URI' => $uri,
-                'loginOptions' => $loginOptions ? $loginOptions->toArray() : []
+                'loginOptions' => $loginOptions ?: []
             ],
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
-    public function generateEnchantedLinkForTestUser(string $loginId, string $uri, ?LoginOptions $loginOptions = null): array {
+    /**
+     * Generate Enchanted Link for the given login ID of a test user.
+     * This is useful when running tests and don't want to use 3rd party messaging services.
+     *
+     * @param string $loginId The login ID of the test user being validated.
+     * @param string $uri Optional redirect uri which will be used instead of any global configuration.
+     * @param array|null $loginOptions Optional, can be provided to set custom claims to the generated jwt.
+     * @return array The enchanted link for the login (exactly as it sent via Email or Phone messaging) and pendingRef.
+     * @throws AuthException if the operation fails.
+    */
+    public function generateEnchantedLinkForTestUser(string $loginId, string $uri, ?array $loginOptions = null): array {
         $response = $this->api->doPost(
             MgmtV1::USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH,
             [
                 'loginId' => $loginId,
                 'URI' => $uri,
-                'loginOptions' => $loginOptions ? $loginOptions->toArray() : []
+                'loginOptions' => $loginOptions ?: []
             ],
             true
         );
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Generate Embedded Link for the given user login ID.
+     * The return value is a token that can be verified via magic link, or using flows.
+     *
+     * @param string $loginId The login ID of the user to authenticate with.
+     * @param array|null $customClaims Additional claims to place on the jwt after verification.
+     * @return string The token to be used in the verification process.
+     * @throws AuthException if the operation fails.
+    */
     public function generateEmbeddedLink(string $loginId, ?array $customClaims = null): string {
         $response = $this->api->doPost(
             MgmtV1::USER_GENERATE_EMBEDDED_LINK_PATH,
             ['loginId' => $loginId, 'customClaims' => $customClaims],
             true
         );
-        return json_decode($response->getBody(), true)['token'];
+        return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Retrieve users' authentication history, by the given user's IDs.
+     *
+     * @param array $userIds List of users' IDs.
+     * @return array The authentication history of the users.
+     * @throws AuthException if the operation fails.
+    */
     public function history(array $userIds): array {
         $response = $this->api->doPost(
             MgmtV1::USER_HISTORY_PATH,
@@ -685,7 +856,7 @@ class User {
         return $this->api->generateJwtResponse($response);
     }
 
-    private static function composeCreateBody(
+    public function composeCreateBody(
         string $loginId,
         ?string $email,
         ?string $phone,
@@ -693,10 +864,10 @@ class User {
         ?string $givenName,
         ?string $middleName,
         ?string $familyName,
-        ?array $roleNames,
-        ?array $userTenants,
-        ?bool $invite,
-        ?bool $test,
+        array $roleNames,
+        array $userTenants,
+        bool $invited,
+        bool $test,
         ?string $picture,
         ?array $customAttributes,
         ?bool $verifiedEmail,
@@ -708,77 +879,80 @@ class User {
         ?array $ssoAppIds,
         ?UserPassword $password
     ): array {
-        $body = self::composeUpdateBody(
-            $loginId,
-            $email,
-            $phone,
-            $displayName,
-            $givenName,
-            $middleName,
-            $familyName,
-            $roleNames,
-            $userTenants,
-            $test,
-            $picture,
-            $customAttributes,
-            $verifiedEmail,
-            $verifiedPhone,
-            $additionalLoginIds,
-            $ssoAppIds,
-            $password
-        );
-        $body['invite'] = $invite;
-        if ($inviteUrl !== null) {
-            $body['inviteUrl'] = $inviteUrl;
-        }
-        if ($sendMail !== null) {
-            $body['sendMail'] = $sendMail;
-        }
-        if ($sendSms !== null) {
-            $body['sendSMS'] = $sendSms;
+        $res = [
+            'loginId' => $loginId,
+            'email' => $email,
+            'phone' => $phone,
+            'displayName' => $displayName,
+            'givenName' => $givenName,
+            'middleName' => $middleName,
+            'familyName' => $familyName,
+            'roleNames' => $roleNames,
+            'userTenants' => $userTenants,
+            'invited' => $invited,
+            'test' => $test,
+            'picture' => $picture,
+            'customAttributes' => $customAttributes ?? (object)[],
+            'verifiedEmail' => $verifiedEmail,
+            'verifiedPhone' => $verifiedPhone,
+            'inviteUrl' => $inviteUrl,
+            'sendMail' => $sendMail,
+            'sendSms' => $sendSms,
+            'additionalLoginIds' => $additionalLoginIds,
+            'ssoAppIds' => $ssoAppIds,
+        ];
+        if ($password !== null) {
+            if (isset($password->cleartext)) {
+                $res['password'] = $password->cleartext;
+            } else {
+                if (isset($password->hashedPassword)) {
+                    $res['hashedPassword'] = $password->hashedPassword;
+                }
+            }
         }
 
-        return $body;
+        print_r($res);
+
+        return $res;
     }
 
-    private static function composeCreateBatchBody(array $users, ?string $inviteUrl, ?bool $sendMail, ?bool $sendSms): array {
-        $usersBody = array_map(fn($user) => self::composeUpdateBody(
-            $user->loginId,
-            $user->email,
-            $user->phone,
-            $user->displayName,
-            $user->givenName,
-            $user->middleName,
-            $user->familyName,
-            $user->roleNames ?? [],
-            $user->userTenants
-
- ?? [],
-            false,
-            $user->picture,
-            $user->customAttributes,
-            $user->verifiedEmail,
-            $user->verifiedPhone,
-            $user->additionalLoginIds,
-            $user->ssoAppIds ?? [],
-            $user->password
-        ), $users);
-
-        $body = ['users' => $usersBody, 'invite' => true];
-        if ($inviteUrl !== null) {
-            $body['inviteUrl'] = $inviteUrl;
+    public function composeCreateBatchBody(
+        array $users,
+        ?string $inviteUrl,
+        ?bool $sendMail,
+        ?bool $sendSms
+    ): array {
+        $userArr = [];
+        foreach ($users as $user) {
+            $userArr[] = $this->composeCreateBody(
+                $user->loginId,
+                $user->email,
+                $user->phone,
+                $user->displayName,
+                $user->givenName,
+                $user->middleName,
+                $user->familyName,
+                $user->roleNames,
+                $user->userTenants,
+                true,
+                false,
+                $user->picture,
+                $user->customAttributes,
+                $user->verifiedEmail,
+                $user->verifiedPhone,
+                $inviteUrl,
+                $sendMail,
+                $sendSms,
+                $user->additionalLoginIds,
+                $user->ssoAppIds,
+                $user->password
+            );
         }
-        if ($sendMail !== null) {
-            $body['sendMail'] = $sendMail;
-        }
-        if ($sendSms !== null) {
-            $body['sendSMS'] = $sendSms;
-        }
 
-        return $body;
+        return ['users' => $userArr];
     }
 
-    private static function composeUpdateBody(
+    public function composeUpdateBody(
         string $loginId,
         ?string $email,
         ?string $phone,
@@ -788,33 +962,32 @@ class User {
         ?string $familyName,
         ?array $roleNames,
         ?array $userTenants,
-        ?bool $test = false,
+        ?bool $test,
         ?string $picture,
         ?array $customAttributes,
-        ?bool $verifiedEmail = false,
-        ?bool $verifiedPhone = false,
-        ?array $additionalLoginIds = null,
-        ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?bool $verifiedEmail,
+        ?bool $verifiedPhone,
+        ?array $additionalLoginIds,
+        ?array $ssoAppIds,
+        ?UserPassword $password
     ): array {
         $res = [
             'loginId' => $loginId,
             'email' => $email,
             'phone' => $phone,
             'displayName' => $displayName,
+            'givenName' => $givenName,
+            'middleName' => $middleName,
+            'familyName' => $familyName,
             'roleNames' => $roleNames,
-            'userTenants' => array_map(function($tenant) {
-                if (is_object($tenant) && method_exists($tenant, 'toArray')) {
-                    return $tenant->toArray();
-                }
-                return $tenant;
-            }, $userTenants),
+            'userTenants' => $userTenants,
             'test' => $test,
             'picture' => $picture,
-            'customAttributes' => $customAttributes,
+            'customAttributes' => $customAttributes ?? (object)[],
             'additionalLoginIds' => $additionalLoginIds,
             'ssoAppIds' => $ssoAppIds,
         ];
+        print_r($customAttributes);
         if ($verifiedEmail !== null) {
             $res['verifiedEmail'] = $verifiedEmail;
         }
@@ -834,13 +1007,11 @@ class User {
             if (isset($password->cleartext)) {
                 $res['password'] = $password->cleartext;
             } else {
-                if (isset($res['password']['hashedPassword'])) {
-                    $res['hashedPassword'] = $res['password']['hashedPassword'];
-                    unset($res['password']);
+                if (isset($password->hashedPassword)) {
+                    $res['hashedPassword'] = $password->hashedPassword;
                 }
             }
         }
-        print_r($res);
 
         return $res;
     }

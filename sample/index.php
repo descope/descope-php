@@ -2,6 +2,7 @@
 require '../vendor/autoload.php';
 use Descope\SDK\DescopeSDK;
 use Descope\SDK\Management\UserPassword;
+use Descope\SDK\Management\UserPasswordBcrypt;
 use Descope\SDK\Management\AssociatedTenant;
 use Descope\SDK\Management\UserObj;
 
@@ -25,21 +26,21 @@ echo "Testing create user:\n";
 $response = $descopeSDK->management->user->create(
     "testuser1",
     "testuser1@example.com",
-    "+1234567890",
+    "+14152464801",
     "Test User",
     "Test",
     "Middle",
     "User",
-    ["admin", "user"],
-    [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant Admin, CRO"])],
-    "http://example.com/picture.jpg",
+    "https://example.com",
     ["customAttr1" => "value1"],
     true,
     true,
     "http://example.com/invite",
     ["additionalLoginId1"],
     ["SA2ZsUj73JFqUn8iQx9tblndjKCc6"],
-    new UserPassword(cleartext: "password123")
+    new UserPassword(cleartext: "password123"),
+    [],
+    [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant Admin"])]
 );
 print_r($response);
 
@@ -48,19 +49,21 @@ echo "Testing create test user:\n";
 $response = $descopeSDK->management->user->createTestUser(
     "testuser2",
     "testuser2@example.com",
-    "+0987654321",
+    "+14152464801",
     "Test User 2",
     "Test",
     "Middle",
     "User",
-    ["user"],
     "http://example.com/picture2.jpg",
     ["customAttr2" => "value2"],
     false,
     false,
     "http://example.com/invite2",
     ["additionalLoginId2"],
-    new UserPassword(cleartext: "password456")
+    ["SA2ZsUj73JFqUn8iQx9tblndjKCc6"],
+    new UserPassword(cleartext: "password456"),
+    ["user"],
+    [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])]
 );
 print_r($response);
 
@@ -69,12 +72,11 @@ echo "Testing invite user:\n";
 $response = $descopeSDK->management->user->invite(
     "testuser3",
     "testuser3@example.com",
-    "1122334455",
+    "+14152464801",
     "Test User 3",
     "Test",
     "Middle",
     "User",
-    ["user"],
     "http://example.com/picture3.jpg",
     ["customAttr3" => "value3"],
     true,
@@ -83,8 +85,9 @@ $response = $descopeSDK->management->user->invite(
     true,
     true,
     ["additionalLoginId3"],
-    ["ssoAppId3"],
-    new UserPassword(hashed: new UserPasswordBcrypt("$2y$10$/brZw23J/ya5sOJl8vm7H.BqhDnLqH4ohtSKcZYvSVP/hE6veK.0K"))
+    [],
+    new UserPassword(hashed: new UserPasswordBcrypt("$2y$10$/brZw23J/ya5sOJl8vm7H.BqhDnLqH4ohtSKcZYvSVP/hE6veK.0K")),
+    [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])]
 );
 print_r($response);
 
@@ -94,31 +97,37 @@ $users = [
     new UserObj(
         "batchuser1",
         "batchuser1@example.com",
-        "1231231234",
+        "+14152464801",
         "Batch User 1",
         "Batch",
         "Middle",
         "User",
         ["user"],
+        [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])],
+        "http://example.com/picture1.jpg",
+        ["customAttr1" => "value1"],
         true,
         true,
         ["additionalLoginId1"],
+        [],
         new UserPassword(cleartext: "password123")
     ),
     new UserObj(
         "batchuser2",
         "batchuser2@example.com",
-        "4321432143",
+        "+14152464801",
         "Batch User 2",
         "Batch",
         "Middle",
         "User",
         ["user"],
+        [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])],
         "http://example.com/picture2.jpg",
         ["customAttr2" => "value2"],
         true,
         true,
         ["additionalLoginId2"],
+        [],
         new UserPassword(cleartext: "password456")
     )
 ];
@@ -130,18 +139,15 @@ echo "Testing update user:\n";
 $descopeSDK->management->user->update(
     "testuser1",
     "newtestuser1@example.com",
-    "1234567899",
+    "+14152464801",
     "Updated Test User",
     "Updated",
     "Middle",
     "User",
-    ["admin", "user"],
     "http://example.com/newpicture.jpg",
-    ["customAttr1" => "newvalue1"],
+    ["dob" => "newvalue1"],
     true,
-    true,
-    ["additionalLoginId1"],
-    new UserPassword(cleartext: "newpassword123")
+    true
 );
 
 // Delete user
@@ -150,31 +156,45 @@ $descopeSDK->management->user->delete("testuser1");
 
 // Load user
 echo "Testing load user:\n";
-$response = $descopeSDK->management->user->load("testuser1");
+$response = $descopeSDK->management->user->load("gaokevin1");
 print_r($response);
 
 // Load user by user ID
 echo "Testing load user by user ID:\n";
-$response = $descopeSDK->management->user->loadByUserId("userId1");
+$response = $descopeSDK->management->user->loadByUserId("U2goH2ldn4SzXoFm6IWKlRiEq6JV");
 print_r($response);
+
+$response = $descopeSDK->password->signIn("gaokevin", "6ny8UPNgTVtwB,tcjltg");
 
 // Logout user
 echo "Testing logout user:\n";
-$descopeSDK->management->user->logoutUser("testuser1");
+$descopeSDK->logout($response['refreshSessionToken']);
 
 // Search all users
 echo "Testing search all users:\n";
-$response = $descopeSDK->management->user->searchAll(["tenant1"], ["admin"], 10, 1, false, false, ["customAttr1" => "value1"], ["active"], ["testuser1@example.com"], ["1234567890"], ["ssoAppId1"], [["field" => "loginId", "desc" => true]], "Test");
+$response = $descopeSDK->management->user->searchAll(
+    [],
+    [],
+    10,
+    1,
+    false,
+    false,
+    [],
+    ["enabled"],
+    ["testuser1@example.com"],
+    ["+14152464801"],
+    [],
+);
 print_r($response);
 
 // Get provider token
 echo "Testing get provider token:\n";
-$response = $descopeSDK->management->user->getProviderToken("testuser1", "provider1");
+$response = $descopeSDK->management->user->getProviderToken("gaokevin1", "google");
 print_r($response);
 
 // Activate user
 echo "Testing activate user:\n";
-$response = $descopeSDK->management->user->activate("testuser1");
+$response = $descopeSDK->management->user->activate("gaokevin1");
 print_r($response);
 
 // Deactivate user
@@ -194,7 +214,7 @@ print_r($response);
 
 // Update phone
 echo "Testing update phone:\n";
-$response = $descopeSDK->management->user->updatePhone("testuser1", "9876543210", true);
+$response = $descopeSDK->management->user->updatePhone("testuser1", "+14152464801", true);
 print_r($response);
 
 // Update display name

@@ -55,7 +55,7 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
-        $jsonBody = json_encode($body);
+        $jsonBody = empty($body) ? '{}' : json_encode($body);
 
         try {
             $response = $this->httpClient->post($uri, [
