@@ -696,19 +696,115 @@ class User {
     }
 
     /**
-     * Update the tenant ID of a user.
+     * Add a tenant to a user.
      *
      * @param string $loginId The login ID of the user.
-     * @param string $tenantId The new tenant ID.
+     * @param string $tenantId The tenant ID to add.
      * @return array The updated user details.
      */
-    public function updateTenant(string $loginId, string $tenantId): array {
+    public function addTenant(string $loginId, string $tenantId): array {
         $response = $this->api->doPost(
-            MgmtV1::USER_UPDATE_TENANT_PATH,
+            MgmtV1::USER_ADD_TENANT_PATH,
             ['loginId' => $loginId, 'tenantId' => $tenantId],
             true
         );
         return $this->api->generateJwtResponse($response);
+    }
+
+    /**
+     * Remove a tenant from a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $tenantId The tenant ID to remove.
+     * @return array The updated user details.
+     */
+    public function removeTenant(string $loginId, string $tenantId): array {
+        $response = $this->api->doPost(
+            MgmtV1::USER_REMOVE_TENANT_PATH,
+            ['loginId' => $loginId, 'tenantId' => $tenantId],
+            true
+        );
+        return $this->api->generateJwtResponse($response);
+    }
+
+    /**
+     * Set roles for a user in a tenant.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $tenantId The tenant ID.
+     * @param array $roleNames The list of role names to set.
+     * @return array The updated user details.
+     */
+    public function setTenantRoles(string $loginId, string $tenantId, array $roleNames): array {
+        $response = $this->api->doPost(
+            MgmtV1::USER_SET_ROLE_PATH,
+            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
+            true
+        );
+        return $this->api->generateJwtResponse($response);
+    }
+
+    /**
+     * Remove roles from a user in a tenant.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $tenantId The tenant ID.
+     * @param array $roleNames The list of role names to remove.
+     * @return array The updated user details.
+     */
+    public function removeTenantRoles(string $loginId, string $tenantId, array $roleNames): array {
+        $response = $this->api->doPost(
+            MgmtV1::USER_REMOVE_ROLE_PATH,
+            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
+            true
+        );
+        return $this->api->generateJwtResponse($response);
+    }
+
+    /**
+     * Set a temporary password for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $password The new temporary password.
+     * @return void
+     */
+    public function setTemporaryPassword(string $loginId, UserPassword $password): void {
+        $this->api->doPost(
+            MgmtV1::USER_SET_TEMPORARY_PASSWORD_PATH,
+            ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => false],
+            true
+        );
+    }
+
+    /**
+     * Set an active password for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $password The new active password.
+     * @return void
+     */
+    public function setActivePassword(string $loginId, UserPassword $password): void {
+        $this->api->doPost(
+            MgmtV1::USER_SET_ACTIVE_PASSWORD_PATH,
+            ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => true],
+            true
+        );
+    }
+
+    /**
+     * Set a password for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $password The new password.
+     * @param bool $setActive Whether to set the password as active.
+     * @return void
+     */
+    public function setPassword(string $loginId, string $password, bool $setActive = false): void {
+        $this->api->doPost(
+            MgmtV1::USER_SET_PASSWORD_PATH,
+            ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
+            true
+        );
     }
 
     /**
@@ -763,7 +859,7 @@ class User {
      * @param array|null $loginOptions Optional login options.
      * @return array The generated OTP details.
      */
-    public function generateOtpForTestUser(string $loginId, string $method, ?array $loginOptions = null): array {
+    public function generateOtpForTestUser(string $loginId, int $method, ?array $loginOptions = null): array {
         $response = $this->api->doPost(
             MgmtV1::USER_GENERATE_OTP_FOR_TEST_PATH,
             [
@@ -773,7 +869,7 @@ class User {
             ],
             true
         );
-        return json_decode($response->getBody(), true);
+        return $this->api->generateJwtResponse($response);
     }
 
     /**

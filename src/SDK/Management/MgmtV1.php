@@ -141,4 +141,65 @@ class MgmtV1 {
     public const PROJECT_EXPORT = DEFAULT_BASE_URL . "/v1/mgmt/project/export";
     public const PROJECT_IMPORT = DEFAULT_BASE_URL . "/v1/mgmt/project/import";
 }
+
+class LoginOptions {
+    public bool $stepup;
+    public bool $mfa;
+    public ?array $customClaims;
+    public ?array $templateOptions;
+
+    public function __construct(
+        bool $stepup = false,
+        bool $mfa = false,
+        ?array $customClaims = null,
+        ?array $templateOptions = null
+    ) {
+        $this->stepup = $stepup;
+        $this->mfa = $mfa;
+        $this->customClaims = $customClaims;
+        $this->templateOptions = $templateOptions;
+    }
+}
+
+class DeliveryMethod {
+    public const WHATSAPP = 1;
+    public const SMS = 2;
+    public const EMAIL = 3;
+    public const EMBEDDED = 4;
+    public const VOICE = 5;
+
+    private int $value;
+
+    private function __construct(int $value) {
+        $this->value = $value;
+    }
+
+    public static function WHATSAPP(): self {
+        return new self(self::WHATSAPP);
+    }
+
+    public static function SMS(): self {
+        return new self(self::SMS);
+    }
+
+    public static function EMAIL(): self {
+        return new self(self::EMAIL);
+    }
+
+    public static function EMBEDDED(): self {
+        return new self(self::EMBEDDED);
+    }
+
+    public static function VOICE(): self {
+        return new self(self::VOICE);
+    }
+
+    public function getValue(): int {
+        return $this->value;
+    }
+
+    public function __toString(): string {
+        return (string) $this->value;
+    }
+}
 ?>

@@ -5,6 +5,8 @@ use Descope\SDK\Management\UserPassword;
 use Descope\SDK\Management\UserPasswordBcrypt;
 use Descope\SDK\Management\AssociatedTenant;
 use Descope\SDK\Management\UserObj;
+use Descope\SDK\Management\LoginOptions;
+use Descope\SDK\Management\DeliveryMethod;
 
 session_start();
 if (isset($_SESSION["user"])) {
@@ -279,7 +281,7 @@ print_r($response);
 
 // Add tenant roles
 echo "Testing add tenant roles:\n";
-$response = $descopeSDK->management->user->addTenantRoles("testuser1", "tenantId1", ["user"]);
+$response = $descopeSDK->management->user->setTenantRoles("testuser1", "tenantId1", ["user"]);
 print_r($response);
 
 // Remove tenant roles
@@ -294,10 +296,6 @@ $descopeSDK->management->user->setTemporaryPassword("testuser1", new UserPasswor
 // Set active password
 echo "Testing set active password:\n";
 $descopeSDK->management->user->setActivePassword("testuser1", new UserPassword(cleartext: "activePassword123"));
-
-// Set password
-echo "Testing set password:\n";
-$descopeSDK->management->user->setPassword("testuser1", new UserPassword(cleartext: "password123"), true);
 
 // Expire password
 echo "Testing expire password:\n";
