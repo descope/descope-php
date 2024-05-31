@@ -159,6 +159,15 @@ class LoginOptions {
         $this->customClaims = $customClaims;
         $this->templateOptions = $templateOptions;
     }
+
+    public function toArray() {
+        return [
+            'stepup' => $this->stepup,
+            'mfa' => $this->mfa,
+            'customClaims' => $this->customClaims,
+            'templateOptions' => $this->templateOptions
+        ];
+    }
 }
 
 class DeliveryMethod {

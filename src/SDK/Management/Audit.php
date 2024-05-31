@@ -3,19 +3,45 @@
 namespace Descope\SDK\Management;
 
 use DateTime;
-use Descope\Auth;
-use Descope\Exception\AuthException;
-use Descope\Management\Common\MgmtV1;
+use Descope\SDK\API;
+use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Management\MgmtV1;
 
 class Audit
 {
-    private Auth $auth;
+    private API $api;
 
-    public function __construct(Auth $auth)
+    /**
+     * Audit constructor.
+     *
+     * @param API $api The API instance to be used for making requests.
+     */
+    public function __construct(API $api)
     {
-        $this->auth = $auth;
+        $this->api = $api;
     }
 
+    /**
+     * Search the audit logs with various filters.
+     *
+     * @param array|null $userIds List of user IDs to filter by.
+     * @param array|null $actions List of actions to filter by.
+     * @param array|null $excludedActions List of actions to exclude.
+     * @param array|null $devices List of devices to filter by (e.g., "Bot", "Mobile", "Desktop").
+     * @param array|null $methods List of methods to filter by (e.g., "otp", "totp", "magiclink").
+     * @param array|null $geos List of geographical locations to filter by (country codes).
+     * @param array|null $remoteAddresses List of remote addresses to filter by.
+     * @param array|null $loginIds List of login IDs to filter by.
+     * @param array|null $tenants List of tenants to filter by.
+     * @param bool $noTenants Whether to include audits without tenants.
+     * @param string|null $text Free text search across all fields.
+     * @param DateTime|null $fromTs Retrieve records newer than this timestamp.
+     * @param DateTime|null $toTs Retrieve records older than this timestamp.
+     *
+     * @return array List of filtered audit records.
+     *
+     * @throws AuthException If the search operation fails.
+     */
     public function search(
         ?array $userIds = null,
         ?array $actions = null,
@@ -69,17 +95,29 @@ class Audit
             $body['to'] = $toTs->getTimestamp() * 1000;
         }
 
-        $response = $this->auth->doPost(
+        $response = $this->api->doPost(
             MgmtV1::AUDIT_SEARCH,
             $body,
-            ['pswd' => $this->auth->managementKey]
+            true
         );
-        $responseBody = json_decode($response->getBody(), true);
+
         return [
-            'audits' => array_map([$this, 'convertAuditRecord'], $responseBody['audits'])
+            'audits' => array_map([$this, 'convertAuditRecord'], $response['audits'])
         ];
     }
 
+    /**
+     * Create an audit event.
+     *
+     * @param string $action The action performed.
+     * @param string $type The type of event (e.g., "info", "warn", "error").
+     * @param string $actorId The ID of the actor performing the action.
+     * @param string $tenantId The ID of the tenant where the action occurred.
+     * @param string|null $userId Optional, the ID of the user associated with the event.
+     * @param array|null $data Optional, additional data associated with the event.
+     *
+     * @throws AuthException If the event creation operation fails.
+     */
     public function createEvent(
         string $action,
         string $type,
@@ -101,13 +139,20 @@ class Audit
             $body['data'] = $data;
         }
 
-        $this->auth->doPost(
+        $this->api->doPost(
             MgmtV1::AUDIT_CREATE_EVENT,
             $body,
-            ['pswd' => $this->auth->managementKey]
+            true
         );
     }
 
+    /**
+     * Convert an audit record from the API response to a structured array.
+     *
+     * @param array $a The audit record from the API response.
+     *
+     * @return array The structured audit record.
+     */
     private function convertAuditRecord(array $a): array
     {
         return [
