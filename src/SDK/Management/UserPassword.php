@@ -4,14 +4,35 @@ declare(strict_types=1);
 
 namespace Descope\SDK\Management;
 
-// TODO: Implement UserPasswordPHPass class
 class UserPasswordPHPass
 {
     private string $hash;
+    private string $salt;
+    private int $iterations;
 
-    public function __construct(string $hash)
+    public function __construct(
+        string $hash,
+        string $salt,
+        int $iterations
+    ) {
+        /**
+         * The hash and salt should be base64 strings using standard encoding with padding.
+         * The iterations cost value is an integer, usually in the thousands.
+         */
+        $this->hash = $hash;
+        $this->salt = $salt;
+        $this->iterations = $iterations;
+    }
+
+    public function toArray(): array
     {
-        
+        return [
+            'phpass' => [
+                'hash' => $this->hash,
+                'salt' => $this->salt,
+                'iterations' => $this->iterations
+            ],
+        ];
     }
 }
 

@@ -21,6 +21,8 @@ class DescopeSDK
     public Management $management;
     public API $api;
 
+    public string $baseUrl;
+
     /**
      * Constructor for DescopeSDK class.
      *
