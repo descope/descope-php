@@ -11,10 +11,12 @@ final class DescopeSDKTest extends TestCase
 
     protected function setUp(): void
     {
-        $descopeSDK = new DescopeSDK([
+        $descopeSDK = new DescopeSDK(
+            [
             'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
             'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'] // This can be optional
-        ]);
+            ]
+        );
     }
 
     public function testVerify(): void
