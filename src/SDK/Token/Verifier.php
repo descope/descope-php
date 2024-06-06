@@ -24,7 +24,6 @@ final class Verifier
      * Constructor for Verifier class.
      *
      * @param SDKConfig $config Base configuration options for the SDK.
-     *
      */
     public function __construct($config)
     {
@@ -34,7 +33,7 @@ final class Verifier
     /**
      * Returns true if the JWT signature is valid and not expired.
      *
-     * @param string $sessionToken The session token.
+     * @param  string $sessionToken The session token.
      * @return boolean Token signature is valid and not expired.
      * @throws AuthException If the refresh operation fails.
      */
@@ -65,7 +64,7 @@ final class Verifier
     /**
      * Refreshes the session token, with the provided refresh token.
      *
-     * @param string $refreshToken The refresh token.
+     * @param  string $refreshToken The refresh token.
      * @return array The refreshed JWT response.
      * @throws AuthException If the refresh operation fails.
      */
@@ -81,8 +80,8 @@ final class Verifier
     /**
      * Verifies the session token, and automatically refreshes when expired.
      *
-     * @param string $sessionToken The session token.
-     * @param string $refreshToken The refresh token.
+     * @param  string $sessionToken The session token.
+     * @param  string $refreshToken The refresh token.
      * @return array The JWT response.
      * @throws AuthException If both tokens are missing or verification fails.
      */
@@ -103,8 +102,8 @@ final class Verifier
     /**
      * Validates permissions for a JWT response.
      *
-     * @param array $jwtResponse JWT response data.
-     * @param array $permissions Permissions to validate.
+     * @param  array $jwtResponse JWT response data.
+     * @param  array $permissions Permissions to validate.
      * @return bool True if permissions are valid, false otherwise.
      */
     public function validatePermissions(array $jwtResponse, array $permissions): bool
@@ -115,9 +114,9 @@ final class Verifier
     /**
      * Validates tenant permissions for a JWT response.
      *
-     * @param array $jwtResponse JWT response data.
-     * @param string $tenant Tenant ID.
-     * @param array $permissions Permissions to validate.
+     * @param  array  $jwtResponse JWT response data.
+     * @param  string $tenant      Tenant ID.
+     * @param  array  $permissions Permissions to validate.
      * @return bool True if tenant permissions are valid, false otherwise.
      * @throws AuthException If JWT response is invalid.
      */
@@ -145,8 +144,8 @@ final class Verifier
     /**
      * Validates roles for a JWT response.
      *
-     * @param array $jwtResponse JWT response data.
-     * @param array $roles Roles to validate.
+     * @param  array $jwtResponse JWT response data.
+     * @param  array $roles       Roles to validate.
      * @return bool True if roles are valid, false otherwise.
      */
     public function validateRoles(array $jwtResponse, array $roles): bool
@@ -157,9 +156,9 @@ final class Verifier
     /**
      * Validates tenant roles for a JWT response.
      *
-     * @param array $jwtResponse JWT response data.
-     * @param string $tenant Tenant ID.
-     * @param array $roles Roles to validate.
+     * @param  array  $jwtResponse JWT response data.
+     * @param  string $tenant      Tenant ID.
+     * @param  array  $roles       Roles to validate.
      * @return bool True if tenant roles are valid, false otherwise.
      * @throws AuthException If JWT response is invalid.
      */

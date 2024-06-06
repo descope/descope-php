@@ -9,7 +9,8 @@ const DEFAULT_DOMAIN = "descope.com";
 
 private static $baseUrl;
 
-public static function setBaseUrl(string $projectId): void {
+public static function setBaseUrl(string $projectId): void
+{
     $region = self::extractRegionFromProjectId($projectId);
     $urlPrefix = self::DEFAULT_URL_PREFIX;
 
@@ -20,17 +21,20 @@ public static function setBaseUrl(string $projectId): void {
     self::$baseUrl = "$urlPrefix." . self::DEFAULT_DOMAIN;
 }
 
-private static function extractRegionFromProjectId(string $projectId): ?string {
+private static function extractRegionFromProjectId(string $projectId): ?string
+{
     // Extract the region based on the given logic
     $region = substr($projectId, 1, -27);
     return !empty($region) ? $region : null;
 }
 
-public static function getBaseUrl(): string {
+public static function getBaseUrl(): string
+{
     return self::$baseUrl ?? self::DEFAULT_URL_PREFIX . "." . self::DEFAULT_DOMAIN;
 }
 
-class MgmtV1 {
+class MgmtV1
+{
     // Tenant
     public const TENANT_CREATE_PATH = self::getBaseUrl() . "/v1/mgmt/tenant/create";
     public const TENANT_UPDATE_PATH = self::getBaseUrl() . "/v1/mgmt/tenant/update";
@@ -163,7 +167,8 @@ class MgmtV1 {
     public const PROJECT_IMPORT = self::getBaseUrl() . "/v1/mgmt/project/import";
 }
 
-class LoginOptions {
+class LoginOptions
+{
     public bool $stepup;
     public bool $mfa;
     public ?array $customClaims;
@@ -181,7 +186,8 @@ class LoginOptions {
         $this->templateOptions = $templateOptions;
     }
 
-    public function toArray() {
+    public function toArray()
+    {
         return [
             'stepup' => $this->stepup,
             'mfa' => $this->mfa,
@@ -191,7 +197,8 @@ class LoginOptions {
     }
 }
 
-class DeliveryMethod {
+class DeliveryMethod
+{
     public const WHATSAPP = 1;
     public const SMS = 2;
     public const EMAIL = 3;
@@ -200,35 +207,43 @@ class DeliveryMethod {
 
     private int $value;
 
-    private function __construct(int $value) {
+    private function __construct(int $value)
+    {
         $this->value = $value;
     }
 
-    public static function WHATSAPP(): self {
+    public static function WHATSAPP(): self
+    {
         return new self(self::WHATSAPP);
     }
 
-    public static function SMS(): self {
+    public static function SMS(): self
+    {
         return new self(self::SMS);
     }
 
-    public static function EMAIL(): self {
+    public static function EMAIL(): self
+    {
         return new self(self::EMAIL);
     }
 
-    public static function EMBEDDED(): self {
+    public static function EMBEDDED(): self
+    {
         return new self(self::EMBEDDED);
     }
 
-    public static function VOICE(): self {
+    public static function VOICE(): self
+    {
         return new self(self::VOICE);
     }
 
-    public function getValue(): int {
+    public function getValue(): int
+    {
         return $this->value;
     }
 
-    public function __toString(): string {
+    public function __toString(): string
+    {
         return (string) $this->value;
     }
 }

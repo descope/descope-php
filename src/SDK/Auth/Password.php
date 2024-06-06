@@ -25,9 +25,9 @@ class Password
     /**
      * Signs up a new user with a login ID and password.
      *
-     * @param string $loginId Login ID for the new user.
-     * @param string $password Password for the new user.
-     * @param array|null $user Optional user details.
+     * @param  string     $loginId  Login ID for the new user.
+     * @param  string     $password Password for the new user.
+     * @param  array|null $user     Optional user details.
      * @return array JWT response array.
      * @throws AuthException If login ID or password is empty.
      */
@@ -51,8 +51,8 @@ class Password
     /**
      * Signs in a user with a login ID and password.
      *
-     * @param string $loginId Login ID of the user.
-     * @param string $password Password of the user.
+     * @param  string $loginId  Login ID of the user.
+     * @param  string $password Password of the user.
      * @return array JWT response array.
      * @throws AuthException If login ID or password is empty.
      */
@@ -74,9 +74,9 @@ class Password
     /**
      * Sends a password reset request.
      *
-     * @param string $loginId Login ID of the user.
-     * @param string|null $redirectUrl Optional redirect URL.
-     * @param array|null $templateOptions Optional template options.
+     * @param  string      $loginId         Login ID of the user.
+     * @param  string|null $redirectUrl     Optional redirect URL.
+     * @param  array|null  $templateOptions Optional template options.
      * @return array Response array.
      * @throws AuthException If login ID is empty.
      */
@@ -102,8 +102,8 @@ class Password
     /**
      * Updates the password of a user.
      *
-     * @param string $loginId Login ID of the user.
-     * @param string $newPassword New password for the user.
+     * @param  string $loginId     Login ID of the user.
+     * @param  string $newPassword New password for the user.
      * @throws AuthException If login ID, new password, or refresh token is empty.
      */
     public function update(string $loginId, string $newPassword, string $refreshToken): void
@@ -127,9 +127,9 @@ class Password
     /**
      * Replaces the password of a user.
      *
-     * @param string $loginId Login ID of the user.
-     * @param string $oldPassword Old password of the user.
-     * @param string $newPassword New password for the user.
+     * @param  string $loginId     Login ID of the user.
+     * @param  string $oldPassword Old password of the user.
+     * @param  string $newPassword New password for the user.
      * @return array JWT response array.
      * @throws AuthException If login ID, old password, or new password is empty.
      */
@@ -148,11 +148,13 @@ class Password
         }
 
         $uri = EndpointsV1::REPLACE_PASSWORD_PATH;
-        $response = $this->api->doPost($uri, [
+        $response = $this->api->doPost(
+            $uri, [
             'loginId' => $loginId,
             'oldPassword' => $oldPassword,
             'newPassword' => $newPassword,
-        ]);
+            ]
+        );
 
         $resp = json_decode($response->getBody(), true);
         return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), true);
@@ -172,10 +174,10 @@ class Password
     /**
      * Composes the body for the signup request.
      *
-     * @param string $loginId Login ID for the new user.
-     * @param string $password Password for the new user.
-     * @param array|null $user Optional user details.
-     * @param array|null $loginOptions Optional login options.
+     * @param  string     $loginId      Login ID for the new user.
+     * @param  string     $password     Password for the new user.
+     * @param  array|null $user         Optional user details.
+     * @param  array|null $loginOptions Optional login options.
      * @return array Body array for the signup request.
      */
     private function composeSignupBody(string $loginId, string $password, ?array $user, ?array $loginOptions): array

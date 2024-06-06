@@ -24,19 +24,19 @@ class Audit
     /**
      * Search the audit logs with various filters.
      *
-     * @param array|null $userIds List of user IDs to filter by.
-     * @param array|null $actions List of actions to filter by.
-     * @param array|null $excludedActions List of actions to exclude.
-     * @param array|null $devices List of devices to filter by (e.g., "Bot", "Mobile", "Desktop").
-     * @param array|null $methods List of methods to filter by (e.g., "otp", "totp", "magiclink").
-     * @param array|null $geos List of geographical locations to filter by (country codes).
-     * @param array|null $remoteAddresses List of remote addresses to filter by.
-     * @param array|null $loginIds List of login IDs to filter by.
-     * @param array|null $tenants List of tenants to filter by.
-     * @param bool $noTenants Whether to include audits without tenants.
-     * @param string|null $text Free text search across all fields.
-     * @param DateTime|null $fromTs Retrieve records newer than this timestamp.
-     * @param DateTime|null $toTs Retrieve records older than this timestamp.
+     * @param array|null    $userIds         List of user IDs to filter by.
+     * @param array|null    $actions         List of actions to filter by.
+     * @param array|null    $excludedActions List of actions to exclude.
+     * @param array|null    $devices         List of devices to filter by (e.g., "Bot", "Mobile", "Desktop").
+     * @param array|null    $methods         List of methods to filter by (e.g., "otp", "totp", "magiclink").
+     * @param array|null    $geos            List of geographical locations to filter by (country codes).
+     * @param array|null    $remoteAddresses List of remote addresses to filter by.
+     * @param array|null    $loginIds        List of login IDs to filter by.
+     * @param array|null    $tenants         List of tenants to filter by.
+     * @param bool          $noTenants       Whether to include audits without tenants.
+     * @param string|null   $text            Free text search across all fields.
+     * @param DateTime|null $fromTs          Retrieve records newer than this timestamp.
+     * @param DateTime|null $toTs            Retrieve records older than this timestamp.
      *
      * @return array List of filtered audit records.
      *
@@ -109,12 +109,12 @@ class Audit
     /**
      * Create an audit event.
      *
-     * @param string $action The action performed.
-     * @param string $type The type of event (e.g., "info", "warn", "error").
-     * @param string $actorId The ID of the actor performing the action.
-     * @param string $tenantId The ID of the tenant where the action occurred.
-     * @param string|null $userId Optional, the ID of the user associated with the event.
-     * @param array|null $data Optional, additional data associated with the event.
+     * @param string      $action   The action performed.
+     * @param string      $type     The type of event (e.g., "info", "warn", "error").
+     * @param string      $actorId  The ID of the actor performing the action.
+     * @param string      $tenantId The ID of the tenant where the action occurred.
+     * @param string|null $userId   Optional, the ID of the user associated with the event.
+     * @param array|null  $data     Optional, additional data associated with the event.
      *
      * @throws AuthException If the event creation operation fails.
      */

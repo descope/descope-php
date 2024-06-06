@@ -41,9 +41,9 @@ class API
     /**
      * Requests JwtResponse from Descope APIs with the given body and auth token.
      *
-     * @param string $uri URI endpoint.
-     * @param array $body Request body.
-     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @param  string $uri              URI endpoint.
+     * @param  array  $body             Request body.
+     * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
@@ -60,10 +60,12 @@ class API
         $jsonBody = empty($body) ? '{}' : json_encode($body);
 
         try {
-            $response = $this->httpClient->post($uri, [
+            $response = $this->httpClient->post(
+                $uri, [
                 'headers' => $this->getHeaders($authToken),
                 'body' => $jsonBody,
-            ]);
+                ]
+            );
             
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -86,8 +88,8 @@ class API
     /**
      * Sends a GET request to the specified URI with an optional auth token.
      *
-     * @param string $uri URI endpoint.
-     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @param  string $uri              URI endpoint.
+     * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
@@ -95,9 +97,11 @@ class API
     {
         $authToken = $this->getAuthToken($useManagementKey);
         try {
-            $response = $this->httpClient->get($uri, [
+            $response = $this->httpClient->get(
+                $uri, [
                 'headers' => $this->getHeaders($authToken),
-            ]);
+                ]
+            );
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -120,9 +124,9 @@ class API
     /**
      * Generates a JWT response array with the given parameters.
      *
-     * @param array $resp Response data.
-     * @param string|null $refreshToken Refresh token.
-     * @param string|null $audience Audience.
+     * @param  array       $resp         Response data.
+     * @param  string|null $refreshToken Refresh token.
+     * @param  string|null $audience     Audience.
      * @return array JWT response array.
      */
     public function generateJwtResponse(array $responseBody, ?string $refreshToken = null, ?string $audience = null): array
@@ -138,7 +142,7 @@ class API
     /**
      * Generates headers for the HTTP request.
      *
-     * @param string|null $authToken Authentication token.
+     * @param  string|null $authToken Authentication token.
      * @return array Headers array.
      */
     private function getHeaders(string $authToken): array
@@ -156,7 +160,7 @@ class API
     /**
      * Constructs the auth token based on whether the management key is used.
      *
-     * @param bool $useManagementKey Whether to use the management key for authentication.
+     * @param  bool $useManagementKey Whether to use the management key for authentication.
      * @return string The constructed auth token.
      */
     private function getAuthToken(bool $useManagementKey, ?string $refreshToken = null): string

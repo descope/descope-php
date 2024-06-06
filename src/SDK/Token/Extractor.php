@@ -22,8 +22,7 @@ final class Extractor
     /**
      * Constructor for Verifier class.
      *
-     * @param SDKConfig $config   Base configuration options for the SDK.
-     *
+     * @param SDKConfig $config Base configuration options for the SDK.
      */
     public function __construct($config)
     {
@@ -57,9 +56,11 @@ final class Extractor
         try {
             $url = 'https://api.descope.com/v1/auth/me';
             $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
-            $res = $client->request('GET', $url, [
+            $res = $client->request(
+                'GET', $url, [
                 'headers' => ['Authorization' => $header]
-            ]);
+                ]
+            );
             $jwkSets = json_decode($res->getBody(), true);
             return $jwkSets;
         } catch (RequestException $re) {
@@ -79,14 +80,18 @@ final class Extractor
             $jwkSet = JWKSet::createFromKeyData($jwkSets);
 
             $jwsVerifier = new JWSVerifier(
-                new AlgorithmManager([
+                new AlgorithmManager(
+                    [
                     new RS256(),
-                ])
+                    ]
+                )
             );
                 
-            $serializerManager = new JWSSerializerManager([
+            $serializerManager = new JWSSerializerManager(
+                [
                 new CompactSerializer(),
-            ]);
+                ]
+            );
     
             $jws = $serializerManager->unserialize($sessionToken);
 

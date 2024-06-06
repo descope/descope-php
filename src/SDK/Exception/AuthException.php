@@ -28,11 +28,13 @@ final class AuthException extends Exception implements DescopeException
 
     public function __toString(): string
     {
-        return json_encode([
+        return json_encode(
+            [
             'statusCode' => $this->statusCode,
             'errorType' => $this->errorType,
             'errorMessage' => $this->errorMessage
-        ]);
+            ]
+        );
     }
 }
 
@@ -63,12 +65,14 @@ final class RateLimitException extends Exception implements DescopeException
 
     public function __toString(): string
     {
-        return json_encode([
+        return json_encode(
+            [
             'statusCode' => $this->statusCode,
             'errorType' => $this->errorType,
             'errorDescription' => $this->errorDescription,
             'errorMessage' => $this->errorMessage,
             'rateLimitParameters' => $this->rateLimitParameters
-        ]);
+            ]
+        );
     }
 }

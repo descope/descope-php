@@ -2,7 +2,8 @@
 
 namespace Descope\SDK\Management;
 
-class AssociatedTenant {
+class AssociatedTenant
+{
     /**
      * Represents a tenant association for a User or Access Key. The tenant will be used to determine permissions and roles for the entity.
      *
@@ -24,13 +25,15 @@ class AssociatedTenant {
      */
     public $roleIds = [];
 
-    public function __construct($tenantId, $roleNames = [], $roleIds = []) {
+    public function __construct($tenantId, $roleNames = [], $roleIds = [])
+    {
         $this->tenantId = $tenantId;
         $this->roleNames = $roleNames;
         $this->roleIds = $roleIds;
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'tenantId' => $this->tenantId,
             'roleNames' => $this->roleNames,

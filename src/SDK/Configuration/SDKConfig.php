@@ -24,7 +24,6 @@ final class SDKConfig
 
     /**
      * Gets the current JWK KeySet that will be needed to validate the JWT
-     *
      */
     private function getJWKSets()
     {

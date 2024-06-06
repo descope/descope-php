@@ -37,8 +37,8 @@ final class DescopeSDKTest extends TestCase
 
     public function testPassword(): void
     {
-        $result = $this->descopeSDK->password->signUp("kevin@descope.com", "Peak6518@!", []);
+        $result = $this->descopeSDK->password->signUp("example@descope.com", "Password123!", []);
         var_dump($result);
-        $this->assertIsArray($this->descopeSDK->password->signUp("kevin@descope.com", "Peak6518@!", []));
+        $this->assertIsArray($this->descopeSDK->password->signUp("example@descope.com", "Password123!", []));
     }
 }

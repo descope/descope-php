@@ -27,7 +27,6 @@ class DescopeSDK
      * Constructor for DescopeSDK class.
      *
      * @param SDKConfig $config Base configuration options for the SDK.
-     *
      */
     public function __construct(array $config)
     {
@@ -49,7 +48,6 @@ class DescopeSDK
 
     /**
      * Verify if the JWT is valid and not expired.
-     *
      */
     public function verify($sessionToken)
     {
@@ -59,7 +57,6 @@ class DescopeSDK
 
     /**
      * Refresh session token with refresh token.
-     *
      */
     public function refreshSession($refreshToken)
     {
@@ -69,7 +66,6 @@ class DescopeSDK
 
     /**
      * Verify if the JWT is valid and not expired.
-     *
      */
     public function verifyAndRefreshSession($sessionToken, $refreshToken)
     {
@@ -79,7 +75,6 @@ class DescopeSDK
 
     /**
      * Returns the JWT claims, if the JWT is valid.
-     *
      */
     public function getClaims($token)
     {
@@ -90,7 +85,7 @@ class DescopeSDK
     /**
      * Returns the user details, using the refresh token.
      *
-     * @param string $refreshToken The refresh token of the user.
+     * @param  string $refreshToken The refresh token of the user.
      * @return void
      * @throws AuthException if the logout operation fails.
      */
@@ -107,11 +102,12 @@ class DescopeSDK
     /**
      * Logout a user from all devices.
      *
-     * @param string $refreshToken The refresh token of the user.
+     * @param  string $refreshToken The refresh token of the user.
      * @return void
      * @throws AuthException if the logout operation fails.
-    */
-    public function logout(string $refreshToken): void {
+     */
+    public function logout(string $refreshToken): void
+    {
         $this->api->doPost(
             EndpointsV1::LOGOUT_PATH,
             [],
@@ -123,11 +119,12 @@ class DescopeSDK
     /**
      * Logout a user from all devices.
      *
-     * @param string $refreshToken The refresh token of the user.
+     * @param  string $refreshToken The refresh token of the user.
      * @return void
      * @throws AuthException if the logout operation fails.
-    */
-    public function logoutAll(string $refreshToken): void {
+     */
+    public function logoutAll(string $refreshToken): void
+    {
         $this->api->doPost(
             EndpointsV1::LOGOUT_ALL_PATH,
             [],

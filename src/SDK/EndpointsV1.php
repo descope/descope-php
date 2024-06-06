@@ -12,7 +12,8 @@ const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)
 
 private static $baseUrl;
 
-public static function setBaseUrl(string $projectId): void {
+public static function setBaseUrl(string $projectId): void
+{
     $region = self::extractRegionFromProjectId($projectId);
     $urlPrefix = self::DEFAULT_URL_PREFIX;
 
@@ -23,7 +24,8 @@ public static function setBaseUrl(string $projectId): void {
     self::$baseUrl = "$urlPrefix." . self::DEFAULT_DOMAIN;
 }
 
-private static function extractRegionFromProjectId(string $projectId): ?string {
+private static function extractRegionFromProjectId(string $projectId): ?string
+{
     // Extract the region based on the given logic
     if (strlen($projectId) >= 32) {
         $region = substr($projectId, 1, 4);
@@ -32,11 +34,13 @@ private static function extractRegionFromProjectId(string $projectId): ?string {
     return null;
 }
 
-public static function getBaseUrl(): string {
+public static function getBaseUrl(): string
+{
     return self::$baseUrl ?? self::DEFAULT_URL_PREFIX . "." . self::DEFAULT_DOMAIN;
 }
 
-class EndpointsV1 {
+class EndpointsV1
+{
     public const REFRESH_TOKEN_PATH = self::getBaseUrl() . "/v1/auth/refresh";
     public const SELECT_TENANT_PATH = self::getBaseUrl() . "/v1/auth/tenant/select";
     public const LOGOUT_PATH = self::getBaseUrl() . "/v1/auth/logout";
@@ -103,11 +107,13 @@ class EndpointsV1 {
     public const PASSWORD_POLICY_PATH = self::getBaseUrl() . "/v1/auth/password/policy";
 }
 
-class EndpointsV2 {
+class EndpointsV2
+{
     public const PUBLIC_KEY_PATH = self::getBaseUrl() . "/v2/keys";
 }
 
-class DeliveryMethod {
+class DeliveryMethod
+{
     public const WHATSAPP = 1;
     public const SMS = 2;
     public const EMAIL = 3;
@@ -115,7 +121,8 @@ class DeliveryMethod {
     public const VOICE = 5;
 }
 
-class LoginOptions {
+class LoginOptions
+{
     public bool $stepup;
     public bool $mfa;
     public ?array $customClaims;
@@ -134,7 +141,8 @@ class LoginOptions {
     }
 }
 
-class AccessKeyLoginOptions {
+class AccessKeyLoginOptions
+{
     public ?array $customClaims;
 
     public function __construct(
@@ -159,7 +167,8 @@ function validate_refresh_token_provided(
     }
 }
 
-class SignUpOptions {
+class SignUpOptions
+{
     public ?array $customClaims;
     public ?array $templateOptions;
 
@@ -172,7 +181,8 @@ class SignUpOptions {
     }
 }
 
-function signup_options_to_dict(?SignUpOptions $signupOptions = null): array {
+function signup_options_to_dict(?SignUpOptions $signupOptions = null): array
+{
     $res = [];
     if ($signupOptions !== null) {
         if ($signupOptions->customClaims !== null) {
