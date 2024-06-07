@@ -1,5 +1,7 @@
 <?php
 
+namespace Descope\Tests;
+
 $license_file = __DIR__ . '/../../LICENSE';
 
 if (!file_exists($license_file)) {

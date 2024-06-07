@@ -1,6 +1,6 @@
 <?php
 
-namespace Descope\SDK\Tests\Auth;
+namespace Descope\Tests\Auth;
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\Auth\SSO;

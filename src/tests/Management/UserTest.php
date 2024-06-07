@@ -1,5 +1,7 @@
 <?php
 
+namespace Descope\Tests\Management;
+
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 use Descope\SDK\Management\UserPassword;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Descope\SDK\Tests;
+namespace Descope\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;

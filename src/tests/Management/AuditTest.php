@@ -1,5 +1,7 @@
 <?php
 
+namespace Descope\Tests\Management;
+
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\API;
 use Descope\SDK\Management\Audit;
