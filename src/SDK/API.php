@@ -42,9 +42,9 @@ class API
      * This function ensures that empty arrays in the input data are
      * converted to empty objects (stdClass) before being JSON encoded.
      *
-     * @param mixed $data The data to transform, which can be an array or any other type.
+     * @param  mixed $data The data to transform, which can be an array or any other type.
      * @return mixed The transformed data with empty arrays replaced by empty objects.
-    */
+     */
     private function transformEmptyArraysToObjects($data)
     {
         if (is_array($data)) {
