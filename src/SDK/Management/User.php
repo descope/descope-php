@@ -65,7 +65,7 @@ class User
         $userTenants = $userTenants ?? [];
 
         $response = $this->api->doPost(
-            MgmtV1::USER_CREATE_PATH,
+            MgmtV1::$USER_CREATE_PATH,
             $this->composeCreateBody(
                 $loginId,
                 $email,
@@ -117,7 +117,7 @@ class User
         $userTenants = $userTenants ?? [];
 
         $response = $this->api->doPost(
-            MgmtV1::USER_CREATE_PATH,
+            MgmtV1::$USER_CREATE_PATH,
             $this->composeCreateBody(
                 $loginId,
                 $email,
@@ -171,7 +171,7 @@ class User
         $userTenants = $userTenants ?? [];
 
         $response = $this->api->doPost(
-            MgmtV1::USER_CREATE_PATH,
+            MgmtV1::$USER_CREATE_PATH,
             $this->composeCreateBody(
                 $loginId,
                 $email,
@@ -207,7 +207,7 @@ class User
         ?bool $sendSms = null
     ): array {
         $response = $this->api->doPost(
-            MgmtV1::USER_CREATE_BATCH_PATH,
+            MgmtV1::$USER_CREATE_BATCH_PATH,
             $this->composeCreateBatchBody(
                 $users,
                 $inviteUrl,
@@ -241,7 +241,7 @@ class User
         $userTenants = $userTenants ?? [];
 
         $this->api->doPost(
-            MgmtV1::USER_UPDATE_PATH,
+            MgmtV1::$USER_UPDATE_PATH,
             $this->composeUpdateBody(
                 $loginId,
                 $email,
@@ -275,7 +275,7 @@ class User
     public function delete(string $loginId): void
     {
         $this->api->doPost(
-            MgmtV1::USER_DELETE_PATH,
+            MgmtV1::$USER_DELETE_PATH,
             ['loginId' => $loginId],
             true
         );
@@ -291,7 +291,7 @@ class User
     public function deleteByUserId(string $userId): void
     {
         $this->api->doPost(
-            MgmtV1::USER_DELETE_PATH,
+            MgmtV1::$USER_DELETE_PATH,
             ['userId' => $userId],
             true
         );
@@ -301,7 +301,7 @@ class User
     public function deleteAllTestUsers(): void
     {
         $this->api->doDelete(
-            MgmtV1::USER_DELETE_ALL_TEST_USERS_PATH,
+            MgmtV1::$USER_DELETE_ALL_TEST_USERS_PATH,
             true
         );
     }
@@ -309,7 +309,7 @@ class User
     public function load(string $loginId): array
     {
         $response = $this->api->doGet(
-            MgmtV1::USER_LOAD_PATH . "?loginId=" . $loginId,
+            MgmtV1::$USER_LOAD_PATH . "?loginId=" . $loginId,
             true
         );
         return $response;
@@ -318,7 +318,7 @@ class User
     public function loadByUserId(string $userId): array
     {
         $response = $this->api->doGet(
-            MgmtV1::USER_LOAD_PATH . "?userId=" . $userId,
+            MgmtV1::$USER_LOAD_PATH . "?userId=" . $userId,
             true
         );
         return $response;
@@ -424,7 +424,7 @@ class User
 
         try {
             $response = $this->api->doPost(
-                MgmtV1::USERS_SEARCH_PATH,
+                MgmtV1::$USERS_SEARCH_PATH,
                 $body,
                 true
             );
@@ -462,7 +462,7 @@ class User
     {
         try {
             $response = $this->api->doGet(
-                MgmtV1::USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider. "&withRefreshToken=true",
+                MgmtV1::$USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider. "&withRefreshToken=true",
                 true
             );
             return $response;
@@ -484,7 +484,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_STATUS_PATH,
+                MgmtV1::$USER_UPDATE_STATUS_PATH,
                 ['loginId' => $loginId, 'status' => 'enabled'],
                 true
             );
@@ -507,7 +507,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_STATUS_PATH,
+                MgmtV1::$USER_UPDATE_STATUS_PATH,
                 ['loginId' => $loginId, 'status' => 'disabled'],
                 true
             );
@@ -530,7 +530,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_LOGIN_ID_PATH,
+                MgmtV1::$USER_UPDATE_LOGIN_ID_PATH,
                 ['loginId' => $loginId, 'newLoginId' => $newLoginId],
                 true
             );
@@ -554,7 +554,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_EMAIL_PATH,
+                MgmtV1::$USER_UPDATE_EMAIL_PATH,
                 ['loginId' => $loginId, 'email' => $email, 'verified' => $verified],
                 true
             );
@@ -579,7 +579,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_PHONE_PATH,
+                MgmtV1::$USER_UPDATE_PHONE_PATH,
                 ['loginId' => $loginId, 'phone' => $phone, 'verified' => $verified],
                 true
             );
@@ -619,7 +619,7 @@ class User
 
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_NAME_PATH,
+                MgmtV1::$USER_UPDATE_NAME_PATH,
                 $body,
                 true
             );
@@ -643,7 +643,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_PICTURE_PATH,
+                MgmtV1::$USER_UPDATE_PICTURE_PATH,
                 ['loginId' => $loginId, 'picture' => $picture],
                 true
             );
@@ -668,7 +668,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_UPDATE_CUSTOM_ATTRIBUTE_PATH,
+                MgmtV1::$USER_UPDATE_CUSTOM_ATTRIBUTE_PATH,
                 ['loginId' => $loginId, 'attributeKey' => $attributeKey, 'attributeValue' => $attributeValue],
                 true
             );
@@ -692,7 +692,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_SET_ROLE_PATH,
+                MgmtV1::$USER_SET_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
@@ -716,7 +716,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_ADD_ROLE_PATH,
+                MgmtV1::$USER_ADD_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
@@ -740,7 +740,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_REMOVE_ROLE_PATH,
+                MgmtV1::$USER_REMOVE_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
@@ -764,7 +764,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_SET_SSO_APPS,
+                MgmtV1::$USER_SET_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
@@ -788,7 +788,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_ADD_SSO_APPS,
+                MgmtV1::$USER_ADD_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
@@ -812,7 +812,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_REMOVE_SSO_APPS,
+                MgmtV1::$USER_REMOVE_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
@@ -836,7 +836,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_ADD_TENANT_PATH,
+                MgmtV1::$USER_ADD_TENANT_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId],
                 true
             );
@@ -860,7 +860,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_REMOVE_TENANT_PATH,
+                MgmtV1::$USER_REMOVE_TENANT_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId],
                 true
             );
@@ -884,7 +884,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_SET_ROLE_PATH,
+                MgmtV1::$USER_SET_ROLE_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
                 true
             );
@@ -908,7 +908,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_REMOVE_ROLE_PATH,
+                MgmtV1::$USER_REMOVE_ROLE_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
                 true
             );
@@ -931,7 +931,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_SET_TEMPORARY_PASSWORD_PATH,
+                MgmtV1::$USER_SET_TEMPORARY_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => false],
                 true
             );
@@ -953,7 +953,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_SET_ACTIVE_PASSWORD_PATH,
+                MgmtV1::$USER_SET_ACTIVE_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => true],
                 true
             );
@@ -976,7 +976,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_SET_PASSWORD_PATH,
+                MgmtV1::$USER_SET_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
                 true
             );
@@ -999,7 +999,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_UPDATE_PASSWORD_PATH,
+                MgmtV1::$USER_UPDATE_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
                 true
             );
@@ -1020,7 +1020,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_EXPIRE_PASSWORD_PATH,
+                MgmtV1::$USER_EXPIRE_PASSWORD_PATH,
                 ['loginId' => $loginId],
                 true
             );
@@ -1041,7 +1041,7 @@ class User
     {
         try {
             $this->api->doPost(
-                MgmtV1::USER_REMOVE_ALL_PASSKEYS_PATH,
+                MgmtV1::$USER_REMOVE_ALL_PASSKEYS_PATH,
                 ['loginId' => $loginId],
                 true
             );
@@ -1064,7 +1064,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_GENERATE_OTP_FOR_TEST_PATH,
+                MgmtV1::$USER_GENERATE_OTP_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
                     'deliveryMethod' => $method,
@@ -1093,7 +1093,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH,
+                MgmtV1::$USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
                     'deliveryMethod' => $method,
@@ -1124,7 +1124,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH,
+                MgmtV1::$USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
                     'URI' => $uri,
@@ -1153,7 +1153,7 @@ class User
     {
         try {
             $response = $this->api->doPost(
-                MgmtV1::USER_GENERATE_EMBEDDED_LINK_PATH,
+                MgmtV1::$USER_GENERATE_EMBEDDED_LINK_PATH,
                 ['loginId' => $loginId, 'customClaims' => $customClaims],
                 true
             );
@@ -1176,7 +1176,7 @@ class User
     // public function history(array $userIds): array {
     //     try {
     //         $response = $this->api->doPost(
-    //             MgmtV1::USER_HISTORY_PATH,
+    //             MgmtV1::$USER_HISTORY_PATH,
     //             $userIds,
     //             true
     //         );

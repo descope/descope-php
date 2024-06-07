@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\API;
 use Descope\Exception\AuthException;
-use GuzzleHttp\Psr7\Response;
+use Descope\SDK\EndpointsV1;
 
 class PasswordTest extends TestCase
 {
@@ -17,6 +17,7 @@ class PasswordTest extends TestCase
     {
         $this->apiMock = $this->createMock(API::class);
         $this->password = new Password($this->apiMock);
+        EndpointsV1::setBaseUrl($_ENV['DESCOPE_PROJECT_ID']);
     }
 
     public function testSignUp()
@@ -25,7 +26,7 @@ class PasswordTest extends TestCase
         $password = 's3cr3t';
         $user = ['name' => 'admin'];
 
-        $response = new Response(200, [], json_encode(['jwt' => 'jwt_token']));
+        $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
             ->with('/v1/auth/signup/password', ['loginId' => $loginId, 'password' => $password, 'user' => $user])
@@ -33,11 +34,11 @@ class PasswordTest extends TestCase
 
         $this->apiMock->expects($this->once())
             ->method('generateJwtResponse')
-            ->with(['jwt' => 'jwt_token'], null, null)
-            ->willReturn(['jwt' => 'jwt_token']);
+            ->with($response, null, null)
+            ->willReturn($response);
 
         $result = $this->password->signUp($loginId, $password, $user);
-        $this->assertEquals(['jwt' => 'jwt_token'], $result);
+        $this->assertEquals($response, $result);
     }
 
     public function testSignIn()
@@ -45,7 +46,7 @@ class PasswordTest extends TestCase
         $loginId = 'test';
         $password = 's3cr3t';
 
-        $response = new Response(200, [], json_encode(['jwt' => 'jwt_token']));
+        $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
             ->with('/v1/auth/signin/password', ['loginId' => $loginId, 'password' => $password])
@@ -53,11 +54,11 @@ class PasswordTest extends TestCase
 
         $this->apiMock->expects($this->once())
             ->method('generateJwtResponse')
-            ->with(['jwt' => 'jwt_token'], null, null)
-            ->willReturn(['jwt' => 'jwt_token']);
+            ->with($response, null, null)
+            ->willReturn($response);
 
         $result = $this->password->signIn($loginId, $password);
-        $this->assertEquals(['jwt' => 'jwt_token'], $result);
+        $this->assertEquals($response, $result);
     }
 
     public function testSendReset()
@@ -66,14 +67,14 @@ class PasswordTest extends TestCase
         $redirectUrl = 'https://example.com/reset';
         $templateOptions = ['template' => 'option'];
 
-        $response = new Response(200, [], json_encode(['status' => 'success']));
+        $response = ['status' => 'success'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
             ->with('/v1/auth/password/reset', ['loginId' => $loginId, 'redirectUrl' => $redirectUrl, 'templateOptions' => $templateOptions])
             ->willReturn($response);
 
         $result = $this->password->sendReset($loginId, $redirectUrl, $templateOptions);
-        $this->assertEquals(['status' => 'success'], $result);
+        $this->assertEquals($response, $result);
     }
 
     public function testUpdate()
@@ -84,7 +85,8 @@ class PasswordTest extends TestCase
 
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/password/update', ['loginId' => $loginId, 'newPassword' => $newPassword], $refreshToken);
+            ->with('/v1/auth/password/update', ['loginId' => $loginId, 'newPassword' => $newPassword], $refreshToken)
+            ->willReturn([]);
 
         $this->password->update($loginId, $newPassword, $refreshToken);
     }
@@ -95,7 +97,7 @@ class PasswordTest extends TestCase
         $oldPassword = 's3cr3t';
         $newPassword = 's3cr3t1';
 
-        $response = new Response(200, [], json_encode(['jwt' => 'jwt_token']));
+        $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
             ->with('/v1/auth/password/replace', ['loginId' => $loginId, 'oldPassword' => $oldPassword, 'newPassword' => $newPassword])
@@ -103,22 +105,22 @@ class PasswordTest extends TestCase
 
         $this->apiMock->expects($this->once())
             ->method('generateJwtResponse')
-            ->with(['jwt' => 'jwt_token'], null, null)
-            ->willReturn(['jwt' => 'jwt_token']);
+            ->with($response, null, null)
+            ->willReturn($response);
 
         $result = $this->password->replace($loginId, $oldPassword, $newPassword);
-        $this->assertEquals(['jwt' => 'jwt_token'], $result);
+        $this->assertEquals($response, $result);
     }
 
     public function testGetPolicy()
     {
-        $response = new Response(200, [], json_encode(['policy' => 'password_policy']));
+        $response = ['policy' => 'password_policy'];
         $this->apiMock->expects($this->once())
             ->method('doGet')
             ->with('/v1/auth/password/policy')
             ->willReturn($response);
 
         $result = $this->password->getPolicy();
-        $this->assertEquals(['policy' => 'password_policy'], $result);
+        $this->assertEquals($response, $result);
     }
 }

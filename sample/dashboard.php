@@ -10,7 +10,6 @@ if (!isset($_SESSION["user"])) {
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
 
-
 ?>
 
 <!DOCTYPE html>

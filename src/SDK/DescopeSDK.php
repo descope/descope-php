@@ -12,6 +12,7 @@ use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
+use Descope\SDK\Management\MgmtV1;
 
 class DescopeSDK
 {
@@ -36,10 +37,14 @@ class DescopeSDK
 
         $this->config = new SDKConfig($config);
 
+        EndpointsV1::setBaseUrl($config['projectId']);
+        EndpointsV2::setBaseUrl($config['projectId']);
+
         $this->api = new API($config['projectId'], $config['managementKey'] ?? '');
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
             $this->management = new Management($this->api);
+            MgmtV1::setBaseUrl($config['projectId']);
         }
 
         $this->password = new Password($this->api);

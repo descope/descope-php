@@ -116,8 +116,6 @@ print_r($response);
 2. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format
 3. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token
 
-// TODO: Add all other functions
-
 > **Note**: To use `verify()` and `getClaims()`, you will need to pass in your session token into the function argument. To use `getUserDetails()`, you will need to pass in your refresh token.
 
 ## User Management Functions

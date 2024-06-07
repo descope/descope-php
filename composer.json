@@ -31,6 +31,6 @@
   },
   "scripts": {
     "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php src/tests/DescopeSDKTest.php",
-    "license-check": "php src/tests/check_license.php"
+    "license-check": "php src/tests/CheckLicense.php"
   }
 }

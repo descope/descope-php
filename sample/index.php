@@ -1,9 +1,21 @@
 <?php
+require '../vendor/autoload.php';
+use Descope\SDK\DescopeSDK;
+
 session_start();
 if (isset($_SESSION["user"])) {
     header('Location: dashboard.php');
     exit();
 }
+
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->load();
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+]);
+
 ?>
 
 <!DOCTYPE html>

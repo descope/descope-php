@@ -10,106 +10,150 @@ const DEFAULT_TIMEOUT_SECONDS = 60;
 
 const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?){0,}((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/';
 
-private static $baseUrl;
-
-public static function setBaseUrl(string $projectId): void
-{
-    $region = self::extractRegionFromProjectId($projectId);
-    $urlPrefix = self::DEFAULT_URL_PREFIX;
-
-    if ($region) {
-        $urlPrefix .= ".$region";
-    }
-
-    self::$baseUrl = "$urlPrefix." . self::DEFAULT_DOMAIN;
-}
-
-private static function extractRegionFromProjectId(string $projectId): ?string
-{
-    // Extract the region based on the given logic
-    if (strlen($projectId) >= 32) {
-        $region = substr($projectId, 1, 4);
-        return !empty($region) ? $region : null;
-    }
-    return null;
-}
-
-public static function getBaseUrl(): string
-{
-    return self::$baseUrl ?? self::DEFAULT_URL_PREFIX . "." . self::DEFAULT_DOMAIN;
-}
-
 class EndpointsV1
 {
-    public const REFRESH_TOKEN_PATH = self::getBaseUrl() . "/v1/auth/refresh";
-    public const SELECT_TENANT_PATH = self::getBaseUrl() . "/v1/auth/tenant/select";
-    public const LOGOUT_PATH = self::getBaseUrl() . "/v1/auth/logout";
-    public const LOGOUT_ALL_PATH = self::getBaseUrl() . "/v1/auth/logoutall";
-    public const ME_PATH = self::getBaseUrl() . "/v1/auth/me";
-    public const HISTORY_PATH = self::getBaseUrl() . "/v1/auth/me/history";
+    public static $baseUrl;
 
-    // Access Keys
-    public const EXCHANGE_AUTH_ACCESS_KEY_PATH = self::getBaseUrl() . "/v1/auth/accesskey/exchange";
+    public static $REFRESH_TOKEN_PATH;
+    public static $SELECT_TENANT_PATH;
+    public static $LOGOUT_PATH;
+    public static $LOGOUT_ALL_PATH;
+    public static $ME_PATH;
+    public static $HISTORY_PATH;
+    public static $EXCHANGE_AUTH_ACCESS_KEY_PATH;
+    public static $SIGN_UP_AUTH_OTP_PATH;
+    public static $SIGN_IN_AUTH_OTP_PATH;
+    public static $SIGN_UP_OR_IN_AUTH_OTP_PATH;
+    public static $VERIFY_CODE_AUTH_PATH;
+    public static $UPDATE_USER_EMAIL_OTP_PATH;
+    public static $UPDATE_USER_PHONE_OTP_PATH;
+    public static $SIGN_UP_AUTH_MAGICLINK_PATH;
+    public static $SIGN_IN_AUTH_MAGICLINK_PATH;
+    public static $SIGN_UP_OR_IN_AUTH_MAGICLINK_PATH;
+    public static $VERIFY_MAGICLINK_AUTH_PATH;
+    public static $GET_SESSION_MAGICLINK_AUTH_PATH;
+    public static $UPDATE_USER_EMAIL_MAGICLINK_PATH;
+    public static $UPDATE_USER_PHONE_MAGICLINK_PATH;
+    public static $SIGN_UP_AUTH_ENCHANTEDLINK_PATH;
+    public static $SIGN_IN_AUTH_ENCHANTEDLINK_PATH;
+    public static $SIGN_UP_OR_IN_AUTH_ENCHANTEDLINK_PATH;
+    public static $VERIFY_ENCHANTEDLINK_AUTH_PATH;
+    public static $GET_SESSION_ENCHANTEDLINK_AUTH_PATH;
+    public static $UPDATE_USER_EMAIL_ENCHANTEDLINK_PATH;
+    public static $OAUTH_START_PATH;
+    public static $OAUTH_EXCHANGE_TOKEN_PATH;
+    public static $AUTH_SSO_START_PATH;
+    public static $SSO_EXCHANGE_TOKEN_PATH;
+    public static $SIGN_UP_AUTH_TOTP_PATH;
+    public static $VERIFY_TOTP_PATH;
+    public static $UPDATE_TOTP_PATH;
+    public static $SIGN_UP_AUTH_WEBAUTHN_START_PATH;
+    public static $SIGN_UP_AUTH_WEBAUTHN_FINISH_PATH;
+    public static $SIGN_IN_AUTH_WEBAUTHN_START_PATH;
+    public static $SIGN_IN_AUTH_WEBAUTHN_FINISH_PATH;
+    public static $SIGN_UP_OR_IN_AUTH_WEBAUTHN_START_PATH;
+    public static $UPDATE_AUTH_WEBAUTHN_START_PATH;
+    public static $UPDATE_AUTH_WEBAUTHN_FINISH_PATH;
+    public static $SIGN_UP_PASSWORD_PATH;
+    public static $SIGN_IN_PASSWORD_PATH;
+    public static $SEND_RESET_PASSWORD_PATH;
+    public static $UPDATE_PASSWORD_PATH;
+    public static $REPLACE_PASSWORD_PATH;
+    public static $PASSWORD_POLICY_PATH;
 
-    // OTP
-    public const SIGN_UP_AUTH_OTP_PATH = self::getBaseUrl() . "/v1/auth/otp/signup";
-    public const SIGN_IN_AUTH_OTP_PATH = self::getBaseUrl() . "/v1/auth/otp/signin";
-    public const SIGN_UP_OR_IN_AUTH_OTP_PATH = self::getBaseUrl() . "/v1/auth/otp/signup-in";
-    public const VERIFY_CODE_AUTH_PATH = self::getBaseUrl() . "/v1/auth/otp/verify";
-    public const UPDATE_USER_EMAIL_OTP_PATH = self::getBaseUrl() . "/v1/auth/otp/update/email";
-    public const UPDATE_USER_PHONE_OTP_PATH = self::getBaseUrl() . "/v1/auth/otp/update/phone";
+    public static function setBaseUrl(string $projectId): void
+    {
+        $region = self::extractRegionFromProjectId($projectId);
+        $urlPrefix = DEFAULT_URL_PREFIX;
 
-    // Magic Link
-    public const SIGN_UP_AUTH_MAGICLINK_PATH = self::getBaseUrl() . "/v1/auth/magiclink/signup";
-    public const SIGN_IN_AUTH_MAGICLINK_PATH = self::getBaseUrl() . "/v1/auth/magiclink/signin";
-    public const SIGN_UP_OR_IN_AUTH_MAGICLINK_PATH = self::getBaseUrl() . "/v1/auth/magiclink/signup-in";
-    public const VERIFY_MAGICLINK_AUTH_PATH = self::getBaseUrl() . "/v1/auth/magiclink/verify";
-    public const GET_SESSION_MAGICLINK_AUTH_PATH = self::getBaseUrl() . "/v1/auth/magiclink/pending-session";
-    public const UPDATE_USER_EMAIL_MAGICLINK_PATH = self::getBaseUrl() . "/v1/auth/magiclink/update/email";
-    public const UPDATE_USER_PHONE_MAGICLINK_PATH = self::getBaseUrl() . "/v1/auth/magiclink/update/phone";
+        if ($region) {
+            $urlPrefix .= ".$region";
+        }
 
-    // Enchanted Link
-    public const SIGN_UP_AUTH_ENCHANTEDLINK_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/signup";
-    public const SIGN_IN_AUTH_ENCHANTEDLINK_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/signin";
-    public const SIGN_UP_OR_IN_AUTH_ENCHANTEDLINK_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/signup-in";
-    public const VERIFY_ENCHANTEDLINK_AUTH_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/verify";
-    public const GET_SESSION_ENCHANTEDLINK_AUTH_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/pending-session";
-    public const UPDATE_USER_EMAIL_ENCHANTEDLINK_PATH = self::getBaseUrl() . "/v1/auth/enchantedlink/update/email";
+        self::$baseUrl = "$urlPrefix." . DEFAULT_DOMAIN;
+        self::updatePaths();
+    }
 
-    // OAuth
-    public const OAUTH_START_PATH = self::getBaseUrl() . "/v1/auth/oauth/authorize";
-    public const OAUTH_EXCHANGE_TOKEN_PATH = self::getBaseUrl() . "/v1/auth/oauth/exchange";
+    public static function extractRegionFromProjectId(string $projectId): ?string
+    {
+        if (strlen($projectId) >= 32) {
+            $region = substr($projectId, 1, 4);
+            return !empty($region) ? $region : null;
+        }
+        return null;
+    }
 
-    // SSO (SAML / OIDC)
-    public const AUTH_SSO_START_PATH = self::getBaseUrl() . "/v1/auth/sso/authorize";
-    public const SSO_EXCHANGE_TOKEN_PATH = self::getBaseUrl() . "/v1/auth/sso/exchange";
-
-    // TOTP
-    public const SIGN_UP_AUTH_TOTP_PATH = self::getBaseUrl() . "/v1/auth/totp/signup";
-    public const VERIFY_TOTP_PATH = self::getBaseUrl() . "/v1/auth/totp/verify";
-    public const UPDATE_TOTP_PATH = self::getBaseUrl() . "/v1/auth/totp/update";
-
-    // WebAuthn
-    public const SIGN_UP_AUTH_WEBAUTHN_START_PATH = self::getBaseUrl() . "/v1/auth/webauthn/signup/start";
-    public const SIGN_UP_AUTH_WEBAUTHN_FINISH_PATH = self::getBaseUrl() . "/v1/auth/webauthn/signup/finish";
-    public const SIGN_IN_AUTH_WEBAUTHN_START_PATH = self::getBaseUrl() . "/v1/auth/webauthn/signin/start";
-    public const SIGN_IN_AUTH_WEBAUTHN_FINISH_PATH = self::getBaseUrl() . "/v1/auth/webauthn/signin/finish";
-    public const SIGN_UP_OR_IN_AUTH_WEBAUTHN_START_PATH = self::getBaseUrl() . "/v1/auth/webauthn/signup-in/start";
-    public const UPDATE_AUTH_WEBAUTHN_START_PATH = self::getBaseUrl() . "/v1/auth/webauthn/update/start";
-    public const UPDATE_AUTH_WEBAUTHN_FINISH_PATH = self::getBaseUrl() . "/v1/auth/webauthn/update/finish";
-
-    // Password
-    public const SIGN_UP_PASSWORD_PATH = self::getBaseUrl() . "/v1/auth/password/signup";
-    public const SIGN_IN_PASSWORD_PATH = self::getBaseUrl() . "/v1/auth/password/signin";
-    public const SEND_RESET_PASSWORD_PATH = self::getBaseUrl() . "/v1/auth/password/reset";
-    public const UPDATE_PASSWORD_PATH = self::getBaseUrl() . "/v1/auth/password/update";
-    public const REPLACE_PASSWORD_PATH = self::getBaseUrl() . "/v1/auth/password/replace";
-    public const PASSWORD_POLICY_PATH = self::getBaseUrl() . "/v1/auth/password/policy";
+    public static function updatePaths(): void
+    {
+        self::$REFRESH_TOKEN_PATH = self::$baseUrl . "/v1/auth/refresh";
+        self::$SELECT_TENANT_PATH = self::$baseUrl . "/v1/auth/tenant/select";
+        self::$LOGOUT_PATH = self::$baseUrl . "/v1/auth/logout";
+        self::$LOGOUT_ALL_PATH = self::$baseUrl . "/v1/auth/logoutall";
+        self::$ME_PATH = self::$baseUrl . "/v1/auth/me";
+        self::$HISTORY_PATH = self::$baseUrl . "/v1/auth/me/history";
+        self::$EXCHANGE_AUTH_ACCESS_KEY_PATH = self::$baseUrl . "/v1/auth/accesskey/exchange";
+        self::$SIGN_UP_AUTH_OTP_PATH = self::$baseUrl . "/v1/auth/otp/signup";
+        self::$SIGN_IN_AUTH_OTP_PATH = self::$baseUrl . "/v1/auth/otp/signin";
+        self::$SIGN_UP_OR_IN_AUTH_OTP_PATH = self::$baseUrl . "/v1/auth/otp/signup-in";
+        self::$VERIFY_CODE_AUTH_PATH = self::$baseUrl . "/v1/auth/otp/verify";
+        self::$UPDATE_USER_EMAIL_OTP_PATH = self::$baseUrl . "/v1/auth/otp/update/email";
+        self::$UPDATE_USER_PHONE_OTP_PATH = self::$baseUrl . "/v1/auth/otp/update/phone";
+        self::$SIGN_UP_AUTH_MAGICLINK_PATH = self::$baseUrl . "/v1/auth/magiclink/signup";
+        self::$SIGN_IN_AUTH_MAGICLINK_PATH = self::$baseUrl . "/v1/auth/magiclink/signin";
+        self::$SIGN_UP_OR_IN_AUTH_MAGICLINK_PATH = self::$baseUrl . "/v1/auth/magiclink/signup-in";
+        self::$VERIFY_MAGICLINK_AUTH_PATH = self::$baseUrl . "/v1/auth/magiclink/verify";
+        self::$GET_SESSION_MAGICLINK_AUTH_PATH = self::$baseUrl . "/v1/auth/magiclink/pending-session";
+        self::$UPDATE_USER_EMAIL_MAGICLINK_PATH = self::$baseUrl . "/v1/auth/magiclink/update/email";
+        self::$UPDATE_USER_PHONE_MAGICLINK_PATH = self::$baseUrl . "/v1/auth/magiclink/update/phone";
+        self::$SIGN_UP_AUTH_ENCHANTEDLINK_PATH = self::$baseUrl . "/v1/auth/enchantedlink/signup";
+        self::$SIGN_IN_AUTH_ENCHANTEDLINK_PATH = self::$baseUrl . "/v1/auth/enchantedlink/signin";
+        self::$SIGN_UP_OR_IN_AUTH_ENCHANTEDLINK_PATH = self::$baseUrl . "/v1/auth/enchantedlink/signup-in";
+        self::$VERIFY_ENCHANTEDLINK_AUTH_PATH = self::$baseUrl . "/v1/auth/enchantedlink/verify";
+        self::$GET_SESSION_ENCHANTEDLINK_AUTH_PATH = self::$baseUrl . "/v1/auth/enchantedlink/pending-session";
+        self::$UPDATE_USER_EMAIL_ENCHANTEDLINK_PATH = self::$baseUrl . "/v1/auth/enchantedlink/update/email";
+        self::$OAUTH_START_PATH = self::$baseUrl . "/v1/auth/oauth/authorize";
+        self::$OAUTH_EXCHANGE_TOKEN_PATH = self::$baseUrl . "/v1/auth/oauth/exchange";
+        self::$AUTH_SSO_START_PATH = self::$baseUrl . "/v1/auth/sso/authorize";
+        self::$SSO_EXCHANGE_TOKEN_PATH = self::$baseUrl . "/v1/auth/sso/exchange";
+        self::$SIGN_UP_AUTH_TOTP_PATH = self::$baseUrl . "/v1/auth/totp/signup";
+        self::$VERIFY_TOTP_PATH = self::$baseUrl . "/v1/auth/totp/verify";
+        self::$UPDATE_TOTP_PATH = self::$baseUrl . "/v1/auth/totp/update";
+        self::$SIGN_UP_AUTH_WEBAUTHN_START_PATH = self::$baseUrl . "/v1/auth/webauthn/signup/start";
+        self::$SIGN_UP_AUTH_WEBAUTHN_FINISH_PATH = self::$baseUrl . "/v1/auth/webauthn/signup/finish";
+        self::$SIGN_IN_AUTH_WEBAUTHN_START_PATH = self::$baseUrl . "/v1/auth/webauthn/signin/start";
+        self::$SIGN_IN_AUTH_WEBAUTHN_FINISH_PATH = self::$baseUrl . "/v1/auth/webauthn/signin/finish";
+        self::$SIGN_UP_OR_IN_AUTH_WEBAUTHN_START_PATH = self::$baseUrl . "/v1/auth/webauthn/signup-in/start";
+        self::$UPDATE_AUTH_WEBAUTHN_START_PATH = self::$baseUrl . "/v1/auth/webauthn/update/start";
+        self::$UPDATE_AUTH_WEBAUTHN_FINISH_PATH = self::$baseUrl . "/v1/auth/webauthn/update/finish";
+        self::$SIGN_UP_PASSWORD_PATH = self::$baseUrl . "/v1/auth/password/signup";
+        self::$SIGN_IN_PASSWORD_PATH = self::$baseUrl . "/v1/auth/password/signin";
+        self::$SEND_RESET_PASSWORD_PATH = self::$baseUrl . "/v1/auth/password/reset";
+        self::$UPDATE_PASSWORD_PATH = self::$baseUrl . "/v1/auth/password/update";
+        self::$REPLACE_PASSWORD_PATH = self::$baseUrl . "/v1/auth/password/replace";
+        self::$PASSWORD_POLICY_PATH = self::$baseUrl . "/v1/auth/password/policy";
+    }
 }
 
 class EndpointsV2
 {
-    public const PUBLIC_KEY_PATH = self::getBaseUrl() . "/v2/keys";
+    private static $baseUrl;
+
+    public static function setBaseUrl(string $projectId): void
+    {
+        $region = EndpointsV1::extractRegionFromProjectId($projectId);
+        $urlPrefix = DEFAULT_URL_PREFIX;
+
+        if ($region) {
+            $urlPrefix .= ".$region";
+        }
+
+        self::$baseUrl = "$urlPrefix." . DEFAULT_DOMAIN;
+    }
+
+    public static function getPublicKeyPath(): string
+    {
+        return self::$baseUrl . "/v2/keys";
+    }
 }
 
 class DeliveryMethod

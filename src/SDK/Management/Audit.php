@@ -96,7 +96,7 @@ class Audit
         }
 
         $response = $this->api->doPost(
-            MgmtV1::AUDIT_SEARCH,
+            MgmtV1::$AUDIT_SEARCH,
             $body,
             true
         );
@@ -140,7 +140,7 @@ class Audit
         }
 
         $this->api->doPost(
-            MgmtV1::AUDIT_CREATE_EVENT,
+            MgmtV1::$AUDIT_CREATE_EVENT,
             $body,
             true
         );

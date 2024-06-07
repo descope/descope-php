@@ -63,7 +63,7 @@ class SSO
      */
     public function exchangeToken(?string $code = null): array
     {
-        $uri = EndpointsV1::SSO_EXCHANGE_TOKEN_PATH;
+        $uri = EndpointsV1::$SSO_EXCHANGE_TOKEN_PATH;
         $body = ['code' => $code];
 
         $response = $this->api->doPost($uri, $body);
@@ -81,7 +81,7 @@ class SSO
      */
     private function composeSignInUrl(?string $tenant, ?string $redirectUrl, ?string $prompt): string
     {
-        $uri = EndpointsV1::AUTH_SSO_START_PATH;
+        $uri = EndpointsV1::$AUTH_SSO_START_PATH;
         $query = [];
         if ($tenant !== null) {
             $query['tenant'] = urlencode($tenant);

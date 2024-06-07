@@ -1,4 +1,4 @@
-name: PHP SDK CI Tests and Release
+name: PHP SDK CI Tests
 
 on:
   push:

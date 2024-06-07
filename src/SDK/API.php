@@ -34,8 +34,31 @@ class API
         $this->httpClient = new Client();
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
+    }
 
-        Descop
+    /**
+     * Recursively transforms empty arrays to empty objects.
+     *
+     * This function ensures that empty arrays in the input data are
+     * converted to empty objects (stdClass) before being JSON encoded.
+     *
+     * @param mixed $data The data to transform, which can be an array or any other type.
+     * @return mixed The transformed data with empty arrays replaced by empty objects.
+    */
+    private function transformEmptyArraysToObjects($data)
+    {
+        if (is_array($data)) {
+            foreach ($data as &$value) {
+                if (is_array($value)) {
+                    if (empty($value)) {
+                        $value = new \stdClass();
+                    } else {
+                        $value = $this->transformEmptyArraysToObjects($value);
+                    }
+                }
+            }
+        }
+        return $data;
     }
 
     /**
@@ -57,6 +80,7 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
+        $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
 
         try {

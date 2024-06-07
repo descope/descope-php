@@ -42,10 +42,10 @@ class Password
         }
 
         $body = $this->composeSignupBody($loginId, $password, $user, $loginOptions);
-
-        $uri = EndpointsV1::SIGN_UP_PASSWORD_PATH;
+        $uri = EndpointsV1::$SIGN_UP_PASSWORD_PATH;
         $response = $this->api->doPost($uri, $body, false);
-        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
+
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
     /**
@@ -66,9 +66,9 @@ class Password
             throw new AuthException(400, 'invalid argument', 'Password cannot be empty');
         }
 
-        $uri = EndpointsV1::SIGN_IN_PASSWORD_PATH;
+        $uri = EndpointsV1::$SIGN_IN_PASSWORD_PATH;
         $response = $this->api->doPost($uri, ['loginId' => $loginId, 'password' => $password], false);
-        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
     /**
@@ -94,9 +94,9 @@ class Password
             $body['templateOptions'] = $templateOptions;
         }
 
-        $uri = EndpointsV1::SEND_RESET_PASSWORD_PATH;
+        $uri = EndpointsV1::$SEND_RESET_PASSWORD_PATH;
         $response = $this->api->doPost($uri, $body, false);
-        return $this->api->generateJwtResponse($response, $response['refreshJwt'], null);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
     /**
@@ -120,7 +120,7 @@ class Password
             throw new AuthException(400, 'invalid argument', 'Refresh token cannot be empty');
         }
 
-        $uri = EndpointsV1::UPDATE_PASSWORD_PATH;
+        $uri = EndpointsV1::$UPDATE_PASSWORD_PATH;
         $this->api->doPost($uri, ['loginId' => $loginId, 'newPassword' => $newPassword], false, $refreshToken);
     }
 
@@ -147,7 +147,7 @@ class Password
             throw new AuthException(400, 'invalid argument', 'new_password cannot be empty');
         }
 
-        $uri = EndpointsV1::REPLACE_PASSWORD_PATH;
+        $uri = EndpointsV1::$REPLACE_PASSWORD_PATH;
         $response = $this->api->doPost(
             $uri, [
             'loginId' => $loginId,
@@ -157,7 +157,7 @@ class Password
         );
 
         $resp = json_decode($response->getBody(), true);
-        return $this->api->generateJwtResponse($resp, $response->getCookie(REFRESH_SESSION_COOKIE_NAME), true);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
     /**
@@ -167,7 +167,7 @@ class Password
      */
     public function getPolicy(): array
     {
-        $response = $this->api->doGet(EndpointsV1::PASSWORD_POLICY_PATH);
+        $response = $this->api->doGet(EndpointsV1::$PASSWORD_POLICY_PATH);
         return json_decode($response->getBody(), true);
     }
 

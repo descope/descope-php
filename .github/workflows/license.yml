@@ -6,7 +6,7 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  license-check:
+  Check-License:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code

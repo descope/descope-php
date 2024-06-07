@@ -6,7 +6,7 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  staged-changes:
+  Run-Tests:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
