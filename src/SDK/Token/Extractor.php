@@ -57,7 +57,9 @@ final class Extractor
             $url = 'https://api.descope.com/v1/auth/me';
             $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
             $res = $client->request(
-                'GET', $url, [
+                'GET',
+                $url,
+                [
                 'headers' => ['Authorization' => $header]
                 ]
             );

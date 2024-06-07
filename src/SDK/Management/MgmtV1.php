@@ -211,4 +211,3 @@ class DeliveryMethod
         return (string) $this->value;
     }
 }
-?>

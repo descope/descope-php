@@ -85,7 +85,8 @@ class API
 
         try {
             $response = $this->httpClient->post(
-                $uri, [
+                $uri,
+                [
                 'headers' => $this->getHeaders($authToken),
                 'body' => $jsonBody,
                 ]
@@ -122,7 +123,8 @@ class API
         $authToken = $this->getAuthToken($useManagementKey);
         try {
             $response = $this->httpClient->get(
-                $uri, [
+                $uri,
+                [
                 'headers' => $this->getHeaders($authToken),
                 ]
             );
@@ -188,7 +190,7 @@ class API
      * @return string The constructed auth token.
      */
     private function getAuthToken(bool $useManagementKey, ?string $refreshToken = null): string
-    {   
+    {
         if ($useManagementKey && !empty($this->managementKey)) {
             return $this->projectId . ':' . $this->managementKey;
         }
@@ -247,15 +249,15 @@ class API
             $jwtResponse['tenants'] = $jwtResponse['tenants'] ?? [];
         }
 
-        $issuer = $jwtResponse[self::SESSION_TOKEN_NAME]['iss'] ?? 
-                  $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['iss'] ?? 
+        $issuer = $jwtResponse[self::SESSION_TOKEN_NAME]['iss'] ??
+                  $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['iss'] ??
                   $jwtResponse['iss'] ?? '';
 
         $issuerParts = explode("/", $issuer);
         $jwtResponse['projectId'] = end($issuerParts);
 
-        $sub = $jwtResponse[self::SESSION_TOKEN_NAME]['sub'] ?? 
-               $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['sub'] ?? 
+        $sub = $jwtResponse[self::SESSION_TOKEN_NAME]['sub'] ??
+               $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['sub'] ??
                $jwtResponse['sub'] ?? '';
 
         if ($userJwt) {

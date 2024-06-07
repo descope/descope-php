@@ -104,5 +104,3 @@ class AuditTest extends TestCase
         $this->assertEquals(['key' => 'value'], $result['data']);
     }
 }
-
-?>

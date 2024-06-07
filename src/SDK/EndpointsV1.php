@@ -197,7 +197,8 @@ class AccessKeyLoginOptions
 }
 
 function validate_refresh_token_provided(
-    ?LoginOptions $loginOptions = null, ?string $refreshToken = null
+    ?LoginOptions $loginOptions = null,
+    ?string $refreshToken = null
 ) {
     $refreshRequired = $loginOptions !== null && ($loginOptions->mfa || $loginOptions->stepup);
     $refreshMissing = $refreshToken === null || $refreshToken === "";

@@ -149,7 +149,8 @@ class Password
 
         $uri = EndpointsV1::$REPLACE_PASSWORD_PATH;
         $response = $this->api->doPost(
-            $uri, [
+            $uri,
+            [
             'loginId' => $loginId,
             'oldPassword' => $oldPassword,
             'newPassword' => $newPassword,

@@ -364,13 +364,17 @@ class User
 
         if ($limit < 0) {
             throw new AuthException(
-                400, 'ERROR_TYPE_INVALID_ARGUMENT', 'limit must be non-negative'
+                400,
+                'ERROR_TYPE_INVALID_ARGUMENT',
+                'limit must be non-negative'
             );
         }
 
         if ($page < 0) {
             throw new AuthException(
-                400, 'ERROR_TYPE_INVALID_ARGUMENT', 'page must be non-negative'
+                400,
+                'ERROR_TYPE_INVALID_ARGUMENT',
+                'page must be non-negative'
             );
         }
 
@@ -389,7 +393,9 @@ class User
             foreach ($statuses as $status) {
                 if (!in_array($status, $allowedStatuses)) {
                     throw new AuthException(
-                        400, 'ERROR_TYPE_INVALID_ARGUMENT', "The status '$status' is invalid. Allowed values are: " . implode(", ", $allowedStatuses)
+                        400,
+                        'ERROR_TYPE_INVALID_ARGUMENT',
+                        "The status '$status' is invalid. Allowed values are: " . implode(", ", $allowedStatuses)
                     );
                 }
             }
@@ -405,7 +411,7 @@ class User
 
         if ($customAttributes !== null) {
             $body['customAttributes'] = $customAttributes;
-        } 
+        }
 
         if ($ssoAppIds !== null) {
             $body['ssoAppIds'] = $ssoAppIds;
@@ -466,7 +472,6 @@ class User
                 true
             );
             return $response;
-
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
@@ -610,11 +615,14 @@ class User
         ?string $familyName = null
     ): array {
         $body = ['loginId' => $loginId, 'displayName' => $displayName];
-        if ($givenName !== null) { $body['givenName'] = $givenName;
+        if ($givenName !== null) {
+            $body['givenName'] = $givenName;
         }
-        if ($middleName !== null) { $body['middleName'] = $middleName;
+        if ($middleName !== null) {
+            $body['middleName'] = $middleName;
         }
-        if ($familyName !== null) { $body['familyName'] = $familyName;
+        if ($familyName !== null) {
+            $body['familyName'] = $familyName;
         }
 
         try {
