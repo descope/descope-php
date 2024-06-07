@@ -11,12 +11,12 @@ final class DescopeSDKTest extends TestCase
 
     public function setUp(): void
     {
-        $descopeSDK = new DescopeSDK(
-            [
-                'projectId' => "<Descope Project ID>",
-                'managementKey' => "<Descope Management Key>" // This can be optional
-            ]
-        );
+        // $descopeSDK = new DescopeSDK(
+        //     [
+        //         'projectId' => "<Descope Project ID>",
+        //         'managementKey' => "<Descope Management Key>" // This can be optional
+        //     ]
+        // );
     }
 
     public function testVerify(): void
