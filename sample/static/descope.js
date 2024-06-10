@@ -1,7 +1,7 @@
-const projectId = "P2OkfVnJi5Ht7mpCqHjx17nV5epH";
+const projectId = "";
 const sdk = Descope({
-    projectId: projectId,
-    persistTokens: true,
-    autoRefresh: true,
+  projectId: projectId,
+  persistTokens: true,
+  autoRefresh: true,
 });
 const sessionToken = sdk.getSessionToken();

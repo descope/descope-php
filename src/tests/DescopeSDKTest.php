@@ -1,19 +1,22 @@
 <?php
 
-namespace Descope\SDK\Tests;
+namespace Descope\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 
 final class DescopeSDKTest extends TestCase
 {
-    private $descopeSDK;
+    public $descopeSDK;
 
-    protected function setUp(): void
+    public function setUp(): void
     {
-        $descopeSDK = new DescopeSDK([
-            'projectId' => "<Descope Project ID>"
-        ]);
+        // $descopeSDK = new DescopeSDK(
+        //     [
+        //         'projectId' => "<Descope Project ID>",
+        //         'managementKey' => "<Descope Management Key>" // This can be optional
+        //     ]
+        // );
     }
 
     public function testVerify(): void
@@ -32,5 +35,11 @@ final class DescopeSDKTest extends TestCase
     {
         $refresh_token = '...';
         // $this->assertIsArray($this->descopeSDK->getUser($refresh_token));
+    }
+
+    public function testPassword(): void
+    {
+        // $result = $this->descopeSDK->password->signUp("example@descope.com", "Password123!", []);
+        // $this->assertIsArray($this->descopeSDK->password->signUp("example@descope.com", "Password123!", []));
     }
 }
