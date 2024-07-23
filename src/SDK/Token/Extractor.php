@@ -101,10 +101,10 @@ final class Extractor
             if ($isVerified) {
                 return $jws;
             } else {
-                throw TokenException::MSG_SIGNATURE_INVALID;
+                throw new TokenException(TokenException::MSG_SIGNATURE_INVALID);
             }
         } catch (Exception $e) {
-            throw TokenException::MSG_COULD_NOT_PARSE;
+            throw new TokenException(TokenException::MSG_COULD_NOT_PARSE);
         }
     }
 }
