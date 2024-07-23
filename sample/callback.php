@@ -22,17 +22,17 @@
     ]);
 
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
-        session_start();
+        session_start()
 
         $_SESSION["user"] = json_decode($_POST["userDetails"], true);
         $_SESSION["sessionToken"] = $_POST["sessionToken"];
 
         // Redirect to dashboard
-        header('Location: dashboard.php');
+        // header('Location: dashboard.php');
         exit();
     } else {
         // Redirect to login page
-        header('Location: login.php');
+        // header('Location: login.php');
         exit();
     }
     ?>

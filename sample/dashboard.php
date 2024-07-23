@@ -9,6 +9,7 @@ if (!isset($_SESSION["user"])) {
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
+
 ?>
 
 <!DOCTYPE html>

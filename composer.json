@@ -1,7 +1,7 @@
 {
   "name": "descope/descope-php",
   "type": "library",
-  "description": "Descope SDK for PHP 8.1+ for JWT validation and fetching claims and user information.",
+  "description": "Descope SDK for PHP 8.1+",
   "keywords": [
     "drag-and-drop",
     "authentication"
@@ -31,6 +31,6 @@
   },
   "scripts": {
     "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php src/tests/DescopeSDKTest.php",
-    "license-check": "php src/tests/check_license.php"
+    "license-check": "php src/tests/CheckLicense.php"
   }
 }

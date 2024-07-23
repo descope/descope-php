@@ -16,6 +16,24 @@ jobs:
           persist-credentials: false
           ref: ${{ github.ref }}
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          tools: composer
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHP CodeSniffer
+        run: vendor/bin/phpcs --standard=PSR2 --extensions=php src
+
+      - name: Run PHPUnit tests
+        run: composer run-script test
+
       - name: Get token
         id: get_token
         uses: tibdex/github-app-token@v1
