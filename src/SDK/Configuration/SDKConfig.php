@@ -5,6 +5,8 @@ namespace Descope\SDK\Configuration;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
+use Descope\SDK\EndpointsV2;
+use Descope\SDK\API;
 
 final class SDKConfig
 {
@@ -18,6 +20,8 @@ final class SDKConfig
         $this->client = new Client();
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
+        
+        EndpointsV2::setBaseUrl($config['projectId']);
 
         $this->jwkSets = $this->getJWKSets();
     }
@@ -28,8 +32,9 @@ final class SDKConfig
     private function getJWKSets()
     {
         try {
+            $url = EndpointsV2::getPublicKeyPath();
+            
             // Fetch JWK public key from Descope API
-            $url = 'https://api.descope.com/v2/keys/' . $this->projectId;
             $res = $this->client->request('GET', $url);
             $jwkSets = json_decode($res->getBody(), true);
             return $jwkSets;
