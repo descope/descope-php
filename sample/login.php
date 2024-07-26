@@ -33,7 +33,6 @@
 
         async function getUserDetails() {
             const user = await sdk.me();
-            console.log(user);
             return user;
         }
         
