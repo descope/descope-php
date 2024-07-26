@@ -22,6 +22,7 @@ final class SDKConfig
         $this->managementKey = $config['managementKey'] ?? '';
         
         EndpointsV2::setBaseUrl($config['projectId']);
+
         $this->jwkSets = $this->getJWKSets();
     }
 
@@ -31,9 +32,12 @@ final class SDKConfig
     private function getJWKSets()
     {
         try {
+            $url = EndpointsV2::getPublicKeyPath();
+            
             // Fetch JWK public key from Descope API
-            $response = $this->api->doGet(EndpointsV2::getPublicKeyPath(), false);
-            return json_decode($response->getBody(), true);
+            $res = $this->client->request('GET', $url);
+            $jwkSets = json_decode($res->getBody(), true);
+            return $jwkSets;
         } catch (RequestException $re) {
             return $re;
         }

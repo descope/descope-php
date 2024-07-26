@@ -33,6 +33,7 @@
 
         async function getUserDetails() {
             const user = await sdk.me();
+            console.log(user);
             return user;
         }
         
@@ -41,7 +42,6 @@
 
         if (validRefreshToken) {
             console.log("Valid refresh token found. Logging in...");
-            sdk.refresh();
             const user = getUserDetails().then((user) => {
                 const sessionToken = sdk.getSessionToken();
                 sendFormData(sessionToken, user.data);
