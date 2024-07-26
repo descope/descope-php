@@ -35,10 +35,10 @@ class DescopeSDK
             throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
         }
 
-        $this->config = new SDKConfig($config);
-
         EndpointsV1::setBaseUrl($config['projectId']);
         EndpointsV2::setBaseUrl($config['projectId']);
+
+        $this->config = new SDKConfig($config, $baseUrl);
 
         $this->api = new API($config['projectId'], $config['managementKey'] ?? '');
         // If OPTIONAL management key was provided in $config
