@@ -427,7 +427,6 @@ class User
         }
 
         $jsonBody = json_encode($body);
-        print($jsonBody);
 
         try {
             $response = $this->api->doPost(

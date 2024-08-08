@@ -22,8 +22,6 @@
     ]);
 
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
-        session_start()
-
         $_SESSION["user"] = json_decode($_POST["userDetails"], true);
         $_SESSION["sessionToken"] = $_POST["sessionToken"];
 

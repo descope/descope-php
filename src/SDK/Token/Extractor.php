@@ -54,7 +54,7 @@ final class Extractor
     {
         $client = $this->config->client;
         try {
-            $url = 'https://api.descope.com/v1/auth/me';
+            $url = EndpointsV1::$ME_PATH;
             $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
             $res = $client->request(
                 'GET',
