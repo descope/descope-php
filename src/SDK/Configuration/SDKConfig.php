@@ -32,7 +32,7 @@ final class SDKConfig
     private function getJWKSets()
     {
         try {
-            $url = EndpointsV2::getPublicKeyPath();
+            $url = EndpointsV2::getPublicKeyPath() . '/' . $this->projectId;
             
             // Fetch JWK public key from Descope API
             $res = $this->client->request('GET', $url);
