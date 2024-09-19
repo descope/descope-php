@@ -61,7 +61,7 @@ class MgmtV1
         self::$USER_DELETE_ALL_TEST_USERS_PATH = self::$baseUrl . "/v1/mgmt/user/test/delete/all";
         self::$USER_LOAD_PATH = self::$baseUrl . "/v1/mgmt/user";
         self::$USERS_SEARCH_PATH = self::$baseUrl . "/v1/mgmt/user/search";
-        self::$USER_GET_PROVIDER_TOKEN = self::$baseUrl . "/v1/mgmt/user/provider/token";
+        self::$USER_GET_PROVIDER_TOKEN = self::$baseUrl . "/v2/mgmt/user/provider/token";
         self::$USER_UPDATE_STATUS_PATH = self::$baseUrl . "/v1/mgmt/user/update/status";
         self::$USER_UPDATE_LOGIN_ID_PATH = self::$baseUrl . "/v1/mgmt/user/update/loginid";
         self::$USER_UPDATE_EMAIL_PATH = self::$baseUrl . "/v1/mgmt/user/update/email";
