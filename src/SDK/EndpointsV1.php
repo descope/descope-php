@@ -13,7 +13,7 @@ const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)
 
 class EndpointsV1
 {
-    public static $baseUrl;
+    private static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
 
     public static $REFRESH_TOKEN_PATH;
     public static $SELECT_TENANT_PATH;

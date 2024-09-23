@@ -118,9 +118,16 @@ class API
      * @return array JWT response array.
      * @throws AuthException If the request fails.
      */
-    public function doGet(string $uri, bool $useManagementKey): array
+    public function doGet(string $uri, bool $useManagementKey, ?string $refreshToken = null): array
     {
-        $authToken = $this->getAuthToken($useManagementKey);
+        $authToken = "";
+
+        if ($refreshToken) {
+            $authToken = $this->getAuthToken(false, $refreshToken);
+        } else {
+            $authToken = $this->getAuthToken($useManagementKey);
+        }
+
         try {
             $response = $this->httpClient->get(
                 $uri,
