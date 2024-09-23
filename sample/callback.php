@@ -2,12 +2,13 @@
 <html>
 <head>
     <title>Login Callback</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <?php
     require '../vendor/autoload.php';
     use Descope\SDK\DescopeSDK;
+
+    session_start();
 
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
     $dotenv->load();
@@ -24,13 +25,15 @@
     if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
         $_SESSION["user"] = json_decode($_POST["userDetails"], true);
         $_SESSION["sessionToken"] = $_POST["sessionToken"];
+        
+        session_write_close();
 
         // Redirect to dashboard
-        // header('Location: dashboard.php');
+        header('Location: dashboard.php');
         exit();
     } else {
         // Redirect to login page
-        // header('Location: login.php');
+        header('Location: login.php');
         exit();
     }
     ?>

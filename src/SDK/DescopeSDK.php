@@ -94,9 +94,12 @@ class DescopeSDK
      */
     public function getUserDetails(string $refreshToken)
     {
-        $this->api->doPost(
-            EndpointsV1::ME_PATH,
-            [],
+        if (empty(EndpointsV1::$ME_PATH)) {
+            throw new \RuntimeException('ME_PATH is not initialized.');
+        }
+
+        return $this->api->doGet(
+            EndpointsV1::$ME_PATH,
             false,
             $refreshToken
         );
@@ -111,8 +114,12 @@ class DescopeSDK
      */
     public function logout(string $refreshToken): void
     {
+        if (empty(EndpointsV1::$LOGOUT_PATH)) {
+            throw new \RuntimeException('ME_PATH is not initialized.');
+        }
+
         $this->api->doPost(
-            EndpointsV1::LOGOUT_PATH,
+            EndpointsV1::$LOGOUT_PATH,
             [],
             false,
             $refreshToken

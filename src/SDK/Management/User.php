@@ -13,24 +13,57 @@ use Descope\SDK\API;
 
 class UserObj
 {
+    public string $loginId;
+    public ?string $email;
+    public ?string $phone;
+    public ?string $displayName;
+    public ?string $givenName;
+    public ?string $middleName;
+    public ?string $familyName;
+    public ?array $roleNames;
+    public ?array $userTenants;
+    public ?string $picture;
+    public ?array $customAttributes;
+    public ?bool $verifiedEmail;
+    public ?bool $verifiedPhone;
+    public ?array $additionalLoginIds;
+    public ?array $ssoAppIds;
+    public ?UserPassword $password;
+
     public function __construct(
-        public string $loginId,
-        public ?string $email = null,
-        public ?string $phone = null,
-        public ?string $displayName = null,
-        public ?string $givenName = null,
-        public ?string $middleName = null,
-        public ?string $familyName = null,
-        public ?array $roleNames = null,
-        public ?array $userTenants = null,
-        public ?string $picture = null,
-        public ?array $customAttributes = null,
-        public ?bool $verifiedEmail = null,
-        public ?bool $verifiedPhone = null,
-        public ?array $additionalLoginIds = null,
-        public ?array $ssoAppIds = null,
-        public ?UserPassword $password = null
+        string $loginId,
+        ?string $email = null,
+        ?string $phone = null,
+        ?string $displayName = null,
+        ?string $givenName = null,
+        ?string $middleName = null,
+        ?string $familyName = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null,
+        ?string $picture = null,
+        ?array $customAttributes = null,
+        ?bool $verifiedEmail = null,
+        ?bool $verifiedPhone = null,
+        ?array $additionalLoginIds = null,
+        ?array $ssoAppIds = null,
+        ?UserPassword $password = null
     ) {
+        $this->loginId = $loginId;
+        $this->email = $email;
+        $this->phone = $phone;
+        $this->displayName = $displayName;
+        $this->givenName = $givenName;
+        $this->middleName = $middleName;
+        $this->familyName = $familyName;
+        $this->roleNames = $roleNames;
+        $this->userTenants = $userTenants;
+        $this->picture = $picture;
+        $this->customAttributes = $customAttributes;
+        $this->verifiedEmail = $verifiedEmail;
+        $this->verifiedPhone = $verifiedPhone;
+        $this->additionalLoginIds = $additionalLoginIds;
+        $this->ssoAppIds = $ssoAppIds;
+        $this->password = $password;
     }
 }
 
@@ -60,7 +93,7 @@ class User
         ?array $ssoAppIds = null,
         ?UserPassword $password = null,
         ?array $roleNames = null,
-        ?array $userTenants = null,
+        ?array $userTenants = null
     ): array {
         $roleNames = $roleNames ?? [];
         $userTenants = $userTenants ?? [];
