@@ -1,5 +1,23 @@
 <?php
-session_start();
+// session_start();
+
+require '../vendor/autoload.php';
+    use Descope\SDK\DescopeSDK;
+
+    session_start();
+
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv->load();
+
+    if (!isset($_ENV['DESCOPE_PROJECT_ID'])) {
+        echo "Descope Project ID not present. Please check .env file.";
+        exit(1);
+    }
+
+    $descopeSDK = new DescopeSDK([
+        'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+    ]);
+
 if (!isset($_SESSION["user"])) {
     session_destroy();
     header('Location: login.php');
@@ -9,7 +27,6 @@ if (!isset($_SESSION["user"])) {
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
-
 ?>
 
 <!DOCTYPE html>

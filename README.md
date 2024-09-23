@@ -10,7 +10,7 @@ The Descope SDK for PHP provides convenient access to Descope authentication. Yo
 
 ### Requirements
 
-- [PHP 8.1+](https://www.php.net/)
+- [PHP 7.4+](https://www.php.net/)
 
 ### Installation
 

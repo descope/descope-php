@@ -72,7 +72,7 @@ final class Verifier
     {
         $this->validateRefreshTokenNotNil($refreshToken);
         $this->validateToken($refreshToken);
-        $uri = EndpointsV1::REFRESH_TOKEN_PATH;
+        $uri = EndpointsV1::$REFRESH_TOKEN_PATH;
         $response = $this->doPost($uri, [], $refreshToken);
         return $this->generateJwtResponse($response, $refreshToken);
     }
