@@ -15,7 +15,7 @@
     }
   ],
   "require": {
-    "php": "^7.3",
+    "php": "^7.3 || ^8.0",
     "web-token/jwt-framework": "2.2.11",
     "guzzlehttp/guzzle": "7.9.2",
     "paragonie/constant_time_encoding": "^2.7.0",
