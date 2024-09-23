@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2bef191d0ef513b213615959fcb991a2",
+    "content-hash": "35e70dbd77fca8551fdaf29f9d79b765",
     "packages": [
         {
             "name": "brick/math",
@@ -5015,13 +5015,26 @@
             "time": "2024-03-03T12:36:25+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "guzzlehttp/guzzle",
+            "version": "7.9.2.0",
+            "alias": "7.9.3",
+            "alias_normalized": "7.9.3.0"
+        },
+        {
+            "package": "web-token/jwt-framework",
+            "version": "2.2.11.0",
+            "alias": "2.3.0",
+            "alias_normalized": "2.3.0.0"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.3"
+        "php": "^7.3 || ^8.0"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
