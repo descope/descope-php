@@ -1275,6 +1275,7 @@ class User
             'additionalLoginIds' => $additionalLoginIds,
             'ssoAppIds' => $ssoAppIds,
         ];
+
         if ($password !== null) {
             if (isset($password->cleartext)) {
                 $res['password'] = $password->cleartext;
@@ -1284,7 +1285,7 @@ class User
                 }
             }
         }
-
+        
         return $res;
     }
 
