@@ -1285,8 +1285,6 @@ class User
             }
         }
 
-        print_r($res);
-
         return $res;
     }
 
@@ -1361,7 +1359,7 @@ class User
             'additionalLoginIds' => $additionalLoginIds,
             'ssoAppIds' => $ssoAppIds,
         ];
-        print_r($customAttributes);
+
         if ($verifiedEmail !== null) {
             $res['verifiedEmail'] = $verifiedEmail;
         }

@@ -5,26 +5,40 @@ declare(strict_types=1);
 
 namespace Descope\SDK\Management;
 
+/**
+ * Class UserPasswordPHPass
+ * 
+ * Represents a user password hashed using the PHPass algorithm.
+ * This includes the hash, salt, and iterations used to generate the hash.
+ */
 class UserPasswordPHPass
 {
-    private string $hash;
-    private string $salt;
-    private int $iterations;
+    public string $hash;
+    public string $salt;
+    public int $iterations;
 
+    /**
+     * Constructor to initialize PHPass password details.
+     *
+     * @param string $hash Base64-encoded password hash.
+     * @param string $salt Base64-encoded salt value.
+     * @param int $iterations The number of iterations.
+     */
     public function __construct(
         string $hash,
         string $salt,
         int $iterations
     ) {
-        /**
-         * The hash and salt should be base64 strings using standard encoding with padding.
-         * The iterations cost value is an integer, usually in the thousands.
-         */
         $this->hash = $hash;
         $this->salt = $salt;
         $this->iterations = $iterations;
     }
 
+     /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         return [
@@ -37,18 +51,30 @@ class UserPasswordPHPass
     }
 }
 
+/**
+ * Class UserPasswordBcrypt
+ * 
+ * Represents a user password hashed using the bcrypt algorithm.
+ */
 class UserPasswordBcrypt
 {
-    private string $hash;
+    public string $hash;
 
+    /**
+     * Constructor to initialize Bcrypt password details.
+     *
+     * @param string $hash The bcrypt hash in plaintext format (e.g., "$2a$...").
+     */
     public function __construct(string $hash)
     {
-        /**
-         * The bcrypt hash in plaintext format, for example "$2a$..."
-         */
         $this->hash = $hash;
     }
 
+     /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         return [
@@ -59,15 +85,30 @@ class UserPasswordBcrypt
     }
 }
 
+/**
+ * Class UserPasswordFirebase
+ * 
+ * Represents a user password hashed using Firebase's custom hashing scheme.
+ */
 class UserPasswordFirebase
 {
-    private string $hash;
-    private string $salt;
-    private string $saltSeparator;
-    private string $signerKey;
-    private int $memory;
-    private int $rounds;
+    public string $hash;
+    public string $salt;
+    public string $saltSeparator;
+    public string $signerKey;
+    public int $memory;
+    public int $rounds;
 
+    /**
+     * Constructor to initialize Firebase password details.
+     *
+     * @param string $hash Base64-encoded hash.
+     * @param string $salt Base64-encoded salt.
+     * @param string $saltSeparator Base64-encoded salt separator.
+     * @param string $signerKey Base64-encoded signer key.
+     * @param int $memory Memory cost (between 12 and 17).
+     * @param int $rounds Rounds cost (between 6 and 10).
+     */
     public function __construct(
         string $hash,
         string $salt,
@@ -76,12 +117,6 @@ class UserPasswordFirebase
         int $memory,
         int $rounds
     ) {
-        /**
-         * The hash, salt, salt separator, and signer key should be base64 strings using
-         * standard encoding with padding.
-         * The memory cost value is an integer, usually between 12 to 17.
-         * The rounds cost value is an integer, usually between 6 to 10.
-         */
         $this->hash = $hash;
         $this->salt = $salt;
         $this->saltSeparator = $saltSeparator;
@@ -90,6 +125,11 @@ class UserPasswordFirebase
         $this->rounds = $rounds;
     }
 
+    /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         return [
@@ -105,30 +145,44 @@ class UserPasswordFirebase
     }
 }
 
+
+/**
+ * Class UserPasswordPbkdf2
+ * 
+ * Represents a user password hashed using the PBKDF2 algorithm.
+ */
 class UserPasswordPbkdf2
 {
-    private string $hash;
-    private string $salt;
-    private int $iterations;
-    private string $variant;
+    public string $hash;
+    public string $salt;
+    public int $iterations;
+    public string $variant;
 
+    /**
+     * Constructor to initialize PBKDF2 password details.
+     *
+     * @param string $hash Base64-encoded hash.
+     * @param string $salt Base64-encoded salt.
+     * @param int $iterations Number of iterations (usually in the thousands).
+     * @param string $variant Hash variant (sha1, sha256, or sha512).
+     */
     public function __construct(
         string $hash,
         string $salt,
         int $iterations,
         string $variant
     ) {
-        /**
-         * The hash and salt should be base64 strings using standard encoding with padding.
-         * The iterations cost value is an integer, usually in the thousands.
-         * The hash variant should be either "sha1", "sha256", or "sha512".
-         */
         $this->hash = $hash;
         $this->salt = $salt;
         $this->iterations = $iterations;
         $this->variant = $variant;
     }
 
+    /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         return [
@@ -142,18 +196,30 @@ class UserPasswordPbkdf2
     }
 }
 
+/**
+ * Class UserPasswordDjango
+ * 
+ * Represents a user password hashed using Django's custom hashing scheme.
+ */
 class UserPasswordDjango
 {
-    private string $hash;
+    public string $hash;
 
+    /**
+     * Constructor to initialize Django password details.
+     *
+     * @param string $hash The django hash in plaintext format (e.g., "pbkdf2_sha256$...").
+     */
     public function __construct(string $hash)
     {
-        /**
-         * The django hash in plaintext format, for example "pbkdf2_sha256$..."
-         */
         $this->hash = $hash;
     }
 
+    /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         return [
@@ -164,21 +230,35 @@ class UserPasswordDjango
     }
 }
 
+/**
+ * Class UserPassword
+ * 
+ * Represents either a cleartext password or a hashed password.
+ * This is used when creating or inviting users with a password.
+ */
 class UserPassword
 {
-    private ?string $cleartext;
-    private ?object $hashed;
+    public ?string $cleartext;
+    public ?object $hashed;
 
+    /**
+     * Constructor to initialize password details.
+     * Either cleartext or hashed password should be provided, not both.
+     *
+     * @param string|null $cleartext Plaintext password.
+     * @param object|null $hashed Hashed password object (one of the above classes).
+     */
     public function __construct(?string $cleartext = null, ?object $hashed = null)
     {
-        /**
-         * Set a UserPassword on UserObj objects when calling invite_batch to create or invite users
-         * with a cleartext or prehashed password. Note that only one of the two options should be set.
-         */
         $this->cleartext = $cleartext;
         $this->hashed = $hashed;
     }
 
+    /**
+     * Convert object data to an array format.
+     *
+     * @return array The password data as an associative array.
+     */
     public function toArray(): array
     {
         $data = [];

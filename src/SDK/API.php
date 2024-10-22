@@ -27,7 +27,8 @@ class API
     /**
      * Constructor for API class.
      *
-     * @param string $managementKey Management key for authentication.
+     * @param string $projectId
+     * @param string|null $managementKey Management key for authentication.
      */
     public function __construct(string $projectId, ?string $managementKey)
     {

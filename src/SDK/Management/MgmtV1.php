@@ -10,7 +10,84 @@ const DEFAULT_DOMAIN = "descope.com";
 
 class MgmtV1
 {
-    private static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+    public static string $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+    public static string $TEMPLATE_EXPORT_PATH;
+    public static string $TEMPLATE_IMPORT_PATH;
+    public static string $FLOW_EXPORT_PATH;
+    public static string $FLOW_DELETE_PATH;
+    public static string $FLOW_LIST_PATH;
+    public static string $ROLE_SEARCH_PATH;
+    public static string $ROLE_LOAD_ALL_PATH;
+    public static string $ROLE_DELETE_PATH;
+    public static string $ROLE_UPDATE_PATH;
+    public static string $ROLE_CREATE_PATH;
+    public static string $PERMISSION_LOAD_ALL_PATH;
+    public static string $PERMISSION_DELETE_PATH;
+    public static string $PERMISSION_UPDATE_PATH;
+    public static string $PERMISSION_CREATE_PATH;
+    public static string $IMPERSONATE_PATH;
+    public static string $UPDATE_JWT_PATH;
+    public static string $SSO_CONFIGURE_SAML_BY_METADATA_SETTINGS;
+    public static string $SSO_CONFIGURE_SAML_SETTINGS;
+    public static string $SSO_CONFIGURE_OIDC_SETTINGS;
+    public static string $SSO_LOAD_SETTINGS_PATH;
+    public static string $SSO_MAPPING_PATH;
+    public static string $SSO_METADATA_PATH;
+    public static string $SSO_SETTINGS_PATH;
+    public static string $ACCESS_KEY_DELETE_PATH;
+    public static string $ACCESS_KEY_ACTIVATE_PATH;
+    public static string $ACCESS_KEY_DEACTIVATE_PATH;
+    public static string $ACCESS_KEY_UPDATE_PATH;
+    public static string $ACCESS_KEYS_SEARCH_PATH;
+    public static string $ACCESS_KEY_LOAD_PATH;
+    public static string $ACCESS_KEY_CREATE_PATH;
+    public static string $USER_HISTORY_PATH;
+    public static string $USER_GENERATE_EMBEDDED_LINK_PATH;
+    public static string $USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH;
+    public static string $USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH;
+    public static string $USER_GENERATE_OTP_FOR_TEST_PATH;
+    public static string $USER_REMOVE_TENANT_PATH;
+    public static string $USER_ADD_TENANT_PATH;
+    public static string $USER_REMOVE_ALL_PASSKEYS_PATH;
+    public static string $USER_EXPIRE_PASSWORD_PATH;
+    public static string $USER_SET_ACTIVE_PASSWORD_PATH;
+    public static string $USER_SET_TEMPORARY_PASSWORD_PATH;
+    public static string $USER_SET_PASSWORD_PATH;
+    public static string $USER_REMOVE_SSO_APPS;
+    public static string $USER_SET_SSO_APPS;
+    public static string $USER_ADD_SSO_APPS;
+    public static string $USER_REMOVE_ROLE_PATH;
+    public static string $USER_ADD_ROLE_PATH;
+    public static string $USER_SET_ROLE_PATH;
+    public static string $USER_UPDATE_CUSTOM_ATTRIBUTE_PATH;
+    public static string $USER_UPDATE_PICTURE_PATH;
+    public static string $USER_UPDATE_NAME_PATH;
+    public static string $USER_UPDATE_PHONE_PATH;
+    public static string $USER_UPDATE_EMAIL_PATH;
+    public static string $USER_UPDATE_LOGIN_ID_PATH;
+    public static string $USER_UPDATE_STATUS_PATH;
+    public static string $USER_GET_PROVIDER_TOKEN;
+    public static string $USERS_SEARCH_PATH;
+    public static string $USER_LOAD_PATH;
+    public static string $USER_DELETE_ALL_TEST_USERS_PATH;
+    public static string $USER_LOGOUT_PATH;
+    public static string $USER_DELETE_PATH;
+    public static string $USER_UPDATE_PATH;
+    public static string $USER_CREATE_BATCH_PATH;
+    public static string $USER_CREATE_PATH;
+    public static string $SSO_APPLICATION_LOAD_ALL_PATH;
+    public static string $SSO_APPLICATION_LOAD_PATH;
+    public static string $SSO_APPLICATION_DELETE_PATH;
+    public static string $SSO_APPLICATION_SAML_UPDATE_PATH;
+    public static string $SSO_APPLICATION_OIDC_UPDATE_PATH;
+    public static string $SSO_APPLICATION_SAML_CREATE_PATH;
+    public static string $SSO_APPLICATION_OIDC_CREATE_PATH;
+    public static string $TENANT_SEARCH_ALL_PATH;
+    public static string $TENANT_LOAD_ALL_PATH;
+    public static string $TENANT_LOAD_PATH;
+    public static string $TENANT_DELETE_PATH;
+    public static string $TENANT_UPDATE_PATH;
+    public static string $TENANT_CREATE_PATH;
 
     public static function setBaseUrl(string $projectId): void
     {
@@ -31,6 +108,7 @@ class MgmtV1
             $region = substr($projectId, 1, 5);
             return !empty($region) ? $region : null;
         }
+        return null;
     }
 
     private static function updatePaths(): void
