@@ -37,12 +37,7 @@ final class Extractor
     public function getClaims($sessionToken): array
     {
         $jws = $this->parseToken($sessionToken);
-        $claims = json_decode($jws->getPayload(), true);
-
-        if (!is_array($claims)) {
-            return [];
-        }
-        return $claims;
+        return json_decode($jws->getPayload(), true) ?? [];
     }
 
     /**
@@ -53,20 +48,14 @@ final class Extractor
     public function getUserDetails($refreshToken)
     {
         $client = $this->config->client;
+        $url = EndpointsV1::$ME_PATH;
+        $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
+
         try {
-            $url = EndpointsV1::$ME_PATH;
-            $header = 'Bearer ' . $this->config->projectId . ":" . $refreshToken;
-            $res = $client->request(
-                'GET',
-                $url,
-                [
-                'headers' => ['Authorization' => $header]
-                ]
-            );
-            $jwkSets = json_decode($res->getBody(), true);
-            return $jwkSets;
-        } catch (RequestException $re) {
-            return $re->getMessage();
+            $response = $client->get($url, ['headers' => ['Authorization' => $header]]);
+            return json_decode($response->getBody(), true);
+        } catch (RequestException $e) {
+            throw new TokenException('Failed to retrieve user details: ' . $e->getMessage());
         }
     }
 
