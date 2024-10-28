@@ -17,10 +17,10 @@
         echo "Descope Project ID not present. Please check .env file.";
         exit(1);
     }
-
+    
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
-    ]); 
+    ]);
 
     if (isset($_POST["sessionToken"])) {
         if ($descopeSDK->verify($_POST["sessionToken"])) {

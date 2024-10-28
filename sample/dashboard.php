@@ -1,21 +1,10 @@
 <?php
 require '../vendor/autoload.php';
-use Descope\SDK\DescopeSDK;
 
 session_start();
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
-
-// if (!isset($_ENV['DESCOPE_PROJECT_ID'])) {
-//     echo "Descope Project ID not present. Please check .env file.";
-//     exit(1);
-// }
-
-// $descopeSDK = new DescopeSDK([
-//     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
-//     'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY']
-// ]);
 
 if (!isset($_SESSION["user"])) {
     session_destroy();

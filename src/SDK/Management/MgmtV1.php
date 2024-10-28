@@ -5,7 +5,6 @@ namespace Descope\SDK\Management;
 
 use Descope\SDK\EndpointsV1;
 
-
 const DEFAULT_URL_PREFIX = "https://api";
 const DEFAULT_DOMAIN = "descope.com";
 
@@ -96,6 +95,8 @@ class MgmtV1
     public static string $TENANT_DELETE_PATH;
     public static string $TENANT_UPDATE_PATH;
     public static string $TENANT_CREATE_PATH;
+    public static string $AUDIT_SEARCH;
+    public static string $AUDIT_CREATE_EVENT;
 
     /**
      * Sets the base URL based on the project ID, taking into account the region.
@@ -232,6 +233,10 @@ class MgmtV1
         self::$FLOW_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/flow/export";
         self::$TEMPLATE_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/template/import";
         self::$TEMPLATE_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/template/export";
+
+        // Audit 
+        self::$AUDIT_SEARCH = self::$baseUrl . "/v1/mgmt/audit/search";
+        self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
     }
 }
 

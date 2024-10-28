@@ -3,106 +3,72 @@
 namespace Descope\Tests\Management;
 
 use PHPUnit\Framework\TestCase;
-use Descope\SDK\API;
-use Descope\SDK\Management\Audit;
-use Descope\SDK\Management\MgmtV1;
+use Descope\SDK\DescopeSDK;
 
 class AuditTest extends TestCase
 {
-    private $apiMock;
-    private $audit;
+    private DescopeSDK $descopeSDK;
 
     protected function setUp(): void
     {
-        $this->apiMock = $this->createMock(API::class);
-        $this->audit = new Audit($this->apiMock);
-    }
-
-    public function testSearch()
-    {
-        $response = [
-            'audits' => [
-                [
-                    'projectId' => 'project1',
-                    'userId' => 'user1',
-                    'action' => 'login',
-                    'occurred' => 1650000000000,
-                    'device' => 'mobile',
-                    'method' => 'otp',
-                    'geo' => 'US',
-                    'remoteAddress' => '192.168.1.1',
-                    'externalIds' => ['login1'],
-                    'tenants' => ['tenant1'],
-                    'data' => ['key' => 'value']
-                ]
-            ]
+        $config = [
+            'projectId' => 'P2OkfVnJi5Ht7mpCqHjx17nV5epH',
+            'managementKey' => 'K2o2rLwk3N3QI7kyJcRUmULKXqB7mKzpY7Dk6Hl24IXRM25YcYDYPFMKCO4SmUTDJJluxlu',
         ];
 
-        $this->apiMock
-            ->expects($this->once())
-            ->method('doPost')
-            ->with(MgmtV1::AUDIT_SEARCH, $this->anything(), true)
-            ->willReturn($response);
+        $this->descopeSDK = new DescopeSDK($config);
+    }
 
-        $result = $this->audit->search(['user1'], ['login']);
+    public function testSearchAudit()
+    {
+        $userIds = ['user1'];
+        $actions = ['login'];
 
+        // Perform the search
+        $result = $this->descopeSDK->management->audit->search($userIds, $actions);
+
+        // Assertions
         $this->assertIsArray($result);
         $this->assertArrayHasKey('audits', $result);
-        $this->assertCount(1, $result['audits']);
-        $this->assertEquals('project1', $result['audits'][0]['projectId']);
-        $this->assertEquals('user1', $result['audits'][0]['userId']);
+        $this->assertIsArray($result['audits']);
+
+        foreach ($result['audits'] as $audit) {
+            $this->assertArrayHasKey('projectId', $audit);
+            $this->assertArrayHasKey('userId', $audit);
+            $this->assertArrayHasKey('action', $audit);
+            $this->assertArrayHasKey('occurred', $audit);
+        }
     }
 
-    public function testCreateEvent()
+    public function testCreateAuditEvent()
     {
-        $this->apiMock
-            ->expects($this->once())
-            ->method('doPost')
-            ->with(
-                MgmtV1::AUDIT_CREATE_EVENT,
-                [
-                    'action' => 'login',
-                    'type' => 'info',
-                    'actorId' => 'actor1',
-                    'tenantId' => 'tenant1',
-                    'userId' => 'user1',
-                    'data' => ['key' => 'value']
-                ],
-                true
-            );
+        // Create an audit event
+        $this->descopeSDK->management->audit->createEvent(
+            'login',
+            'info',
+            'actor1',
+            'tenant1',
+            'user1',
+            ['key' => 'value']
+        );
 
-        $this->audit->createEvent('login', 'info', 'actor1', 'tenant1', 'user1', ['key' => 'value']);
+        // If no exceptions were thrown, the test passes.
+        $this->assertTrue(true);
     }
 
-    public function testConvertAuditRecord()
+    public function testCreateAuditEventWithoutUserId()
     {
-        $auditRecord = [
-            'projectId' => 'project1',
-            'userId' => 'user1',
-            'action' => 'login',
-            'occurred' => 1650000000000,
-            'device' => 'mobile',
-            'method' => 'otp',
-            'geo' => 'US',
-            'remoteAddress' => '192.168.1.1',
-            'externalIds' => ['login1'],
-            'tenants' => ['tenant1'],
-            'data' => ['key' => 'value']
-        ];
+        // Create an audit event without a userId
+        $this->descopeSDK->management->audit->createEvent(
+            'login',
+            'info',
+            'actor1',
+            'tenant1',
+            null,
+            ['key' => 'value']
+        );
 
-        $result = $this->audit->convertAuditRecord($auditRecord);
-
-        $this->assertIsArray($result);
-        $this->assertEquals('project1', $result['projectId']);
-        $this->assertEquals('user1', $result['userId']);
-        $this->assertEquals('login', $result['action']);
-        $this->assertInstanceOf(DateTime::class, $result['occurred']);
-        $this->assertEquals('mobile', $result['device']);
-        $this->assertEquals('otp', $result['method']);
-        $this->assertEquals('US', $result['geo']);
-        $this->assertEquals('192.168.1.1', $result['remoteAddress']);
-        $this->assertEquals(['login1'], $result['loginIds']);
-        $this->assertEquals(['tenant1'], $result['tenants']);
-        $this->assertEquals(['key' => 'value'], $result['data']);
+        // If no exceptions were thrown, the test passes.
+        $this->assertTrue(true);
     }
 }

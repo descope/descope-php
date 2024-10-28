@@ -16,6 +16,7 @@ class Management
      * @var User The User management component.
      */
     public User $user;
+    public Audit $audit;
 
     /**
      * Constructor for Management class.
@@ -25,6 +26,7 @@ class Management
     public function __construct(API $auth)
     {
         $this->user = new User($auth);
+        $this->audit = new Audit($auth);
     }
 
     /**
@@ -35,5 +37,15 @@ class Management
     public function user(): User
     {
         return $this->user;
+    }
+
+    /**
+     * Get the Audit Management component.
+     *
+     * @return Audit The Audit management instance.
+     */
+    public function audit(): Audit
+    {
+        return $this->audit;
     }
 }

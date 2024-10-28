@@ -20,24 +20,16 @@ class AssociatedTenant
     public $roleNames = [];
 
     /**
-     * Represents the role IDs for a user in the Tenant.
-     *
-     * @var array<string> The Role IDs.
-     */
-    public $roleIds = [];
-
-    /**
      * Constructor for the AssociatedTenant class.
      *
      * @param string        $tenantId  The Tenant ID.
      * @param array<string> $roleNames The role names for the user in the tenant.
      * @param array<string> $roleIds   The role IDs for the user in the tenant.
      */
-    public function __construct(string $tenantId, array $roleNames = [], array $roleIds = [])
+    public function __construct(string $tenantId, array $roleNames = [])
     {
         $this->tenantId = $tenantId;
         $this->roleNames = $roleNames;
-        $this->roleIds = $roleIds;
     }
 
     /**
@@ -49,8 +41,7 @@ class AssociatedTenant
     {
         return [
             'tenantId' => $this->tenantId,
-            'roleNames' => $this->roleNames,
-            'roleIds' => $this->roleIds,
+            'roleNames' => $this->roleNames
         ];
     }
 }

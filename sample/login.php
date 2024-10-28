@@ -37,6 +37,10 @@
             return user;
         }
 
+        async function handleLogout() {
+            
+        }
+
         async function handleLogin() {
             try {
                 console.log("Attempting to refresh the session...");
@@ -57,6 +61,7 @@
                 sendFormData(sessionToken, user.data);
             } catch (error) {
                 console.log("Error during login:", error);
+                sdk.logout();
                 window.location.href = 'login.php'; // Redirect to login on error
             }
         }
@@ -68,6 +73,7 @@
             console.log("Valid refresh token found. Logging in...");
             handleLogin();
         } else {
+            sdk.logout();
             console.log("No valid refresh token. Displaying login form.");
             const container = document.getElementById("container")
             container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="sign-up-or-in"></descope-wc>';

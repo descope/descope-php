@@ -8,10 +8,13 @@ use Descope\SDK\Common\DeliveryMethod;
 use Descope\SDK\Management\AssociatedTenant;
 use Descope\SDK\Management\MgmtV1;
 use Descope\SDK\Management\LoginOptions;
-use Descope\SDK\Management\UserPassword;
+use Descope\SDK\Management\Password\UserPassword;
 use Descope\SDK\API;
 use GuzzleHttp\Exception\RequestException;
 
+/**
+ * UserObj class represents the details of a user.
+ */
 class UserObj
 {
     public string $loginId;
@@ -31,6 +34,26 @@ class UserObj
     public ?array $ssoAppIds;
     public ?UserPassword $password;
 
+    /**
+     * Constructor for UserObj.
+     *
+     * @param string $loginId The user's login ID.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param array|null $roleNames The roles assigned to the user.
+     * @param array|null $userTenants The tenants associated with the user.
+     * @param string|null $picture The URL of the user's profile picture.
+     * @param array|null $customAttributes Custom attributes associated with the user.
+     * @param bool|null $verifiedEmail Whether the user's email is verified.
+     * @param bool|null $verifiedPhone Whether the user's phone number is verified.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password The user's password.
+     */
     public function __construct(
         string $loginId,
         ?string $email = null,
@@ -68,15 +91,46 @@ class UserObj
     }
 }
 
+/**
+ * User class provides methods to interact with user-related functionalities in the Descope API.
+ */
 class User
 {
     private API $api;
 
+    /**
+     * Constructor for the User class.
+     *
+     * @param API $api The API instance to be used for HTTP requests.
+     */
     public function __construct(API $api)
     {
         $this->api = $api;
     }
 
+    /**
+     * Creates a new user.
+     *
+     * @param string $loginId The login ID for the user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param string|null $picture The user's profile picture URL.
+     * @param array|null $customAttributes Custom attributes for the user.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param string|null $inviteUrl URL to invite the user.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password The user's password.
+     * @param array|null $roleNames Roles assigned to the user.
+     * @param array|null $userTenants Tenants associated with the user.
+     * @return array The created user's information.
+     * @throws AuthException
+     */
     public function create(
         string $loginId,
         ?string $email = null,
@@ -129,6 +183,29 @@ class User
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Creates a test user.
+     *
+     * @param string $loginId The login ID for the test user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param string|null $picture The user's profile picture URL.
+     * @param array|null $customAttributes Custom attributes for the user.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param string|null $inviteUrl URL to invite the user.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password The user's password.
+     * @param array|null $roleNames Roles assigned to the user.
+     * @param array|null $userTenants Tenants associated with the user.
+     * @return array The created test user's information.
+     * @throws AuthException
+     */
     public function createTestUser(
         string $loginId,
         ?string $email = null,
@@ -181,6 +258,31 @@ class User
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Invites a user.
+     *
+     * @param string $loginId The login ID for the user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param string|null $picture The user's profile picture URL.
+     * @param array|null $customAttributes Custom attributes for the user.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param string|null $inviteUrl URL to invite the user.
+     * @param bool|null $sendMail Indicates if the invite should be sent via email.
+     * @param bool|null $sendSms Indicates if the invite should be sent via SMS.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password The user's password.
+     * @param array|null $roleNames Roles assigned to the user.
+     * @param array|null $userTenants Tenants associated with the user.
+     * @return array The invited user's information.
+     * @throws AuthException
+     */
     public function invite(
         string $loginId,
         ?string $email = null,
@@ -235,6 +337,16 @@ class User
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Invites a batch of users.
+     *
+     * @param array $users The array of UserObj instances representing users to be invited.
+     * @param string|null $inviteUrl URL to invite the users.
+     * @param bool|null $sendMail Indicates if the invite should be sent via email.
+     * @param bool|null $sendSms Indicates if the invite should be sent via SMS.
+     * @return array The response containing details of the invited users.
+     * @throws AuthException
+     */
     public function inviteBatch(
         array $users,
         ?string $inviteUrl = null,
@@ -254,6 +366,28 @@ class User
         return $this->api->generateJwtResponse($response);
     }
 
+    /**
+     * Updates an existing user's details.
+     *
+     * @param string $loginId The login ID of the user to update.
+     * @param string|null $email The user's new email address.
+     * @param string|null $phone The user's new phone number.
+     * @param string|null $displayName The user's new display name.
+     * @param string|null $givenName The user's new given name.
+     * @param string|null $middleName The user's new middle name.
+     * @param string|null $familyName The user's new family name.
+     * @param string|null $picture The user's new profile picture URL.
+     * @param array|null $customAttributes Updated custom attributes for the user.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password The user's new password.
+     * @param array|null $roleNames Updated roles for the user.
+     * @param array|null $userTenants Updated tenants associated with the user.
+     * @return void
+     * @throws AuthException
+     */
     public function update(
         string $loginId,
         ?string $email = null,
@@ -266,9 +400,8 @@ class User
         ?array $customAttributes = null,
         ?bool $verifiedEmail = null,
         ?bool $verifiedPhone = null,
-        ?array $additionalLoginIds = null,
+        ?array $additionalIdentifiers = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null,
         ?array $roleNames = null,
         ?array $userTenants = null
     ): void {
@@ -287,14 +420,12 @@ class User
                 $familyName,
                 $roleNames,
                 $userTenants,
-                false,
                 $picture,
                 $customAttributes,
                 $verifiedEmail,
                 $verifiedPhone,
-                $additionalLoginIds,
-                $ssoAppIds,
-                $password
+                $additionalIdentifiers,
+                $ssoAppIds
             ),
             true
         );
@@ -303,7 +434,7 @@ class User
     /**
      * Delete an existing user by login ID. IMPORTANT: This action is irreversible. Use carefully.
      *
-     * @param  string $loginId The login ID from the user's JWT.
+     * @param string $loginId The login ID from the user's JWT.
      * @return void
      * @throws AuthException if the delete operation fails.
      */
@@ -319,9 +450,9 @@ class User
     /**
      * Delete an existing user by user ID. IMPORTANT: This action is irreversible. Use carefully.
      *
-     * @param  string $userId The user ID from the user's JWT.
+     * @param string $userId The user ID from the user's JWT.
      * @return void
-     * @throws AuthException if the delete operation fails.
+     * @throws AuthException
      */
     public function deleteByUserId(string $userId): void
     {
@@ -332,7 +463,13 @@ class User
         );
     }
 
-
+    /**
+     * Deletes all test users in the system.
+     * IMPORTANT: This action is irreversible. Use with caution.
+     *
+     * @return void
+     * @throws AuthException
+    */
     public function deleteAllTestUsers(): void
     {
         $this->api->doDelete(
@@ -342,8 +479,12 @@ class User
     }
 
     /**
+     * Loads user details using the login ID.
+     *
+     * @param string $loginId The login ID of the user to retrieve.
+     * @return array The user's details.
      * @throws AuthException
-     */
+    */
     public function load(string $loginId): array
     {
         return $this->api->doGet(
@@ -352,6 +493,13 @@ class User
         );
     }
 
+    /**
+     * Loads user details using the user ID.
+     *
+     * @param string $userId The user ID of the user to retrieve.
+     * @return array The user's details.
+     * @throws AuthException
+    */
     public function loadByUserId(string $userId): array
     {
         return $this->api->doGet(
@@ -397,6 +545,12 @@ class User
         // Initialize arrays if they are null
         $tenantIds = $tenantIds ?? [];
         $roleNames = $roleNames ?? [];
+        $statuses = $statuses ?? [];
+        $emails = $emails ?? [];
+        $phones = $phones ?? [];
+        $ssoAppIds = $ssoAppIds ?? [];
+        $sort = $sort ?? [];
+        $customAttributes = $customAttributes ?? (object)[];
 
         if ($limit < 0) {
             throw new AuthException(
@@ -414,54 +568,25 @@ class User
             );
         }
 
+        // Prepare the request body
         $body = [
+            'loginId' => '',
             'tenantIds' => $tenantIds,
             'roleNames' => $roleNames,
-            'limit' => $limit,
-            'page' => $page,
-            'testUsersOnly' => $testUsersOnly,
-            'withTestUser' => $withTestUser,
-            'customAttributes' => $customAttributes ?? (object)[],
+            'limit' => (string)$limit,
+            'page' => (string)$page,
+            'text' => $text ?? '',
+            'ssoOnly' => '',
+            'withTestUser' => $withTestUser ? true : false,
+            'testUsersOnly' => $testUsersOnly ? true : false,
+            'customAttributes' => $customAttributes,
+            'statuses' => $statuses,
+            'emails' => $emails,
+            'phones' => $phones,
+            'ssoAppIds' => $ssoAppIds,
+            'sort' => $sort,
+            'loginIds' => [],
         ];
-
-        $allowedStatuses = ['enabled', 'disabled', 'invited'];
-        if ($statuses !== null) {
-            foreach ($statuses as $status) {
-                if (!in_array($status, $allowedStatuses, true)) {
-                    throw new AuthException(
-                        400,
-                        'ERROR_TYPE_INVALID_ARGUMENT',
-                        "The status '$status' is invalid. Allowed values are: " . implode(", ", $allowedStatuses)
-                    );
-                }
-            }
-        }
-
-        if ($emails !== null) {
-            $body['emails'] = $emails;
-        }
-
-        if ($phones !== null) {
-            $body['phones'] = $phones;
-        }
-
-        if ($customAttributes !== null) {
-            $body['customAttributes'] = $customAttributes;
-        }
-
-        if ($ssoAppIds !== null) {
-            $body['ssoAppIds'] = $ssoAppIds;
-        }
-
-        if ($text !== null) {
-            $body['text'] = $text;
-        }
-
-        if ($sort !== null) {
-            $body['sort'] = $this->sortToArray($sort);
-        }
-
-        $jsonBody = json_encode($body);
 
         try {
             return $this->api->doPost(
@@ -1234,6 +1359,37 @@ class User
         }
     }
 
+    /**
+     * Composes the request body for creating a user.
+     *
+     * This method structures the user information, including login ID, email, phone,
+     * display name, roles, tenants, and additional attributes, into an array format
+     * suitable for creating a user via the API. It also handles password assignment
+     * and the inclusion of optional properties such as verified email and phone.
+     *
+     * @param string $loginId The unique login ID for the user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given (first) name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family (last) name.
+     * @param array $roleNames An array of role names assigned to the user.
+     * @param array $userTenants An array of user tenants with roles.
+     * @param bool $invited Flag to indicate if the user is invited.
+     * @param bool $test Flag to indicate if the user is a test user.
+     * @param string|null $picture URL of the user's profile picture.
+     * @param array|null $customAttributes Additional custom attributes for the user.
+     * @param bool|null $verifiedEmail Flag to indicate if the user's email is verified.
+     * @param bool|null $verifiedPhone Flag to indicate if the user's phone is verified.
+     * @param string|null $inviteUrl Optional URL for inviting the user.
+     * @param bool|null $sendMail Flag to send an invitation email.
+     * @param bool|null $sendSms Flag to send an invitation SMS.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password User's password information (cleartext or hashed).
+     * @return array The composed request body for user creation.
+    */
     public function composeCreateBody(
         string $loginId,
         ?string $email,
@@ -1293,6 +1449,20 @@ class User
         return $res;
     }
 
+    /**
+     * Composes the request body for batch user creation.
+     *
+     * This method iterates over a list of user objects, converting each into an array
+     * using the `composeCreateBody` method. It includes user details such as login ID,
+     * email, phone, and additional attributes. The resulting array of users is formatted
+     * for a batch creation API request.
+     *
+     * @param array $users The array of user objects to be created.
+     * @param string|null $inviteUrl Optional URL for sending invitations to the created users.
+     * @param bool|null $sendMail Optional flag indicating whether to send an invitation email.
+     * @param bool|null $sendSms Optional flag indicating whether to send an invitation SMS.
+     * @return array The structured request body for creating multiple users.
+    */
     public function composeCreateBatchBody(
         array $users,
         ?string $inviteUrl,
@@ -1329,6 +1499,31 @@ class User
         return ['users' => $userArr];
     }
 
+    /**
+     * Composes the request body for updating a user's information.
+     *
+     * This method creates a structured array with user details, including login ID,
+     * email, phone, display name, roles, tenants, and optional attributes like profile
+     * picture and custom attributes. It is used when sending a request to update user data.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given (first) name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family (last) name.
+     * @param array|null $roleNames An array of role names assigned to the user.
+     * @param array|null $userTenants An array of user tenants with roles.
+     * @param string|null $picture URL of the user's profile picture.
+     * @param array|null $customAttributes Additional custom attributes for the user.
+     * @param bool|null $verifiedEmail Flag to indicate if the user's email is verified.
+     * @param bool|null $verifiedPhone Flag to indicate if the user's phone is verified.
+     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @param UserPassword|null $password User's password information (cleartext or hashed).
+     * @return array The composed request body for updating user information.
+    */
     public function composeUpdateBody(
         string $loginId,
         ?string $email,
@@ -1339,55 +1534,33 @@ class User
         ?string $familyName,
         ?array $roleNames,
         ?array $userTenants,
-        ?bool $test,
         ?string $picture,
         ?array $customAttributes,
         ?bool $verifiedEmail,
         ?bool $verifiedPhone,
-        ?array $additionalLoginIds,
-        ?array $ssoAppIds,
-        ?UserPassword $password
+        ?array $additionalIdentifiers,
+        ?array $ssoAppIds
     ): array {
         $res = [
             'loginId' => $loginId,
             'email' => $email,
-            'phone' => $phone,
-            'displayName' => $displayName,
-            'givenName' => $givenName,
-            'middleName' => $middleName,
-            'familyName' => $familyName,
-            'roleNames' => $roleNames,
-            'userTenants' => $userTenants,
-            'test' => $test,
-            'picture' => $picture,
+            'phone' => $phone ?? '',
+            'verifiedEmail' => $verifiedEmail ?? '',
+            'verifiedPhone' => $verifiedPhone ?? '',
+            'name' => $displayName ?? '',
+            'roleNames' => $roleNames ?? [],
+            'userTenants' => $userTenants ?? [],
             'customAttributes' => $customAttributes ?? (object)[],
-            'additionalLoginIds' => $additionalLoginIds,
-            'ssoAppIds' => $ssoAppIds,
+            'picture' => $picture ?? '',
+            'additionalIdentifiers' => $additionalIdentifiers ?? [],
+            'givenName' => $givenName ?? '',
+            'middleName' => $middleName ?? '',
+            'familyName' => $familyName ?? '',
+            'ssoAppIds' => $ssoAppIds ?? [],
         ];
-
-        if ($verifiedEmail !== null) {
-            $res['verifiedEmail'] = $verifiedEmail;
-        }
-        if ($givenName !== null) {
-            $res['givenName'] = $givenName;
-        }
-        if ($middleName !== null) {
-            $res['middleName'] = $middleName;
-        }
-        if ($familyName !== null) {
-            $res['familyName'] = $familyName;
-        }
-        if ($verifiedPhone !== null) {
-            $res['verifiedPhone'] = $verifiedPhone;
-        }
-        if ($password !== null) {
-            if (isset($password->cleartext)) {
-                $res['password'] = $password->cleartext;
-            } else if (isset($password->hashed)) {
-                $res['hashedPassword'] = $password->hashed;
-        }
-
-        return $res;
-    }
+    
+        return array_filter($res, function ($value) {
+            return $value !== null;
+        });
     }
 }
