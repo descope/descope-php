@@ -20,7 +20,7 @@ class API
     /**
      * Constructor for API class.
      *
-     * @param string $projectId
+     * @param string      $projectId
      * @param string|null $managementKey Management key for authentication.
      */
     public function __construct(string $projectId, ?string $managementKey)
@@ -178,9 +178,9 @@ class API
     /**
      * Generates a JWT response array with the given parameters.
      *
-     * @param array $responseBody
-     * @param string|null $refreshToken Refresh token.
-     * @param string|null $audience Audience.
+     * @param  array       $responseBody
+     * @param  string|null $refreshToken Refresh token.
+     * @param  string|null $audience     Audience.
      * @return array JWT response array.
      */
     public function generateJwtResponse(array $responseBody, ?string $refreshToken = null, ?string $audience = null): array

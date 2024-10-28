@@ -50,12 +50,12 @@ class DescopeSDK
     }
 
      /**
-     * Verify if the JWT is valid and not expired.
-     *
-     * @param string|null $sessionToken The session token to verify.
-     * @return bool Verification result.
-     * @throws AuthException
-     */
+      * Verify if the JWT is valid and not expired.
+      *
+      * @param  string|null $sessionToken The session token to verify.
+      * @return bool Verification result.
+      * @throws AuthException
+      */
     public function verify($sessionToken = null)
     {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME_NAME] ?? null;
@@ -71,7 +71,7 @@ class DescopeSDK
     /**
      * Refresh session token using the refresh token.
      *
-     * @param string|null $refreshToken The refresh token to use.
+     * @param  string|null $refreshToken The refresh token to use.
      * @return array The new session information.
      * @throws AuthException
      */
@@ -90,8 +90,8 @@ class DescopeSDK
     /**
      * Verify and refresh the session using session and refresh tokens.
      *
-     * @param string|null $sessionToken The session token.
-     * @param string|null $refreshToken The refresh token.
+     * @param  string|null $sessionToken The session token.
+     * @param  string|null $refreshToken The refresh token.
      * @return array The refreshed session information.
      * @throws AuthException
      */
@@ -111,7 +111,7 @@ class DescopeSDK
     /**
      * Get the JWT claims if the token is valid.
      *
-     * @param string|null $token The token to extract claims from.
+     * @param  string|null $token The token to extract claims from.
      * @return array The JWT claims.
      * @throws AuthException
      */
@@ -130,7 +130,7 @@ class DescopeSDK
     /**
      * Retrieve user details using the refresh token.
      *
-     * @param string|null $refreshToken The refresh token of the user.
+     * @param  string|null $refreshToken The refresh token of the user.
      * @return array The user details.
      * @throws AuthException
      */
@@ -152,7 +152,7 @@ class DescopeSDK
     /**
      * Logout a user using the refresh token.
      *
-     * @param string|null $refreshToken The refresh token of the user.
+     * @param  string|null $refreshToken The refresh token of the user.
      * @return void
      * @throws AuthException
      */
@@ -175,7 +175,7 @@ class DescopeSDK
     /**
      * Logout a user from all devices using the refresh token.
      *
-     * @param string|null $refreshToken The refresh token of the user.
+     * @param  string|null $refreshToken The refresh token of the user.
      * @return void
      * @throws AuthException
      */

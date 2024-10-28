@@ -29,9 +29,9 @@ class AssociatedTenant
     /**
      * Constructor for the AssociatedTenant class.
      *
-     * @param string $tenantId The Tenant ID.
+     * @param string        $tenantId  The Tenant ID.
      * @param array<string> $roleNames The role names for the user in the tenant.
-     * @param array<string> $roleIds The role IDs for the user in the tenant.
+     * @param array<string> $roleIds   The role IDs for the user in the tenant.
      */
     public function __construct(string $tenantId, array $roleNames = [], array $roleIds = [])
     {
