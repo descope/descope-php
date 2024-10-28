@@ -9,11 +9,17 @@ const DEFAULT_URL_PREFIX = "https://api";
 const DEFAULT_DOMAIN = "descope.com";
 const DEFAULT_TIMEOUT_SECONDS = 60;
 
+const SESSION_COOKIE = "DS";
+const REFRESH_COOKIE = "DSR";
+
 const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?){0,}((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/';
 
 class EndpointsV1
 {
-    private static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+    public static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+
+    public static $SESSION_COOKIE_NAME = SESSION_COOKIE;
+    public static $REFRESH_COOKIE_NAME = REFRESH_COOKIE;
 
     public static $REFRESH_TOKEN_PATH;
     public static $SELECT_TENANT_PATH;
@@ -62,6 +68,13 @@ class EndpointsV1
     public static $REPLACE_PASSWORD_PATH;
     public static $PASSWORD_POLICY_PATH;
 
+    /**
+     * Set the base URL for API endpoints using the project ID.
+     * The project ID is used to determine the correct region-specific base URL.
+     *
+     * @param string $projectId The project ID for the Descope project.
+     * @return void
+     */
     public static function setBaseUrl(string $projectId): void
     {
         $region = self::extractRegionFromProjectId($projectId);
@@ -75,6 +88,12 @@ class EndpointsV1
         self::updatePaths();
     }
 
+    /**
+     * Extracts the region information from the given project ID.
+     *
+     * @param string $projectId The project ID for the Descope project.
+     * @return string|null Returns the region if extracted, otherwise null.
+     */
     public static function extractRegionFromProjectId(string $projectId): ?string
     {
         if (strlen($projectId) >= 32) {
@@ -84,6 +103,11 @@ class EndpointsV1
         return null;
     }
 
+    /**
+     * Updates the API endpoint paths to reflect the currently set base URL.
+     *
+     * @return void
+     */
     public static function updatePaths(): void
     {
         self::$REFRESH_TOKEN_PATH = self::$baseUrl . "/v1/auth/refresh";
@@ -139,6 +163,13 @@ class EndpointsV2
 {
     private static $baseUrl;
 
+    /**
+     * Set the base URL for API endpoints using the project ID.
+     * The project ID is used to determine the correct region-specific base URL.
+     *
+     * @param string $projectId The project ID for the Descope project.
+     * @return void
+     */
     public static function setBaseUrl(string $projectId): void
     {
         $region = EndpointsV1::extractRegionFromProjectId($projectId);
@@ -151,6 +182,11 @@ class EndpointsV2
         self::$baseUrl = "$urlPrefix." . DEFAULT_DOMAIN;
     }
 
+    /**
+     * Fetches the public JWK set path with the proper base url.
+     *
+     * @return string Returns the public key path of the JWK set.
+     */
     public static function getPublicKeyPath(): string
     {
         return self::$baseUrl . "/v2/keys";

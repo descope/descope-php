@@ -39,14 +39,25 @@
 
         async function handleLogin() {
             try {
-                // Wait for refresh to ensure token validity
+                console.log("Attempting to refresh the session...");
                 await sdk.refresh();
 
                 const sessionToken = sdk.getSessionToken();
+                console.log("Session token obtained:", sessionToken);
+
+                if (!sessionToken) {
+                    console.log("Session token is missing after refresh. Redirecting to login.");
+                    window.location.href = 'login.php'; // Redirect to login if session token is invalid
+                    return;
+                }
+
                 const user = await getUserDetails();
+                console.log("User details obtained:", user);
+
                 sendFormData(sessionToken, user.data);
             } catch (error) {
                 console.log("Error during login:", error);
+                window.location.href = 'login.php'; // Redirect to login on error
             }
         }
 
@@ -57,15 +68,17 @@
             console.log("Valid refresh token found. Logging in...");
             handleLogin();
         } else {
+            console.log("No valid refresh token. Displaying login form.");
             const container = document.getElementById("container")
             container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="sign-up-or-in"></descope-wc>';
             const wcElement = document.getElementsByTagName('descope-wc')[0];
 
             const onSuccess = async (e) => {
+                console.log("Login successful, handling login.");
                 await handleLogin(); // Wait for login and session details
             }
 
-            const onError = (err) => console.log(err);
+            const onError = (err) => console.log("Login error:", err);
 
             if (wcElement) {
                 wcElement.addEventListener('success', onSuccess);

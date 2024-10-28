@@ -20,18 +20,26 @@
 
     $descopeSDK = new DescopeSDK([
         'projectId' => $_ENV['DESCOPE_PROJECT_ID']
-    ]);
+    ]); 
 
-    if (isset($_POST["sessionToken"]) && $descopeSDK->verify($_POST["sessionToken"])) {
-        $_SESSION["user"] = json_decode($_POST["userDetails"], true);
-        $_SESSION["sessionToken"] = $_POST["sessionToken"];
-        
-        session_write_close();
-
-        // Redirect to dashboard
-        header('Location: dashboard.php');
-        exit();
+    if (isset($_POST["sessionToken"])) {
+        if ($descopeSDK->verify($_POST["sessionToken"])) {
+            $_SESSION["user"] = json_decode($_POST["userDetails"], true);
+            $_SESSION["sessionToken"] = $_POST["sessionToken"];
+            session_write_close();
+    
+            // Redirect to dashboard
+            header('Location: dashboard.php');
+            exit();
+        } else {
+            error_log("Session token verification failed.");
+            $descopeSDK->logout();
+            // Redirect to login page
+            header('Location: login.php');
+            exit();
+        }
     } else {
+        error_log("Session token is not set in POST request.");
         // Redirect to login page
         header('Location: login.php');
         exit();

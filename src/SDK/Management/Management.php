@@ -4,8 +4,17 @@ namespace Descope\SDK\Management;
 
 use Descope\SDK\API;
 
+/**
+ * Class Management
+ *
+ * Represents the management functionality for Descope, providing access to
+ * user management capabilities.
+ */
 class Management
 {
+    /**
+     * @var User The User management component.
+     */
     public User $user;
 
     /**
@@ -20,6 +29,8 @@ class Management
 
     /**
      * Get the User Management component.
+     *
+     * @return User The User management instance.
      */
     public function user(): User
     {

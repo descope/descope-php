@@ -10,6 +10,9 @@ use Descope\SDK\API;
 
 class SSO
 {
+    /**
+     * @var API The API object for making authenticated requests.
+     */
     private $api;
 
     /**
@@ -25,15 +28,15 @@ class SSO
     /**
      * SSO sign-in request.
      *
-     * @param  string|null $tenant       Tenant identifier.
-     * @param  string|null $redirectUrl  URL to redirect after authentication.
-     * @param  string|null $prompt       Prompt parameter.
-     * @param  bool        $stepup       Whether to perform step-up authentication.
-     * @param  bool        $mfa          Whether to enforce MFA.
-     * @param  array       $customClaims Custom claims to include in the token.
-     * @param  string|null $ssoAppId     SSO application identifier.
+     * @param string|null $tenant Tenant identifier.
+     * @param string|null $redirectUrl URL to redirect after authentication.
+     * @param string|null $prompt Prompt parameter.
+     * @param bool $stepup Whether to perform step-up authentication.
+     * @param bool $mfa Whether to enforce MFA.
+     * @param array $customClaims Custom claims to include in the token.
+     * @param string|null $ssoAppId SSO application identifier.
      * @return array Response array.
-     * @throws AuthException If tenant or redirect URL validation fails.
+     * @throws AuthException
      */
     public function signIn(?string $tenant = null, ?string $redirectUrl = null, ?string $prompt = null, bool $stepup = false, bool $mfa = false, array $customClaims = [], ?string $ssoAppId = null): array
     {
@@ -58,7 +61,7 @@ class SSO
     /**
      * Exchanges SSO code for authentication.
      *
-     * @param  string|null $code The exchange code.
+     * @param string|null $code The exchange code.
      * @return array Response array.
      */
     public function exchangeToken(?string $code = null): array
@@ -74,9 +77,9 @@ class SSO
     /**
      * Composes the SSO sign-in URL.
      *
-     * @param  string|null $tenant      Tenant identifier.
-     * @param  string|null $redirectUrl Redirect URL.
-     * @param  string|null $prompt      Prompt parameter.
+     * @param string|null $tenant Tenant identifier.
+     * @param string|null $redirectUrl Redirect URL.
+     * @param string|null $prompt Prompt parameter.
      * @return string Composed URL.
      */
     private function composeSignInUrl(?string $tenant, ?string $redirectUrl, ?string $prompt): string
@@ -101,8 +104,8 @@ class SSO
     /**
      * Validates the tenant parameter.
      *
-     * @param  string|null $tenant The tenant identifier.
-     * @throws AuthException If the tenant is invalid.
+     * @param string|null $tenant The tenant identifier.
+     * @throws AuthException 
      */
     private function validateTenant(?string $tenant): void
     {
@@ -114,8 +117,8 @@ class SSO
     /**
      * Validates the redirect URL parameter.
      *
-     * @param  string|null $redirectUrl The redirect URL.
-     * @throws AuthException If the redirect URL is invalid.
+     * @param string|null $redirectUrl The redirect URL.
+     * @throws AuthException
      */
     private function validateRedirectUrl(?string $redirectUrl): void
     {

@@ -5,12 +5,20 @@ namespace Descope\SDK\Management;
 
 use Descope\SDK\EndpointsV1;
 
+
 const DEFAULT_URL_PREFIX = "https://api";
 const DEFAULT_DOMAIN = "descope.com";
 
 class MgmtV1
 {
+    /**
+     * Base URL for the Descope API.
+     *
+     * @var string
+     */
     public static string $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+
+    // Paths for various management operations
     public static string $TEMPLATE_EXPORT_PATH;
     public static string $TEMPLATE_IMPORT_PATH;
     public static string $FLOW_EXPORT_PATH;
@@ -89,6 +97,12 @@ class MgmtV1
     public static string $TENANT_UPDATE_PATH;
     public static string $TENANT_CREATE_PATH;
 
+    /**
+     * Sets the base URL based on the project ID, taking into account the region.
+     *
+     * @param string $projectId The project ID for determining the region.
+     * @return void
+     */
     public static function setBaseUrl(string $projectId): void
     {
         $region = self::extractRegionFromProjectId($projectId);
@@ -102,6 +116,12 @@ class MgmtV1
         self::updatePaths();
     }
 
+    /**
+     * Extracts the region from a given project ID.
+     *
+     * @param string $projectId The project ID to extract the region from.
+     * @return string|null The extracted region or null if not found.
+     */
     private static function extractRegionFromProjectId(string $projectId): ?string
     {
         if (strlen($projectId) >= 32) {
@@ -111,6 +131,11 @@ class MgmtV1
         return null;
     }
 
+    /**
+     * Updates all API endpoint paths based on the current base URL.
+     *
+     * @return void
+     */
     private static function updatePaths(): void
     {
         // Tenant
@@ -210,13 +235,39 @@ class MgmtV1
     }
 }
 
+/**
+ * Class representing login options for various authentication methods.
+ */
 class LoginOptions
 {
+    /**
+     * @var bool Indicates if step-up authentication is required.
+     */
     public bool $stepup;
+
+    /**
+     * @var bool Indicates if MFA is required.
+     */
     public bool $mfa;
+
+    /**
+     * @var array|null Custom claims to include in the JWT.
+     */
     public ?array $customClaims;
+
+    /**
+     * @var array|null Options for templates.
+     */
     public ?array $templateOptions;
 
+    /**
+     * Constructor for the LoginOptions class.
+     *
+     * @param bool $stepup Whether step-up is required.
+     * @param bool $mfa Whether MFA is required.
+     * @param array|null $customClaims Additional custom claims for the JWT.
+     * @param array|null $templateOptions Options for templates.
+     */
     public function __construct(
         bool $stepup = false,
         bool $mfa = false,
@@ -229,17 +280,25 @@ class LoginOptions
         $this->templateOptions = $templateOptions;
     }
 
-    public function toArray()
+    /**
+     * Converts the LoginOptions object to an array.
+     *
+     * @return array The array representation of the login options.
+     */
+    public function toArray(): array
     {
         return [
             'stepup' => $this->stepup,
             'mfa' => $this->mfa,
             'customClaims' => $this->customClaims,
-            'templateOptions' => $this->templateOptions
+            'templateOptions' => $this->templateOptions,
         ];
     }
 }
 
+/**
+ * Class representing different delivery methods for authentication.
+ */
 class DeliveryMethod
 {
     public const WHATSAPP = 1;
@@ -248,43 +307,42 @@ class DeliveryMethod
     public const EMBEDDED = 4;
     public const VOICE = 5;
 
+    /**
+     * @var int The delivery method value.
+     */
     private int $value;
 
+    /**
+     * Constructor for the DeliveryMethod class.
+     *
+     * @param int $value The delivery method value.
+     */
     private function __construct(int $value)
     {
         $this->value = $value;
     }
 
-    public static function WHATSAPP(): self
-    {
-        return new self(self::WHATSAPP);
-    }
+    public static function WHATSAPP(): self { return new self(self::WHATSAPP); }
+    public static function SMS(): self { return new self(self::SMS); }
+    public static function EMAIL(): self { return new self(self::EMAIL); }
+    public static function EMBEDDED(): self { return new self(self::EMBEDDED); }
+    public static function VOICE(): self { return new self(self::VOICE); }
 
-    public static function SMS(): self
-    {
-        return new self(self::SMS);
-    }
-
-    public static function EMAIL(): self
-    {
-        return new self(self::EMAIL);
-    }
-
-    public static function EMBEDDED(): self
-    {
-        return new self(self::EMBEDDED);
-    }
-
-    public static function VOICE(): self
-    {
-        return new self(self::VOICE);
-    }
-
+    /**
+     * Gets the value of the delivery method.
+     *
+     * @return int The delivery method value.
+     */
     public function getValue(): int
     {
         return $this->value;
     }
 
+    /**
+     * Converts the delivery method to a string.
+     *
+     * @return string The string representation of the delivery method.
+     */
     public function __toString(): string
     {
         return (string) $this->value;
