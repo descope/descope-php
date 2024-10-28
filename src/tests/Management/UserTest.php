@@ -170,7 +170,6 @@ class UserTest extends TestCase
             false,
             ["additionalLoginId1"]
         );
-        print("Hello!");
         $this->assertTrue(true);
     }
 

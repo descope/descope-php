@@ -62,7 +62,7 @@ class API
                 if (is_array($value)) {
                     // If the array is empty, ensure it's preserved as an empty array
                     if (empty($value)) {
-                        $value = [];
+                        $value = new \stdClass();
                     } else {
                         // Recur for non-empty arrays
                         $value = $this->transformEmptyArraysToObjects($value);
