@@ -24,8 +24,8 @@ class UserPasswordTest extends TestCase
     protected function setUp(): void
     {
         $config = [
-            'projectId' => 'P2OkfVnJi5Ht7mpCqHjx17nV5epH',
-            'managementKey' => 'K2nmY9zuewgPZpRpTAmGW6hlBYYp6EiZfXeMkJyHDg89NOpobIlMbSZzb388BiilhPfg04l',
+            'projectId' => 'YOUR_PROJECT_ID',
+            'managementKey' => 'YOUR_MANAGEMENT_KEY',
         ];
 
         $this->descopeSDK = new DescopeSDK($config);
