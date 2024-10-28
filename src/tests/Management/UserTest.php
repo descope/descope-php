@@ -260,5 +260,3 @@ class UserPasswordTest extends TestCase
         print_r($response);
     }
 }
-
-

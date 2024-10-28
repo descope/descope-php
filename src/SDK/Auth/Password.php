@@ -57,7 +57,7 @@ class Password
      * @param  string $loginId  Login ID of the user.
      * @param  string $password Password of the user.
      * @return array JWT response array.
-     * @throws AuthException 
+     * @throws AuthException
      */
     public function signIn(string $loginId, string $password): array
     {
