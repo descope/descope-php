@@ -58,7 +58,7 @@ class DescopeSDK
      */
     public function verify($sessionToken = null)
     {
-        $sessionToken = $sessionToken ?? $_COOKIE[SESSION_COOKIE] ?? null;
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME_NAME] ?? null;
 
         if (!$sessionToken) {
             throw new \InvalidArgumentException('Session token is required.');
@@ -77,7 +77,7 @@ class DescopeSDK
      */
     public function refreshSession($refreshToken = null)
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[REFRESH_COOKIE] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
             throw new \InvalidArgumentException('Refresh token is required.');
@@ -97,8 +97,8 @@ class DescopeSDK
      */
     public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null)
     {
-        $sessionToken = $sessionToken ?? $_COOKIE[SESSION_COOKIE] ?? null;
-        $refreshToken = $refreshToken ?? $_COOKIE[REFRESH_COOKIE] ?? null;
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$sessionToken || !$refreshToken) {
             throw new \InvalidArgumentException('Session token and refresh token are required.');
@@ -117,7 +117,7 @@ class DescopeSDK
      */
     public function getClaims($token = null)
     {
-        $token = $token ?? $_COOKIE[SESSION_COOKIE] ?? null;
+        $token = $token ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
         if (!$token) {
             throw new \InvalidArgumentException('Token is required.');
@@ -136,7 +136,7 @@ class DescopeSDK
      */
     public function getUserDetails(string $refreshToken = null)
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[REFRESH_COOKIE] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
             throw new \InvalidArgumentException('Refresh token is required.');
@@ -158,7 +158,7 @@ class DescopeSDK
      */
     public function logout(string $refreshToken = null): void
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[REFRESH_COOKIE] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
             throw new \InvalidArgumentException('Refresh token is required.');
@@ -181,7 +181,7 @@ class DescopeSDK
      */
     public function logoutAll(string $refreshToken = null): void
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[REFRESH_COOKIE] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
             throw new \InvalidArgumentException('Refresh token is required.');

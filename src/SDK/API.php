@@ -17,14 +17,6 @@ class API
     private $projectId;
     private $managementKey;
 
-    const SESSION_TOKEN_NAME = 'sessionToken';
-    const REFRESH_SESSION_TOKEN_NAME = 'refreshSessionToken';
-    const COOKIE_DATA_NAME = 'cookieData';
-
-    const SESSION_COOKIE_NAME = "DS";
-    const REFRESH_SESSION_COOKIE_NAME = "DSR";
-    const REDIRECT_LOCATION_COOKIE_NAME = "Location";
-
     /**
      * Constructor for API class.
      *
@@ -244,21 +236,21 @@ class API
         $stJwt = $responseBody['sessionJwt'] ?? '';
 
         if ($stJwt) {
-            $jwtResponse[self::SESSION_TOKEN_NAME] = $stJwt;
+            $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME] = $stJwt;
         }
         
         $rtJwt = $responseBody['refreshJwt'] ?? '';
 
         if ($refreshToken) {
-            $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME] = $refreshToken;
+            $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME] = $refreshToken;
         } elseif ($rtJwt) {
-            $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME] = $rtJwt;
+            $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME] = $rtJwt;
         }
 
         $jwtResponse = $this->adjustProperties($jwtResponse, $userJwt);
 
         if ($userJwt) {
-            $jwtResponse[self::COOKIE_DATA_NAME] = [
+            $jwtResponse[EndpointsV1::COOKIE_DATA_NAME] = [
                 'exp' => $responseBody['cookieExpiration'] ?? 0,
                 'maxAge' => $responseBody['cookieMaxAge'] ?? 0,
                 'domain' => $responseBody['cookieDomain'] ?? '',
@@ -271,29 +263,29 @@ class API
 
     private function adjustProperties(array $jwtResponse, bool $userJwt): array
     {
-        if (isset($jwtResponse[self::SESSION_TOKEN_NAME])) {
-            $jwtResponse['permissions'] = $jwtResponse[self::SESSION_TOKEN_NAME]['permissions'] ?? [];
-            $jwtResponse['roles'] = $jwtResponse[self::SESSION_TOKEN_NAME]['roles'] ?? [];
-            $jwtResponse['tenants'] = $jwtResponse[self::SESSION_TOKEN_NAME]['tenants'] ?? [];
-        } elseif (isset($jwtResponse[self::REFRESH_SESSION_TOKEN_NAME])) {
-            $jwtResponse['permissions'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['permissions'] ?? [];
-            $jwtResponse['roles'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['roles'] ?? [];
-            $jwtResponse['tenants'] = $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['tenants'] ?? [];
+        if (isset($jwtResponse[EndpointsV1::SESSION_TOKEN_NAME])) {
+            $jwtResponse['permissions'] = $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME]['permissions'] ?? [];
+            $jwtResponse['roles'] = $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME]['roles'] ?? [];
+            $jwtResponse['tenants'] = $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME]['tenants'] ?? [];
+        } elseif (isset($jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME])) {
+            $jwtResponse['permissions'] = $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME]['permissions'] ?? [];
+            $jwtResponse['roles'] = $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME]['roles'] ?? [];
+            $jwtResponse['tenants'] = $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME]['tenants'] ?? [];
         } else {
             $jwtResponse['permissions'] = $jwtResponse['permissions'] ?? [];
             $jwtResponse['roles'] = $jwtResponse['roles'] ?? [];
             $jwtResponse['tenants'] = $jwtResponse['tenants'] ?? [];
         }
 
-        $issuer = $jwtResponse[self::SESSION_TOKEN_NAME]['iss'] ??
-                  $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['iss'] ??
+        $issuer = $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME]['iss'] ??
+                  $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME]['iss'] ??
                   $jwtResponse['iss'] ?? '';
 
         $issuerParts = explode("/", $issuer);
         $jwtResponse['projectId'] = end($issuerParts);
 
-        $sub = $jwtResponse[self::SESSION_TOKEN_NAME]['sub'] ??
-               $jwtResponse[self::REFRESH_SESSION_TOKEN_NAME]['sub'] ??
+        $sub = $jwtResponse[EndpointsV1::SESSION_TOKEN_NAME]['sub'] ??
+               $jwtResponse[EndpointsV1::REFRESH_TOKEN_NAME]['sub'] ??
                $jwtResponse['sub'] ?? '';
 
         if ($userJwt) {

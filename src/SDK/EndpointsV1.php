@@ -12,6 +12,11 @@ const DEFAULT_TIMEOUT_SECONDS = 60;
 const SESSION_COOKIE = "DS";
 const REFRESH_COOKIE = "DSR";
 
+const SESSION_TOKEN = "sessionToken";
+const REFRESH_TOKEN = "refreshSessionToken";
+
+const REDIRECT_LOCATION_NAME = "Location";
+
 const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?){0,}((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$/';
 
 class EndpointsV1
@@ -20,6 +25,11 @@ class EndpointsV1
 
     public static $SESSION_COOKIE_NAME = SESSION_COOKIE;
     public static $REFRESH_COOKIE_NAME = REFRESH_COOKIE;
+
+    public static $SESSION_TOKEN_NAME = SESSION_TOKEN;
+    public static $REFRESH_TOKEN_NAME = REFRESH_TOKEN;
+
+    public static $REDIRECT_LOCATION_COOKIE_NAME = REDIRECT_LOCATION_NAME;
 
     public static $REFRESH_TOKEN_PATH;
     public static $SELECT_TENANT_PATH;
