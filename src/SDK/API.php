@@ -88,7 +88,7 @@ class API
      * @param  array  $body             Request body.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|JsonException If the request fails.
+     * @throws AuthException|GuzzleException|\JsonException If the request fails.
      */
     public function doPost(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
@@ -141,7 +141,7 @@ class API
      * @param  string $uri              URI endpoint.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|JsonException If the request fails.
+     * @throws AuthException|GuzzleException|\JsonException If the request fails.
      */
     public function doGet(string $uri, bool $useManagementKey, ?string $refreshToken = null): array
     {
