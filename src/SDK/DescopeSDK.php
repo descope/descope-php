@@ -25,7 +25,7 @@ class DescopeSDK
     /**
      * Constructor for DescopeSDK class.
      *
-     * @param SDKConfig $config Base configuration options for the SDK.
+     * @param array $config Base configuration options for the SDK.
      */
     public function __construct(array $config)
     {
@@ -49,53 +49,97 @@ class DescopeSDK
         $this->sso = new SSO($this->api);
     }
 
-    /**
-     * Verify if the JWT is valid and not expired.
-     */
-    public function verify($sessionToken)
+     /**
+      * Verify if the JWT is valid and not expired.
+      *
+      * @param  string|null $sessionToken The session token to verify.
+      * @return bool Verification result.
+      * @throws AuthException
+      */
+    public function verify($sessionToken = null)
     {
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME_NAME] ?? null;
+
+        if (!$sessionToken) {
+            throw new \InvalidArgumentException('Session token is required.');
+        }
+
         $verifier = new Verifier($this->config);
         return $verifier->verify($sessionToken);
     }
 
     /**
-     * Refresh session token with refresh token.
+     * Refresh session token using the refresh token.
+     *
+     * @param  string|null $refreshToken The refresh token to use.
+     * @return array The new session information.
+     * @throws AuthException
      */
-    public function refreshSession($refreshToken)
+    public function refreshSession($refreshToken = null)
     {
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$refreshToken) {
+            throw new \InvalidArgumentException('Refresh token is required.');
+        }
+
         $verifier = new Verifier($this->config);
         return $verifier->refreshSession($refreshToken);
     }
 
     /**
-     * Verify if the JWT is valid and not expired.
+     * Verify and refresh the session using session and refresh tokens.
+     *
+     * @param  string|null $sessionToken The session token.
+     * @param  string|null $refreshToken The refresh token.
+     * @return array The refreshed session information.
+     * @throws AuthException
      */
-    public function verifyAndRefreshSession($sessionToken, $refreshToken)
+    public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null)
     {
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$sessionToken || !$refreshToken) {
+            throw new \InvalidArgumentException('Session token and refresh token are required.');
+        }
+
         $verifier = new Verifier($this->config);
         return $verifier->verifyAndRefreshSession($sessionToken, $refreshToken);
     }
 
     /**
-     * Returns the JWT claims, if the JWT is valid.
+     * Get the JWT claims if the token is valid.
+     *
+     * @param  string|null $token The token to extract claims from.
+     * @return array The JWT claims.
+     * @throws AuthException
      */
-    public function getClaims($token)
+    public function getClaims($token = null)
     {
+        $token = $token ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
+
+        if (!$token) {
+            throw new \InvalidArgumentException('Token is required.');
+        }
+
         $extractor = new Extractor($this->config);
         return $extractor->getClaims($token);
     }
 
     /**
-     * Returns the user details, using the refresh token.
+     * Retrieve user details using the refresh token.
      *
-     * @param  string $refreshToken The refresh token of the user.
-     * @return void
-     * @throws AuthException if the logout operation fails.
+     * @param  string|null $refreshToken The refresh token of the user.
+     * @return array The user details.
+     * @throws AuthException
      */
-    public function getUserDetails(string $refreshToken)
+    public function getUserDetails(string $refreshToken = null)
     {
-        if (empty(EndpointsV1::$ME_PATH)) {
-            throw new \RuntimeException('ME_PATH is not initialized.');
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$refreshToken) {
+            throw new \InvalidArgumentException('Refresh token is required.');
         }
 
         return $this->api->doGet(
@@ -106,16 +150,18 @@ class DescopeSDK
     }
 
     /**
-     * Logout a user from all devices.
+     * Logout a user using the refresh token.
      *
-     * @param  string $refreshToken The refresh token of the user.
+     * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException if the logout operation fails.
+     * @throws AuthException
      */
-    public function logout(string $refreshToken): void
+    public function logout(string $refreshToken = null): void
     {
-        if (empty(EndpointsV1::$LOGOUT_PATH)) {
-            throw new \RuntimeException('ME_PATH is not initialized.');
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$refreshToken) {
+            throw new \InvalidArgumentException('Refresh token is required.');
         }
 
         $this->api->doPost(
@@ -127,14 +173,20 @@ class DescopeSDK
     }
 
     /**
-     * Logout a user from all devices.
+     * Logout a user from all devices using the refresh token.
      *
-     * @param  string $refreshToken The refresh token of the user.
+     * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException if the logout operation fails.
+     * @throws AuthException
      */
-    public function logoutAll(string $refreshToken): void
+    public function logoutAll(string $refreshToken = null): void
     {
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$refreshToken) {
+            throw new \InvalidArgumentException('Refresh token is required.');
+        }
+
         $this->api->doPost(
             EndpointsV1::LOGOUT_ALL_PATH,
             [],
@@ -145,6 +197,8 @@ class DescopeSDK
 
     /**
      * Get the Password component.
+     *
+     * @return Password The Password instance.
      */
     public function password(): Password
     {
@@ -153,6 +207,8 @@ class DescopeSDK
 
     /**
      * Get the SSO component.
+     *
+     * @return SSO The SSO instance.
      */
     public function sso(): SSO
     {
@@ -161,6 +217,8 @@ class DescopeSDK
 
     /**
      * Get the Management component.
+     *
+     * @return Management The Management instance.
      */
     public function management(): Management
     {
