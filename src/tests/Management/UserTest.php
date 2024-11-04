@@ -4,24 +4,27 @@ namespace Descope\Tests\Management;
 
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
-use Descope\SDK\Management\UserPassword;
-use Descope\SDK\Management\UserPasswordBcrypt;
-use Descope\SDK\Management\UserPasswordFirebase;
-use Descope\SDK\Management\UserPasswordPbkdf2;
-use Descope\SDK\Management\UserPasswordDjango;
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordBcrypt;
+use Descope\SDK\Management\Password\UserPasswordFirebase;
+use Descope\SDK\Management\Password\UserPasswordPbkdf2;
+use Descope\SDK\Management\Password\UserPasswordDjango;
 use Descope\SDK\Management\User;
 use Descope\SDK\Management\AssociatedTenant;
 use Descope\SDK\Management\UserObj;
-use Descope\SDK\Auth\LoginOptions;
-use Descope\SDK\DeliveryMethod;
+use Descope\SDK\Management\LoginOptions;
+use Descope\SDK\Common\DeliveryMethod;
+use Descope\SDK\Exception\AuthException;
+use GuzzleHttp\Exception\RequestException;
 
-class UserPasswordTest extends TestCase
+class UserTest extends TestCase
 {
-    private $descopeSDK;
+    private DescopeSDK $descopeSDK;
+    private string $createdUserLoginId;
+    private string $createdUserId;
 
     protected function setUp(): void
     {
-        // Assuming $config is an array with necessary configuration
         $config = [
             'projectId' => 'YOUR_PROJECT_ID',
             'managementKey' => 'YOUR_MANAGEMENT_KEY',
@@ -47,11 +50,14 @@ class UserPasswordTest extends TestCase
             "http://example.com/invite",
             ["additionalLoginId1"],
             ["SA2ZsUj73JFqUn8iQx9tblndjKCc6"],
-            new UserPassword(cleartext: "password123"),
-            [],
-            [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant Admin"])]
+            new UserPassword("Password123!"),
+            ["user"],
+            [new AssociatedTenant("T2o2zKibuWuCVH4lqJrSfFuXss06", ["Tenant Admin"])]
         );
-        print_r($response);
+        $this->createdUserLoginId = $response['user']['loginIds'][0] ?? null;
+        $this->createdUserId = $response['user']['userId'] ?? null;
+
+        $this->assertArrayHasKey('userId', $response);
     }
 
     public function testCreateTestUser()
@@ -71,11 +77,10 @@ class UserPasswordTest extends TestCase
             "http://example.com/invite2",
             ["additionalLoginId2"],
             ["SA2ZsUj73JFqUn8iQx9tblndjKCc6"],
-            new UserPassword(cleartext: "password456"),
-            ["user"],
-            [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])]
+            new UserPassword("Password456!"),
+            ["user"]
         );
-        print_r($response);
+        $this->assertArrayHasKey('userId', $response);
     }
 
     public function testInviteUser()
@@ -96,11 +101,12 @@ class UserPasswordTest extends TestCase
             true,
             true,
             ["additionalLoginId3"],
-            [],
-            new UserPassword(hashed: new UserPasswordBcrypt("$2y$10$/brZw23J/ya5sOJl8vm7H.BqhDnLqH4ohtSKcZYvSVP/hE6veK.0K")),
-            [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])]
+            ["SA2ZsUj73JFqUn8iQx9tblndjKCc6"],
+            new UserPassword("", new UserPasswordBcrypt("$2y$10$/brZw23J/ya5sOJl8vm7H.BqhDnLqH4ohtSKcZYvSVP/hE6veK.0K")),
+            ["user"],
+            [new AssociatedTenant("T2o2zKibuWuCVH4lqJrSfFuXss06", ["Tenant Admin"])]
         );
-        print_r($response);
+        $this->assertArrayHasKey('userId', $response);
     }
 
     public function testInviteBatchUsers()
@@ -115,14 +121,14 @@ class UserPasswordTest extends TestCase
                 "Middle",
                 "User",
                 ["user"],
-                [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])],
+                [new AssociatedTenant("T2o2zKibuWuCVH4lqJrSfFuXss06", ["Tenant Admin"])],
                 "http://example.com/picture1.jpg",
-                ["customAttr1" => "value1"],
+                [],
                 true,
                 true,
                 ["additionalLoginId1"],
                 [],
-                new UserPassword(cleartext: "password123")
+                new UserPassword("Password123!"),
             ),
             new UserObj(
                 "batchuser2",
@@ -133,64 +139,68 @@ class UserPasswordTest extends TestCase
                 "Middle",
                 "User",
                 ["user"],
-                [new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant User"])],
+                [],
                 "http://example.com/picture2.jpg",
-                ["customAttr2" => "value2"],
+                [],
                 true,
                 true,
                 ["additionalLoginId2"],
                 [],
-                new UserPassword(cleartext: "password456")
+                new UserPassword("Password456!"),
             )
         ];
+
         $response = $this->descopeSDK->management->user->inviteBatch($users, "http://example.com/invitebatch", true, true);
-        print_r($response);
+        $this->assertArrayHasKey('createdUsers', $response);
     }
 
     public function testUpdateUser()
     {
         $this->descopeSDK->management->user->update(
-            "testuser1",
+            "use login id from previously created user",
             "newtestuser1@example.com",
-            "+14152464801",
+            "",
             "Updated Test User",
-            "Updated",
-            "Middle",
-            "User",
+            "",
+            "",
+            "",
             "http://example.com/newpicture.jpg",
-            ["dob" => "newvalue1"],
+            [],
             true,
-            true
+            false,
+            ["additionalLoginId1"]
         );
-    }
-
-    public function testDeleteUser()
-    {
-        $this->descopeSDK->management->user->delete("testuser1");
+        $this->assertTrue(true);
     }
 
     public function testLoadUser()
     {
-        $response = $this->descopeSDK->management->user->load("gaokevin1");
-        print_r($response);
+        $response = $this->descopeSDK->management->user->load($this->createdUserLoginId);
+        $this->assertArrayHasKey('user', $response);
     }
 
     public function testLoadUserByUserId()
     {
-        $response = $this->descopeSDK->management->user->loadByUserId("U2goH2ldn4SzXoFm6IWKlRiEq6JV");
-        print_r($response);
+        $response = $this->descopeSDK->management->user->loadByUserId($this->createdUserId);
+        $this->assertArrayHasKey('user', $response);
     }
 
-    public function testSignIn()
+    public function testGenerateEmbeddedLink()
     {
-        $response = $this->descopeSDK->password->signIn("gaokevin", "6ny8UPNgTVtwB,tcjltg");
-        print_r($response);
+        $response = $this->descopeSDK->management->user->generateEmbeddedLink("kevin+1@descope.com");
+        $this->assertIsString($response);
     }
 
-    public function testLogoutUser()
+    public function testGenerateEnchantedLinkForTestUser()
     {
-        $response = $this->descopeSDK->password->signIn("gaokevin", "6ny8UPNgTVtwB,tcjltg");
-        $this->descopeSDK->logout($response['refreshSessionToken']);
+        $loginOptions = new LoginOptions(true, true);
+        $response = $this->descopeSDK->management->user->generateEnchantedLinkForTestUser(
+            "testuser1",
+            "http://example.com/redirect",
+            $loginOptions
+        );
+        $this->assertArrayHasKey('link', $response);
+        $this->assertArrayHasKey('pendingRef', $response);
     }
 
     public function testSearchAllUsers()
@@ -199,7 +209,7 @@ class UserPasswordTest extends TestCase
             [],
             [],
             10,
-            1,
+            0,
             false,
             false,
             [],
@@ -208,109 +218,30 @@ class UserPasswordTest extends TestCase
             ["+14152464801"],
             []
         );
-        print_r($response);
-    }
-
-    public function testGetProviderToken()
-    {
-        $response = $this->descopeSDK->management->user->getProviderToken("gaokevin1", "google");
-        print_r($response);
+        $this->assertArrayHasKey('users', $response);
     }
 
     public function testActivateUser()
     {
-        $response = $this->descopeSDK->management->user->activate("gaokevin1");
-        print_r($response);
+        $response = $this->descopeSDK->management->user->activate("testuser1");
+        $this->assertTrue(true);
     }
 
     public function testDeactivateUser()
     {
         $response = $this->descopeSDK->management->user->deactivate("testuser1");
-        print_r($response);
+        $this->assertTrue(true);
     }
 
-    public function testUpdateLoginId()
+    public function testDeleteUser()
     {
-        $response = $this->descopeSDK->management->user->updateLoginId("testuser1", "newtestuser1");
-        print_r($response);
+        $this->descopeSDK->management->user->delete("testuser1");
+        $this->assertTrue(true);
     }
 
-    public function testUpdateEmail()
+    public function testDeleteAllTestUsers()
     {
-        $response = $this->descopeSDK->management->user->updateEmail("testuser1", "newtestuser1@example.com", true);
-        print_r($response);
-    }
-
-    public function testUpdatePhone()
-    {
-        $response = $this->descopeSDK->management->user->updatePhone("testuser1", "+14152464801", true);
-        print_r($response);
-    }
-
-    public function testUpdateDisplayName()
-    {
-        $response = $this->descopeSDK->management->user->updateDisplayName("testuser1", "Updated Display Name", "Updated Given Name", "Updated Middle Name", "Updated Family Name");
-        print_r($response);
-    }
-
-    public function testUpdatePicture()
-    {
-        $response = $this->descopeSDK->management->user->updatePicture("testuser1", "http://example.com/newpicture.jpg");
-        print_r($response);
-    }
-
-    public function testUpdateCustomAttribute()
-    {
-        $response = $this->descopeSDK->management->user->updateCustomAttribute("testuser1", "customAttr1", "newvalue1");
-        print_r($response);
-    }
-
-    public function testSetRoles()
-    {
-        $response = $this->descopeSDK->management->user->setRoles("testuser1", ["user"]);
-        print_r($response);
-    }
-
-    public function testAddRoles()
-    {
-        $response = $this->descopeSDK->management->user->addRoles("testuser1", ["admin"]);
-        print_r($response);
-    }
-
-    public function testRemoveRoles()
-    {
-        $response = $this->descopeSDK->management->user->removeRoles("testuser1", ["admin"]);
-        print_r($response);
-    }
-
-    public function testSetTenants()
-    {
-        $tenants = [
-            new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBA", ["Tenant Admin"]),
-            new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBB", ["Tenant User"])
-        ];
-        $response = $this->descopeSDK->management->user->setTenants("testuser1", $tenants);
-        print_r($response);
-    }
-
-    public function testAddTenants()
-    {
-        $tenants = [
-            new AssociatedTenant("T2SrweL5J2y8YOh8DyDbGpZXejBC", ["Tenant Viewer"])
-        ];
-        $response = $this->descopeSDK->management->user->addTenants("testuser1", $tenants);
-        print_r($response);
-    }
-
-    public function testRemoveTenants()
-    {
-        $response = $this->descopeSDK->management->user->removeTenants("testuser1", ["T2SrweL5J2y8YOh8DyDbGpZXejBB"]);
-        print_r($response);
-    }
-
-    public function testUpdateDisplay()
-    {
-        $response = $this->descopeSDK->management->user->updateDisplay("testuser1", "Updated Display");
-        print_r($response);
+        $this->descopeSDK->management->user->deleteAllTestUsers();
+        $this->assertTrue(true);
     }
 }

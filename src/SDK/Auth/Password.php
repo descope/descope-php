@@ -10,6 +10,9 @@ use Descope\SDK\API;
 
 class Password
 {
+    /**
+     * @var API The API object for making authenticated requests.
+     */
     private $api;
 
     /**
@@ -29,7 +32,7 @@ class Password
      * @param  string     $password Password for the new user.
      * @param  array|null $user     Optional user details.
      * @return array JWT response array.
-     * @throws AuthException If login ID or password is empty.
+     * @throws AuthException
      */
     public function signUp(string $loginId, string $password, ?array $user = null, ?array $loginOptions = null): array
     {
@@ -54,7 +57,7 @@ class Password
      * @param  string $loginId  Login ID of the user.
      * @param  string $password Password of the user.
      * @return array JWT response array.
-     * @throws AuthException If login ID or password is empty.
+     * @throws AuthException
      */
     public function signIn(string $loginId, string $password): array
     {
@@ -78,7 +81,7 @@ class Password
      * @param  string|null $redirectUrl     Optional redirect URL.
      * @param  array|null  $templateOptions Optional template options.
      * @return array Response array.
-     * @throws AuthException If login ID is empty.
+     * @throws AuthException
      */
     public function sendReset(string $loginId, ?string $redirectUrl = null, ?array $templateOptions = null): array
     {
@@ -104,7 +107,7 @@ class Password
      *
      * @param  string $loginId     Login ID of the user.
      * @param  string $newPassword New password for the user.
-     * @throws AuthException If login ID, new password, or refresh token is empty.
+     * @throws AuthException
      */
     public function update(string $loginId, string $newPassword, string $refreshToken): void
     {
@@ -131,7 +134,7 @@ class Password
      * @param  string $oldPassword Old password of the user.
      * @param  string $newPassword New password for the user.
      * @return array JWT response array.
-     * @throws AuthException If login ID, old password, or new password is empty.
+     * @throws AuthException
      */
     public function replace(string $loginId, string $oldPassword, string $newPassword): array
     {

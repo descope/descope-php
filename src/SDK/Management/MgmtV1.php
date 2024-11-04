@@ -10,8 +10,100 @@ const DEFAULT_DOMAIN = "descope.com";
 
 class MgmtV1
 {
-    private static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
+    /**
+     * Base URL for the Descope API.
+     *
+     * @var string
+     */
+    public static string $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
 
+    // Paths for various management operations
+    public static string $TEMPLATE_EXPORT_PATH;
+    public static string $TEMPLATE_IMPORT_PATH;
+    public static string $FLOW_EXPORT_PATH;
+    public static string $FLOW_DELETE_PATH;
+    public static string $FLOW_LIST_PATH;
+    public static string $ROLE_SEARCH_PATH;
+    public static string $ROLE_LOAD_ALL_PATH;
+    public static string $ROLE_DELETE_PATH;
+    public static string $ROLE_UPDATE_PATH;
+    public static string $ROLE_CREATE_PATH;
+    public static string $PERMISSION_LOAD_ALL_PATH;
+    public static string $PERMISSION_DELETE_PATH;
+    public static string $PERMISSION_UPDATE_PATH;
+    public static string $PERMISSION_CREATE_PATH;
+    public static string $IMPERSONATE_PATH;
+    public static string $UPDATE_JWT_PATH;
+    public static string $SSO_CONFIGURE_SAML_BY_METADATA_SETTINGS;
+    public static string $SSO_CONFIGURE_SAML_SETTINGS;
+    public static string $SSO_CONFIGURE_OIDC_SETTINGS;
+    public static string $SSO_LOAD_SETTINGS_PATH;
+    public static string $SSO_MAPPING_PATH;
+    public static string $SSO_METADATA_PATH;
+    public static string $SSO_SETTINGS_PATH;
+    public static string $ACCESS_KEY_DELETE_PATH;
+    public static string $ACCESS_KEY_ACTIVATE_PATH;
+    public static string $ACCESS_KEY_DEACTIVATE_PATH;
+    public static string $ACCESS_KEY_UPDATE_PATH;
+    public static string $ACCESS_KEYS_SEARCH_PATH;
+    public static string $ACCESS_KEY_LOAD_PATH;
+    public static string $ACCESS_KEY_CREATE_PATH;
+    public static string $USER_HISTORY_PATH;
+    public static string $USER_GENERATE_EMBEDDED_LINK_PATH;
+    public static string $USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH;
+    public static string $USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH;
+    public static string $USER_GENERATE_OTP_FOR_TEST_PATH;
+    public static string $USER_REMOVE_TENANT_PATH;
+    public static string $USER_ADD_TENANT_PATH;
+    public static string $USER_REMOVE_ALL_PASSKEYS_PATH;
+    public static string $USER_EXPIRE_PASSWORD_PATH;
+    public static string $USER_SET_ACTIVE_PASSWORD_PATH;
+    public static string $USER_SET_TEMPORARY_PASSWORD_PATH;
+    public static string $USER_SET_PASSWORD_PATH;
+    public static string $USER_REMOVE_SSO_APPS;
+    public static string $USER_SET_SSO_APPS;
+    public static string $USER_ADD_SSO_APPS;
+    public static string $USER_REMOVE_ROLE_PATH;
+    public static string $USER_ADD_ROLE_PATH;
+    public static string $USER_SET_ROLE_PATH;
+    public static string $USER_UPDATE_CUSTOM_ATTRIBUTE_PATH;
+    public static string $USER_UPDATE_PICTURE_PATH;
+    public static string $USER_UPDATE_NAME_PATH;
+    public static string $USER_UPDATE_PHONE_PATH;
+    public static string $USER_UPDATE_EMAIL_PATH;
+    public static string $USER_UPDATE_LOGIN_ID_PATH;
+    public static string $USER_UPDATE_STATUS_PATH;
+    public static string $USER_GET_PROVIDER_TOKEN;
+    public static string $USERS_SEARCH_PATH;
+    public static string $USER_LOAD_PATH;
+    public static string $USER_DELETE_ALL_TEST_USERS_PATH;
+    public static string $USER_LOGOUT_PATH;
+    public static string $USER_DELETE_PATH;
+    public static string $USER_UPDATE_PATH;
+    public static string $USER_CREATE_BATCH_PATH;
+    public static string $USER_CREATE_PATH;
+    public static string $SSO_APPLICATION_LOAD_ALL_PATH;
+    public static string $SSO_APPLICATION_LOAD_PATH;
+    public static string $SSO_APPLICATION_DELETE_PATH;
+    public static string $SSO_APPLICATION_SAML_UPDATE_PATH;
+    public static string $SSO_APPLICATION_OIDC_UPDATE_PATH;
+    public static string $SSO_APPLICATION_SAML_CREATE_PATH;
+    public static string $SSO_APPLICATION_OIDC_CREATE_PATH;
+    public static string $TENANT_SEARCH_ALL_PATH;
+    public static string $TENANT_LOAD_ALL_PATH;
+    public static string $TENANT_LOAD_PATH;
+    public static string $TENANT_DELETE_PATH;
+    public static string $TENANT_UPDATE_PATH;
+    public static string $TENANT_CREATE_PATH;
+    public static string $AUDIT_SEARCH;
+    public static string $AUDIT_CREATE_EVENT;
+
+    /**
+     * Sets the base URL based on the project ID, taking into account the region.
+     *
+     * @param string $projectId The project ID for determining the region.
+     * @return void
+     */
     public static function setBaseUrl(string $projectId): void
     {
         $region = self::extractRegionFromProjectId($projectId);
@@ -25,14 +117,26 @@ class MgmtV1
         self::updatePaths();
     }
 
+    /**
+     * Extracts the region from a given project ID.
+     *
+     * @param string $projectId The project ID to extract the region from.
+     * @return string|null The extracted region or null if not found.
+     */
     private static function extractRegionFromProjectId(string $projectId): ?string
     {
         if (strlen($projectId) >= 32) {
             $region = substr($projectId, 1, 5);
             return !empty($region) ? $region : null;
         }
+        return null;
     }
 
+    /**
+     * Updates all API endpoint paths based on the current base URL.
+     *
+     * @return void
+     */
     private static function updatePaths(): void
     {
         // Tenant
@@ -129,16 +233,46 @@ class MgmtV1
         self::$FLOW_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/flow/export";
         self::$TEMPLATE_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/template/import";
         self::$TEMPLATE_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/template/export";
+
+        // Audit 
+        self::$AUDIT_SEARCH = self::$baseUrl . "/v1/mgmt/audit/search";
+        self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
     }
 }
 
+/**
+ * Class representing login options for various authentication methods.
+ */
 class LoginOptions
 {
+    /**
+     * @var bool Indicates if step-up authentication is required.
+     */
     public bool $stepup;
+
+    /**
+     * @var bool Indicates if MFA is required.
+     */
     public bool $mfa;
+
+    /**
+     * @var array|null Custom claims to include in the JWT.
+     */
     public ?array $customClaims;
+
+    /**
+     * @var array|null Options for templates.
+     */
     public ?array $templateOptions;
 
+    /**
+     * Constructor for the LoginOptions class.
+     *
+     * @param bool $stepup Whether step-up is required.
+     * @param bool $mfa Whether MFA is required.
+     * @param array|null $customClaims Additional custom claims for the JWT.
+     * @param array|null $templateOptions Options for templates.
+     */
     public function __construct(
         bool $stepup = false,
         bool $mfa = false,
@@ -151,17 +285,25 @@ class LoginOptions
         $this->templateOptions = $templateOptions;
     }
 
-    public function toArray()
+    /**
+     * Converts the LoginOptions object to an array.
+     *
+     * @return array The array representation of the login options.
+     */
+    public function toArray(): array
     {
         return [
             'stepup' => $this->stepup,
             'mfa' => $this->mfa,
             'customClaims' => $this->customClaims,
-            'templateOptions' => $this->templateOptions
+            'templateOptions' => $this->templateOptions,
         ];
     }
 }
 
+/**
+ * Class representing different delivery methods for authentication.
+ */
 class DeliveryMethod
 {
     public const WHATSAPP = 1;
@@ -170,43 +312,42 @@ class DeliveryMethod
     public const EMBEDDED = 4;
     public const VOICE = 5;
 
+    /**
+     * @var int The delivery method value.
+     */
     private int $value;
 
+    /**
+     * Constructor for the DeliveryMethod class.
+     *
+     * @param int $value The delivery method value.
+     */
     private function __construct(int $value)
     {
         $this->value = $value;
     }
 
-    public static function WHATSAPP(): self
-    {
-        return new self(self::WHATSAPP);
-    }
+    public static function WHATSAPP(): self { return new self(self::WHATSAPP); }
+    public static function SMS(): self { return new self(self::SMS); }
+    public static function EMAIL(): self { return new self(self::EMAIL); }
+    public static function EMBEDDED(): self { return new self(self::EMBEDDED); }
+    public static function VOICE(): self { return new self(self::VOICE); }
 
-    public static function SMS(): self
-    {
-        return new self(self::SMS);
-    }
-
-    public static function EMAIL(): self
-    {
-        return new self(self::EMAIL);
-    }
-
-    public static function EMBEDDED(): self
-    {
-        return new self(self::EMBEDDED);
-    }
-
-    public static function VOICE(): self
-    {
-        return new self(self::VOICE);
-    }
-
+    /**
+     * Gets the value of the delivery method.
+     *
+     * @return int The delivery method value.
+     */
     public function getValue(): int
     {
         return $this->value;
     }
 
+    /**
+     * Converts the delivery method to a string.
+     *
+     * @return string The string representation of the delivery method.
+     */
     public function __toString(): string
     {
         return (string) $this->value;

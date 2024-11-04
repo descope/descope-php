@@ -3,13 +3,13 @@
 namespace Descope\Tests\Management;
 
 use PHPUnit\Framework\TestCase;
-use Descope\SDK\Management\UserPassword;
-use Descope\SDK\Management\UserPasswordBcrypt;
-use Descope\SDK\Management\UserPasswordFirebase;
-use Descope\SDK\Management\UserPasswordPbkdf2;
-use Descope\SDK\Management\UserPasswordDjango;
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordBcrypt;
+use Descope\SDK\Management\Password\UserPasswordFirebase;
+use Descope\SDK\Management\Password\UserPasswordPbkdf2;
+use Descope\SDK\Management\Password\UserPasswordDjango;
 
-class UserPasswordTest extends TestCase
+class UserPwdTest extends TestCase
 {
     public function testUserPasswordBcrypt()
     {
