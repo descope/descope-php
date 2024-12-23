@@ -91,5 +91,4 @@ class Role
 
         return empty(array_diff($roles, $grantedRoles));
     }
-
 }
