@@ -1,45 +1,40 @@
 <?php
 
-namespace Descope\Tests;
-
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
+use Descope\SDK\API;
+use Descope\SDK\Configuration\SDKConfig;
 
-final class DescopeSDKTest extends TestCase
+class DescopeSDKTest extends TestCase
 {
-    public $descopeSDK;
+    private $config;
+    private $sdk;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
-        // $descopeSDK = new DescopeSDK(
-        //     [
-        //         'projectId' => "<Descope Project ID>",
-        //         'managementKey' => "<Descope Management Key>" // This can be optional
-        //     ]
-        // );
+        $this->config = [
+            'projectId' => 'test_project_id',
+            'managementKey' => 'test_management_key'
+        ];
+        $this->sdk = new DescopeSDK($this->config);
     }
 
-    public function testVerify(): void
+    public function testConstructorInitializesComponents()
     {
-        $token = '...';
-        // $this->assertTrue($this->descopeSDK->verify($token));
+        $this->assertInstanceOf(SDKConfig::class, $this->sdk->password());
+        $this->assertInstanceOf(SDKConfig::class, $this->sdk->sso());
+        $this->assertInstanceOf(SDKConfig::class, $this->sdk->management());
     }
 
-    public function getClaims(): void
+    public function testVerifyThrowsExceptionWithoutToken()
     {
-        $token = '...';
-        // $this->assertNotEmpty($this->descopeSDK->getClaims($token));
+        $this->expectException(\InvalidArgumentException::class);
+        $this->sdk->verify(null);
     }
 
-    public function testUserDetails(): void
+    public function testRefreshSessionThrowsExceptionWithoutToken()
     {
-        $refresh_token = '...';
-        // $this->assertIsArray($this->descopeSDK->getUser($refresh_token));
-    }
-
-    public function testPassword(): void
-    {
-        // $result = $this->descopeSDK->password->signUp("example@descope.com", "Password123!", []);
-        // $this->assertIsArray($this->descopeSDK->password->signUp("example@descope.com", "Password123!", []));
+        $this->expectException(\InvalidArgumentException::class);
+        $this->sdk->refreshSession(null);
     }
 }

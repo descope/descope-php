@@ -12,6 +12,8 @@ use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
+use Descope\SDK\EndpointsV2;
+
 use Descope\SDK\Management\MgmtV1;
 
 class DescopeSDK
@@ -45,6 +47,8 @@ class DescopeSDK
             MgmtV1::setBaseUrl($config['projectId']);
         }
 
+        $this->verifier = new Verifier($this->config, $this->api);
+
         $this->password = new Password($this->api);
         $this->sso = new SSO($this->api);
     }
@@ -58,14 +62,14 @@ class DescopeSDK
       */
     public function verify($sessionToken = null)
     {
-        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME_NAME] ?? null;
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
         if (!$sessionToken) {
             throw new \InvalidArgumentException('Session token is required.');
         }
 
-        $verifier = new Verifier($this->config);
-        return $verifier->verify($sessionToken);
+        $verifier = new Verifier($this->config, $this->api);
+        return $this->verifier->verify($sessionToken);
     }
 
     /**
@@ -79,12 +83,22 @@ class DescopeSDK
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
-        if (!$refreshToken) {
-            throw new \InvalidArgumentException('Refresh token is required.');
+        if (empty($refreshToken)) {
+            throw new AuthException('Refresh token cannot be null or empty.');
         }
 
-        $verifier = new Verifier($this->config);
-        return $verifier->refreshSession($refreshToken);
+        try {
+            return $this->api->doPost(
+                EndpointsV1::$REFRESH_TOKEN_PATH,
+                [],
+                false,
+                $refreshToken
+            );
+        } catch (RequestException $e) {
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
+        }
     }
 
     /**
@@ -100,12 +114,16 @@ class DescopeSDK
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
-        if (!$sessionToken || !$refreshToken) {
-            throw new \InvalidArgumentException('Session token and refresh token are required.');
+        if (empty($sessionToken) || empty($refreshToken)) {
+            throw new AuthException(400, 'Session or refresh token cannot be null or empty.');
         }
-
-        $verifier = new Verifier($this->config);
-        return $verifier->verifyAndRefreshSession($sessionToken, $refreshToken);
+        
+        try {
+            $this->verify($sessionToken);
+            return $this->refreshSession($refreshToken);
+        } catch (AuthException $e) {
+            return $this->refreshSession($refreshToken);
+        }
     }
 
     /**
@@ -142,11 +160,18 @@ class DescopeSDK
             throw new \InvalidArgumentException('Refresh token is required.');
         }
 
-        return $this->api->doGet(
-            EndpointsV1::$ME_PATH,
-            false,
-            $refreshToken
-        );
+        try {
+            $this->api->doGet(
+                EndpointsV1::$ME_PATH,
+                false,
+                $refreshToken
+            );
+            return;
+        } catch (RequestException $e) {
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
+        }
     }
 
     /**
@@ -164,12 +189,19 @@ class DescopeSDK
             throw new \InvalidArgumentException('Refresh token is required.');
         }
 
-        $this->api->doPost(
-            EndpointsV1::$LOGOUT_PATH,
-            [],
-            false,
-            $refreshToken
-        );
+        try {
+            $this->api->doPost(
+                EndpointsV1::$LOGOUT_PATH,
+                [],
+                false,
+                $refreshToken
+            );
+            return;
+        } catch (RequestException $e) {
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
+        }
     }
 
     /**
@@ -187,12 +219,19 @@ class DescopeSDK
             throw new \InvalidArgumentException('Refresh token is required.');
         }
 
-        $this->api->doPost(
-            EndpointsV1::LOGOUT_ALL_PATH,
-            [],
-            false,
-            $refreshToken
-        );
+        try {
+            $this->api->doPost(
+                EndpointsV1::$LOGOUT_ALL_PATH,
+                [],
+                false,
+                $refreshToken
+            );
+            return;
+        } catch (RequestException $e) {
+            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
+        }
     }
 
     /**

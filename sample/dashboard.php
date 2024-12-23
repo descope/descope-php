@@ -1,5 +1,6 @@
 <?php
 require '../vendor/autoload.php';
+use Descope\SDK\DescopeSDK;
 
 session_start();
 
@@ -15,6 +16,10 @@ if (!isset($_SESSION["user"])) {
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+]);
 ?>
 
 <!DOCTYPE html>
