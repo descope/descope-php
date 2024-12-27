@@ -70,7 +70,6 @@ final class Verifier
 
             // All validations passed
             return true;
-
         } catch (TokenException $e) {
             // You might want to throw a specific error or return false depending on your needs
             throw new TokenException('Token validation failed: ' . $e->getMessage());

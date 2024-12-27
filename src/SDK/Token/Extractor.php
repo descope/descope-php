@@ -104,7 +104,6 @@ final class Extractor
                 }
 
                 return $jwt['payload'];
-
             } catch (TokenException $e) {
                 if ($useRefreshedKey) {
                     throw new TokenException('JWT validation failed after retry: ' . $e->getMessage());
@@ -159,12 +158,7 @@ final class Extractor
         $modulus = pack('Ca*a*', 0x02, $this->encodeLength(strlen($modulus)), $modulus);
         $exponent = pack('Ca*a*', 0x02, $this->encodeLength(strlen($exponent)), $exponent);
         
-        $rsaPublicKey = pack(
-            'Ca*a*', 
-            0x30, 
-            $this->encodeLength(strlen($modulus . $exponent)),
-            $modulus . $exponent
-        );
+        $rsaPublicKey = pack('Ca*a*', 0x30, $this->encodeLength(strlen($modulus . $exponent)), $modulus . $exponent);
 
         // Add RSA public key algorithm identifier
         $algorithmIdentifier = pack('H*', '300d06092a864886f70d0101010500');
