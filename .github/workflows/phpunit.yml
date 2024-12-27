@@ -9,6 +9,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      DESCOPE_PROJECT_ID: 'P2OkfVnJi5Ht7mpCqHjx17nV5epH'
+
     steps:
     - uses: actions/checkout@v2
 
