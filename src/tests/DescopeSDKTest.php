@@ -1,11 +1,15 @@
 <?php
 
+namespace Descope\Tests;
+
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 use Descope\SDK\API;
-use Descope\SDK\Configuration\SDKConfig;
+use Descope\SDK\Auth\Password;
+use Descope\SDK\Auth\SSO;
+use Descope\SDK\Management\Management;
 
-class DescopeSDKTest extends TestCase
+final class DescopeSDKTest extends TestCase
 {
     private $config;
     private $sdk;
@@ -21,9 +25,9 @@ class DescopeSDKTest extends TestCase
 
     public function testConstructorInitializesComponents()
     {
-        $this->assertInstanceOf(SDKConfig::class, $this->sdk->password());
-        $this->assertInstanceOf(SDKConfig::class, $this->sdk->sso());
-        $this->assertInstanceOf(SDKConfig::class, $this->sdk->management());
+        $this->assertInstanceOf(Password::class, $this->sdk->password());
+        $this->assertInstanceOf(SSO::class, $this->sdk->sso());
+        $this->assertInstanceOf(Management::class, $this->sdk->management());
     }
 
     public function testVerifyThrowsExceptionWithoutToken()
