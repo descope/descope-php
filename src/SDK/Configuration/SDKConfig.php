@@ -47,6 +47,7 @@ final class SDKConfig
     {
         try {
             $url = EndpointsV2::getPublicKeyPath() . '/' . $this->projectId;
+<<<<<<< Updated upstream
             $response = $this->client->request('GET', $url);
             $jwkSets = json_decode($response->getBody(), true);
 
@@ -54,6 +55,12 @@ final class SDKConfig
                 throw new \Exception('Invalid JWK response');
             }
 
+=======
+            
+            // Fetch JWK public key from Descope API
+            $res = $this->client->request('GET', $url);
+            $jwkSets = json_decode($res->getBody(), true);
+>>>>>>> Stashed changes
             return $jwkSets;
         } catch (RequestException $e) {
             throw new \Exception('Failed to fetch JWK KeySet: ' . $e->getMessage());
