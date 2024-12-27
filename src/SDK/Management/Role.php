@@ -29,10 +29,8 @@ class Role
      * @return bool True if tenant permissions are valid, false otherwise.
      * @throws AuthException If JWT response is invalid.
      */
-    public function validateTenantPermissions(array $jwtResponse, array $permissions, ?string $tenant = null): bool
+    public function validateTenantPermissions(array $jwtResponse, string $tenant = '', array $permissions): bool
     {
-        $tenant = $tenant ?? '';
-
         if (!is_array($permissions)) {
             $permissions = [$permissions];
         }

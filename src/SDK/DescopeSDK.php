@@ -13,7 +13,6 @@ use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
-use Descope\SDK\Exception\AuthException;
 
 use Descope\SDK\Management\MgmtV1;
 
@@ -63,10 +62,10 @@ class DescopeSDK
       */
     public function verify($sessionToken = null): bool
     {
-        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
         if (!$sessionToken) {
-            throw new \InvalidArgumentException('Session token cannot be null or empty.');
+            throw new \InvalidArgumentException('Session token is required.');
         }
 
         $verifier = new Verifier($this->config, $this->api);
@@ -82,10 +81,10 @@ class DescopeSDK
      */
     public function refreshSession($refreshToken = null): array
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (empty($refreshToken)) {
-            throw new \InvalidArgumentException('Refresh token cannot be null or empty.');
+            throw new AuthException('Refresh token cannot be null or empty.');
         }
 
         try {
@@ -112,11 +111,11 @@ class DescopeSDK
      */
     public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null): array
     {
-        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
-        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+        $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (empty($sessionToken) || empty($refreshToken)) {
-            throw new \InvalidArgumentException('Session or refresh token cannot be null or empty.');
+            throw new AuthException(400, 'Session or refresh token cannot be null or empty.');
         }
         
         try {
@@ -136,10 +135,10 @@ class DescopeSDK
      */
     public function getClaims($token = null): array
     {
-        $token = $token ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
+        $token = $token ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
         if (!$token) {
-            throw new \InvalidArgumentException('Session token cannot be null or empty.');
+            throw new \InvalidArgumentException('Token is required.');
         }
 
         $extractor = new Extractor($this->config);
@@ -155,10 +154,10 @@ class DescopeSDK
      */
     public function getUserDetails(string $refreshToken = null): array
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
-            throw new \InvalidArgumentException('Refresh token cannot be null or empty.');
+            throw new \InvalidArgumentException('Refresh token is required.');
         }
 
         try {
@@ -183,10 +182,10 @@ class DescopeSDK
      */
     public function logout(string $refreshToken = null): void
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
-            throw new \InvalidArgumentException('Refresh token cannot be null or empty.');
+            throw new \InvalidArgumentException('Refresh token is required.');
         }
 
         try {
@@ -213,10 +212,10 @@ class DescopeSDK
      */
     public function logoutAll(string $refreshToken = null): void
     {
-        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
         if (!$refreshToken) {
-            throw new \InvalidArgumentException('Refresh token cannot be null or empty.');
+            throw new \InvalidArgumentException('Refresh token is required.');
         }
 
         try {

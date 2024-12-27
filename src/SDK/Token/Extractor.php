@@ -67,7 +67,7 @@ final class Extractor
 
     /**
      * Validate a JWT using the provided JWK Set.
-     */
+    */
     public function validateJWT(string $sessionToken): array
     {
         $useRefreshedKey = false;
