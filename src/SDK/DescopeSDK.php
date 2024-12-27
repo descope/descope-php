@@ -60,7 +60,7 @@ class DescopeSDK
       * @return bool Verification result.
       * @throws AuthException
       */
-    public function verify($sessionToken = null)
+    public function verify($sessionToken = null): bool
     {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
@@ -79,7 +79,7 @@ class DescopeSDK
      * @return array The new session information.
      * @throws AuthException
      */
-    public function refreshSession($refreshToken = null)
+    public function refreshSession($refreshToken = null): array
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
@@ -109,7 +109,7 @@ class DescopeSDK
      * @return array The refreshed session information.
      * @throws AuthException
      */
-    public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null)
+    public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null): array
     {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
@@ -133,7 +133,7 @@ class DescopeSDK
      * @return array The JWT claims.
      * @throws AuthException
      */
-    public function getClaims($token = null)
+    public function getClaims($token = null): array
     {
         $token = $token ?? $_COOKIE[EndpointsV1::SESSION_COOKIE_NAME] ?? null;
 
@@ -152,7 +152,7 @@ class DescopeSDK
      * @return array The user details.
      * @throws AuthException
      */
-    public function getUserDetails(string $refreshToken = null)
+    public function getUserDetails(string $refreshToken = null): array
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::REFRESH_COOKIE_NAME] ?? null;
 
@@ -161,12 +161,11 @@ class DescopeSDK
         }
 
         try {
-            $this->api->doGet(
+            return $this->api->doGet(
                 EndpointsV1::$ME_PATH,
                 false,
                 $refreshToken
             );
-            return;
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';

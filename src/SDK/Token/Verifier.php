@@ -4,14 +4,8 @@ namespace Descope\SDK\Token;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Descope\SDK\Exception\TokenException;
 use GuzzleHttp\Psr7\Request;
-use Jose\Component\Core\Util\JsonConverter;
-use Jose\Component\Core\AlgorithmManager;
-use Jose\Component\Core\JWKSet;
-use Jose\Component\Signature\Algorithm\RS256;
-use Jose\Component\Signature\JWSVerifier;
-use Jose\Component\Signature\Serializer\CompactSerializer;
-use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\EndpointsV1;
@@ -31,6 +25,7 @@ final class Verifier
     {
         $this->config = $config;
         $this->api = $api;
+        $this->extractor = new Extractor($this->config);
     }
 
     /**
@@ -40,27 +35,45 @@ final class Verifier
      * @return boolean Token signature is valid and not expired.
      * @throws AuthException If the refresh operation fails.
      */
-    public function verify($sessionToken, ?string $audience = null)
+    public function verify(string $sessionToken, ?string $audience = null): bool
     {
         try {
-            $extractor = new Extractor($this->config);
-            $jws = $extractor->parseToken($sessionToken);
+            // First validate the token signature
+            $validatedToken = $this->extractor->validateJWT($sessionToken);
+            if (!$validatedToken) {
+                throw new TokenException('Invalid token signature');
+            }
+            
+            // Verify expiration
+            if (isset($validatedToken['exp']) && time() > $validatedToken['exp']) {
+                throw new TokenException('Token has expired');
+            }
 
-            // If JWT signature is valid
-            if (isset($jws)) {
-                $payload = json_decode($jws->getPayload());
-
-                // Check to make sure JWT is not expired
-                if (isset($payload->exp) && time() < $payload->exp) {
-                    if ($audience && (!isset($payload->aud) || $payload->aud !== $audience)) {
-                        return false;
+            // Verify audience if provided
+            if ($audience !== null) {
+                if (!isset($validatedToken['aud'])) {
+                    throw new TokenException('Token is missing audience claim');
+                }
+                
+                // Handle both string and array audience claims
+                $tokenAudience = $validatedToken['aud'];
+                if (is_array($tokenAudience)) {
+                    if (!in_array($audience, $tokenAudience, true)) {
+                        throw new TokenException('Token audience does not match expected value');
                     }
-                    return true;
+                } else {
+                    if ($tokenAudience !== $audience) {
+                        throw new TokenException('Token audience does not match expected value');
+                    }
                 }
             }
-            return false;
-        } catch (TokenException $te) {
-            throw TokenException::MSG_SIGNATURE_INVALID;
+
+            // All validations passed
+            return true;
+
+        } catch (TokenException $e) {
+            // You might want to throw a specific error or return false depending on your needs
+            throw new TokenException('Token validation failed: ' . $e->getMessage());
         }
     }
 }
