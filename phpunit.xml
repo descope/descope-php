@@ -2,7 +2,7 @@
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
         <testsuite name="DescopeSDK Test Suite">
-            <directory>src/tests</directory>
+            <directory>src/tests/DescopeSDKTest.php</directory>
         </testsuite>
     </testsuites>
 </phpunit> 

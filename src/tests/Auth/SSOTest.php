@@ -18,6 +18,7 @@ final class SSOTest extends TestCase
     {
         $this->apiMock = $this->createMock(API::class);
         $this->sso = new SSO($this->apiMock);
+        EndpointsV1::setBaseUrl('descope_project_id');
     }
 
     public function testSSOSignIn(): void

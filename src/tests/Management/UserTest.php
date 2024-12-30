@@ -23,8 +23,8 @@ class UserTest extends TestCase
     protected function setUp(): void
     {
         $config = [
-            'projectId' => 'YOUR_PROJECT_ID',
-            'managementKey' => 'YOUR_MANAGEMENT_KEY',
+            'projectId' => 'descope_project_id',
+            'managementKey' => 'descope_management_key',
         ];
 
         $this->descopeSDK = new DescopeSDK($config);
