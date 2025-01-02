@@ -41,7 +41,61 @@ $descopeSDK = new DescopeSDK([
 ]);
 ```
 
-This SDK will easily allow you to handle Descope JWT tokens with the following built-in functions:
+### Caching Mechanism
+
+The Descope PHP SDK uses a caching mechanism to store frequently accessed data, such as JSON Web Key Sets (JWKs) for session token validation. By default, the SDK uses **APCu** for caching, provided it is enabled and configured in your environment. If APCu is not available, and no other caching mechanism is provided, caching is disabled.
+
+By using the `CacheInterface`, you can integrate the Descope PHP SDK with any caching mechanism that suits your application, ensuring optimal performance in both small and large-scale deployments.
+
+#### Custom Caching with `CacheInterface`
+
+The SDK allows you to provide a custom caching mechanism by implementing the `CacheInterface`. This interface defines three methods that any cache implementation should support:
+
+- `get(string $key)`: Retrieve a value by key.
+- `set(string $key, $value, int $ttl = 3600): bool`: Store a value with a specified time-to-live (TTL).
+- `delete(string $key): bool`: Remove a value by key.
+
+You can provide your custom caching implementation by creating a class that implements `CacheInterface`. Here’s an example using Laravel’s cache system:
+
+```php
+namespace App\Cache;
+
+use Descope\SDK\Cache\CacheInterface;
+use Illuminate\Support\Facades\Cache;
+
+class LaravelCache implements CacheInterface
+{
+    public function get(string $key)
+    {
+        return Cache::get($key);
+    }
+
+    public function set(string $key, $value, int $ttl = 3600): bool
+    {
+        // Laravel TTL is in minutes
+        return Cache::put($key, $value, $ttl / 60);
+    }
+
+    public function delete(string $key): bool
+    {
+        return Cache::forget($key);
+    }
+}
+```
+
+To use the Laravel cache in the SDK:
+
+```php
+use Descope\SDK\DescopeSDK;
+use App\Cache\LaravelCache;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'],
+], new LaravelCache());
+```
+
+Once you've configured your caching, you're ready to use the SDK. This SDK will easily allow you integrate Descope functionality with the following built-in functions:
 
 ## Password Authentication
 

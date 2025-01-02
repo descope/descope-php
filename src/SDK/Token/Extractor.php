@@ -125,18 +125,14 @@ final class Extractor
             throw new TokenException('Invalid public key');
         }
 
-        try {
-            $result = openssl_verify(
-                $signedData,
-                $signature,
-                $publicKey,
-                OPENSSL_ALGO_SHA256
-            );
+        $result = openssl_verify(
+            $signedData,
+            $signature,
+            $publicKey,
+            OPENSSL_ALGO_SHA256
+        );
 
-            return $result === 1;
-        } finally {
-            openssl_free_key($publicKey);
-        }
+        return $result === 1;
     }
 
     /**

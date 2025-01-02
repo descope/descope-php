@@ -7,20 +7,32 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\API;
+use Descope\SDK\Cache\CacheInterface;
+use Descope\SDK\Cache\APCuCache;
+use Descope\SDK\Cache\NullCache;
 
 final class SDKConfig
 {
     public $client;
     public $projectId;
     public $managementKey;
-    public $jwkSets;
-    private $cachedJWKSets = null;
+    private $cache;
+    private const JWKS_CACHE_KEY = 'descope_jwks';
 
-    public function __construct(array $config)
+    public function __construct(array $config, ?CacheInterface $cache = null)
     {
         $this->client = new Client();
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
+        
+        if ($cache) {
+            $this->cache = $cache;
+        } elseif (extension_loaded('apcu') && ini_get('apc.enable_cli')) {
+            $this->cache = new APCuCache();
+        } else {
+            $this->cache = new NullCache();
+            error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
+        }
         
         EndpointsV2::setBaseUrl($config['projectId']);
     }
@@ -30,14 +42,16 @@ final class SDKConfig
      */
     public function getJWKSets(bool $forceRefresh = false): array
     {
-        // Return cached JWK if it exists and no refresh is requested
-        if ($this->cachedJWKSets !== null && !$forceRefresh) {
-            return $this->cachedJWKSets;
+        if (!$forceRefresh) {
+            $cachedJWKSets = $this->cache->get(self::JWKS_CACHE_KEY);
+            if ($cachedJWKSets) {
+                return $cachedJWKSets;
+            }
         }
 
-        // Fetch new JWK KeySet from Descope API
-        $this->cachedJWKSets = $this->fetchJWKSets();
-        return $this->cachedJWKSets;
+        $jwks = $this->fetchJWKSets();
+        $this->cache->set(self::JWKS_CACHE_KEY, $jwks, 3600); // Cache for 1 hour
+        return $jwks;
     }
 
     /**

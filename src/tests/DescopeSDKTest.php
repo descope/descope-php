@@ -8,6 +8,7 @@ use Descope\SDK\API;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\Management\Management;
+use Descope\SDK\Exception\ValidationException;
 
 final class DescopeSDKTest extends TestCase
 {
@@ -32,13 +33,13 @@ final class DescopeSDKTest extends TestCase
 
     public function testVerifyThrowsExceptionWithoutToken()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ValidationException::class);
         $this->sdk->verify(null);
     }
 
     public function testRefreshSessionThrowsExceptionWithoutToken()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ValidationException::class);
         $this->sdk->refreshSession(null);
     }
 }
