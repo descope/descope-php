@@ -1,5 +1,6 @@
 <?php
 require '../vendor/autoload.php';
+use Descope\SDK\DescopeSDK;
 
 session_start();
 

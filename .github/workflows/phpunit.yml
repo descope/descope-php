@@ -1,0 +1,31 @@
+name: PHP Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      DESCOPE_PROJECT_ID: ${{ vars.DESCOPE_PROJECT_ID }}
+
+    strategy:
+      matrix:
+        php-version: [8.1, 7.4]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+
+    - name: Install dependencies
+      run: composer install
+
+    - name: Run tests
+      run: vendor/bin/phpunit --configuration phpunit.xml
