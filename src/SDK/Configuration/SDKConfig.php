@@ -26,7 +26,7 @@ final class SDKConfig
     }
 
     /**
-     * Gets the current JWK KeySet. Fetches a new one if not cached or if explicitly requested.
+     * Gets the current JWKSet. Fetches a new one if not cached or if explicitly requested.
      */
     public function getJWKSets(bool $forceRefresh = false): array
     {
