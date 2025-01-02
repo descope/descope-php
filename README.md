@@ -73,7 +73,7 @@ class LaravelCache implements CacheInterface
     public function set(string $key, $value, int $ttl = 3600): bool
     {
         // Laravel TTL is in minutes
-        return Cache::put($key, $value, $ttl / 60);
+        return Cache::put($key, $value, max(1, ceil($ttl / 60)));
     }
 
     public function delete(string $key): bool
