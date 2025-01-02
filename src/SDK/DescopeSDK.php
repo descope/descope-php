@@ -14,7 +14,7 @@ use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\Exception\AuthException;
-use Descope\SDK\Exception\ValidateException;
+use Descope\SDK\Exception\ValidationException;
 
 use Descope\SDK\Management\MgmtV1;
 
