@@ -84,7 +84,7 @@ class UserPwdTest extends TestCase
 
     public function testUserPasswordMD5()
     {
-        $md5Hash = 'pbkdf2_sha256$30000$hashvalue';
+        $md5Hash = '87f77988ccb5aa917c93201ba314fcd4';
         $userPasswordMD5 = new UserPasswordMD5($md5Hash);
         $expectedArray = [
             'md5' => [

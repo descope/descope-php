@@ -76,7 +76,7 @@
             sdk.logout();
             console.log("No valid refresh token. Displaying login form.");
             const container = document.getElementById("container")
-            container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="test"></descope-wc>';
+            container.innerHTML = '<descope-wc project-id="' + projectId + '" flow-id="sign-up-or-in"></descope-wc>';
             const wcElement = document.getElementsByTagName('descope-wc')[0];
 
             const onSuccess = async (e) => {

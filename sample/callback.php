@@ -35,7 +35,7 @@
             error_log("Session token verification failed.");
             $descopeSDK->logout();
             // Redirect to login page
-            // header('Location: login.php');
+            header('Location: login.php');
             exit();
         }
     } else {

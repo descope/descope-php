@@ -12,13 +12,17 @@ jobs:
     env:
       DESCOPE_PROJECT_ID: ${{ vars.DESCOPE_PROJECT_ID }}
 
+    strategy:
+      matrix:
+        php-version: [8.1, 7.3]
+
     steps:
     - uses: actions/checkout@v2
 
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: ${{ matrix.php-version }}
 
     - name: Install dependencies
       run: composer install
