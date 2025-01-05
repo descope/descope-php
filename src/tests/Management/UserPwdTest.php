@@ -8,6 +8,7 @@ use Descope\SDK\Management\Password\UserPasswordBcrypt;
 use Descope\SDK\Management\Password\UserPasswordFirebase;
 use Descope\SDK\Management\Password\UserPasswordPbkdf2;
 use Descope\SDK\Management\Password\UserPasswordDjango;
+use Descope\SDK\Management\Password\UserPasswordMD5;
 
 class UserPwdTest extends TestCase
 {
@@ -79,6 +80,19 @@ class UserPwdTest extends TestCase
         ];
 
         $this->assertEquals($expectedArray, $userPasswordDjango->toArray());
+    }
+
+    public function testUserPasswordMD5()
+    {
+        $md5Hash = '87f77988ccb5aa917c93201ba314fcd4';
+        $userPasswordMD5 = new UserPasswordMD5($md5Hash);
+        $expectedArray = [
+            'md5' => [
+                'hash' => $md5Hash,
+            ],
+        ];
+
+        $this->assertEquals($expectedArray, $userPasswordMD5->toArray());
     }
 
     public function testUserPasswordWithCleartext()

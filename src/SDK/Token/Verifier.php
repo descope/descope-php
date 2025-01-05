@@ -4,30 +4,28 @@ namespace Descope\SDK\Token;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Descope\SDK\Exception\TokenException;
 use GuzzleHttp\Psr7\Request;
-use Jose\Component\Core\Util\JsonConverter;
-use Jose\Component\Core\AlgorithmManager;
-use Jose\Component\Core\JWKSet;
-use Jose\Component\Signature\Algorithm\RS256;
-use Jose\Component\Signature\JWSVerifier;
-use Jose\Component\Signature\Serializer\CompactSerializer;
-use Jose\Component\Signature\Serializer\JWSSerializerManager;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\EndpointsV1;
+use Descope\SDK\API;
 
 final class Verifier
 {
     private SDKConfig $config;
+    private API $api;
 
     /**
      * Constructor for Verifier class.
      *
      * @param SDKConfig $config Base configuration options for the SDK.
      */
-    public function __construct($config)
+    public function __construct(SDKConfig $config, API $api)
     {
         $this->config = $config;
+        $this->api = $api;
+        $this->extractor = new Extractor($this->config);
     }
 
     /**
@@ -37,149 +35,44 @@ final class Verifier
      * @return boolean Token signature is valid and not expired.
      * @throws AuthException If the refresh operation fails.
      */
-    public function verify($sessionToken, ?string $audience = null)
+    public function verify(string $sessionToken, ?string $audience = null): bool
     {
         try {
-            $extractor = new Extractor($this->config);
-            $jws = $extractor->parseToken($sessionToken);
+            // First validate the token signature
+            $validatedToken = $this->extractor->validateJWT($sessionToken);
+            if (!$validatedToken) {
+                throw new TokenException('Invalid token signature');
+            }
+            
+            // Verify expiration
+            if (isset($validatedToken['exp']) && time() > $validatedToken['exp']) {
+                throw new TokenException('Token has expired');
+            }
 
-            // If JWT signature is valid
-            if (isset($jws)) {
-                $payload = json_decode($jws->getPayload());
-
-                // Check to make sure JWT is not expired
-                if (isset($payload->exp) && time() < $payload->exp) {
-                    if ($audience && (!isset($payload->aud) || $payload->aud !== $audience)) {
-                        return false;
+            // Verify audience if provided
+            if ($audience !== null) {
+                if (!isset($validatedToken['aud'])) {
+                    throw new TokenException('Token is missing audience claim');
+                }
+                
+                // Handle both string and array audience claims
+                $tokenAudience = $validatedToken['aud'];
+                if (is_array($tokenAudience)) {
+                    if (!in_array($audience, $tokenAudience, true)) {
+                        throw new TokenException('Token audience does not match expected value');
                     }
-                    return true;
+                } else {
+                    if ($tokenAudience !== $audience) {
+                        throw new TokenException('Token audience does not match expected value');
+                    }
                 }
             }
-            return false;
-        } catch (TokenException $te) {
-            throw TokenException::MSG_SIGNATURE_INVALID;
+
+            // All validations passed
+            return true;
+        } catch (TokenException $e) {
+            // You might want to throw a specific error or return false depending on your needs
+            throw new TokenException('Token validation failed: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Refreshes the session token, with the provided refresh token.
-     *
-     * @param  string $refreshToken The refresh token.
-     * @return array The refreshed JWT response.
-     * @throws AuthException If the refresh operation fails.
-     */
-    public function refreshSession(string $refreshToken): array
-    {
-        $this->validateRefreshTokenNotNil($refreshToken);
-        $this->validateToken($refreshToken);
-        $uri = EndpointsV1::$REFRESH_TOKEN_PATH;
-        $response = $this->doPost($uri, [], $refreshToken);
-        return $this->generateJwtResponse($response, $refreshToken);
-    }
-
-    /**
-     * Verifies the session token, and automatically refreshes when expired.
-     *
-     * @param  string $sessionToken The session token.
-     * @param  string $refreshToken The refresh token.
-     * @return array The JWT response.
-     * @throws AuthException If both tokens are missing or verification fails.
-     */
-    public function verifyAndRefreshSession(string $sessionToken, string $refreshToken): array
-    {
-        if (empty($sessionToken)) {
-            throw new AuthException(400, 'Session token is missing');
-        }
-
-        try {
-            $this->validateToken($sessionToken);
-            return $this->generateJwtResponse($sessionToken, $refreshToken);
-        } catch (AuthException $e) {
-            return $this->refreshSession($refreshToken);
-        }
-    }
-
-    /**
-     * Validates permissions for a JWT response.
-     *
-     * @param  array $jwtResponse JWT response data.
-     * @param  array $permissions Permissions to validate.
-     * @return bool True if permissions are valid, false otherwise.
-     */
-    public function validatePermissions(array $jwtResponse, array $permissions): bool
-    {
-        return $this->validateTenantPermissions($jwtResponse, '', $permissions);
-    }
-
-    /**
-     * Validates tenant permissions for a JWT response.
-     *
-     * @param  array  $jwtResponse JWT response data.
-     * @param  string $tenant      Tenant ID.
-     * @param  array  $permissions Permissions to validate.
-     * @return bool True if tenant permissions are valid, false otherwise.
-     * @throws AuthException If JWT response is invalid.
-     */
-    public function validateTenantPermissions(array $jwtResponse, string $tenant, array $permissions): bool
-    {
-        if (!is_array($permissions)) {
-            $permissions = [$permissions];
-        }
-
-        if (!is_array($jwtResponse)) {
-            throw new AuthException(400, 'Invalid JWT response hash');
-        }
-
-        $grantedPermissions = $jwtResponse['permissions'] ?? [];
-        if (!empty($tenant)) {
-            if (empty($jwtResponse['tenants'][$tenant])) {
-                return false;
-            }
-            $grantedPermissions = $jwtResponse['tenants'][$tenant]['permissions'] ?? [];
-        }
-
-        return empty(array_diff($permissions, $grantedPermissions));
-    }
-
-    /**
-     * Validates roles for a JWT response.
-     *
-     * @param  array $jwtResponse JWT response data.
-     * @param  array $roles       Roles to validate.
-     * @return bool True if roles are valid, false otherwise.
-     */
-    public function validateRoles(array $jwtResponse, array $roles): bool
-    {
-        return $this->validateTenantRoles($jwtResponse, '', $roles);
-    }
-
-    /**
-     * Validates tenant roles for a JWT response.
-     *
-     * @param  array  $jwtResponse JWT response data.
-     * @param  string $tenant      Tenant ID.
-     * @param  array  $roles       Roles to validate.
-     * @return bool True if tenant roles are valid, false otherwise.
-     * @throws AuthException If JWT response is invalid.
-     */
-    public function validateTenantRoles(array $jwtResponse, string $tenant, array $roles): bool
-    {
-        if (!is_array($roles)) {
-            $roles = [$roles];
-        }
-
-        if (!is_array($jwtResponse)) {
-            throw new AuthException(400, 'Invalid JWT response hash');
-        }
-
-        $grantedRoles = $jwtResponse['roles'] ?? [];
-        if (!empty($tenant)) {
-            if (empty($jwtResponse['tenants'][$tenant])) {
-                return false;
-            }
-            $grantedRoles = $jwtResponse['tenants'][$tenant]['roles'] ?? [];
-        }
-
-        return empty(array_diff($roles, $grantedRoles));
     }
 }
