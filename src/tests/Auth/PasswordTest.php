@@ -17,7 +17,7 @@ class PasswordTest extends TestCase
     {
         $this->apiMock = $this->createMock(API::class);
         $this->password = new Password($this->apiMock);
-        EndpointsV1::setBaseUrl($_ENV['DESCOPE_PROJECT_ID']);
+        EndpointsV1::setBaseUrl('descope_project_id');
     }
 
     public function testSignUp()

@@ -6,9 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Descope\SDK\DescopeSDK;
 use Descope\SDK\Management\Password\UserPassword;
 use Descope\SDK\Management\Password\UserPasswordBcrypt;
-use Descope\SDK\Management\Password\UserPasswordFirebase;
-use Descope\SDK\Management\Password\UserPasswordPbkdf2;
-use Descope\SDK\Management\Password\UserPasswordDjango;
 use Descope\SDK\Management\User;
 use Descope\SDK\Management\AssociatedTenant;
 use Descope\SDK\Management\UserObj;
@@ -26,8 +23,8 @@ class UserTest extends TestCase
     protected function setUp(): void
     {
         $config = [
-            'projectId' => 'YOUR_PROJECT_ID',
-            'managementKey' => 'YOUR_MANAGEMENT_KEY',
+            'projectId' => 'descope_project_id',
+            'managementKey' => 'descope_management_key',
         ];
 
         $this->descopeSDK = new DescopeSDK($config);

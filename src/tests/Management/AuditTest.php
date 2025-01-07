@@ -12,8 +12,8 @@ class AuditTest extends TestCase
     protected function setUp(): void
     {
         $config = [
-            'projectId' => 'P2OkfVnJi5Ht7mpCqHjx17nV5epH',
-            'managementKey' => 'K2o2rLwk3N3QI7kyJcRUmULKXqB7mKzpY7Dk6Hl24IXRM25YcYDYPFMKCO4SmUTDJJluxlu',
+            'projectId' => 'descope_project_id',
+            'managementKey' => 'descope_management_key',
         ];
 
         $this->descopeSDK = new DescopeSDK($config);
