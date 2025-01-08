@@ -58,15 +58,18 @@ class API
     private function transformEmptyArraysToObjects($data)
     {
         if (is_array($data)) {
-            foreach ($data as &$value) {
+            // Check if the array is associative
+            $isAssociative = count(array_filter(array_keys($data), 'is_string')) > 0;
+    
+            // If the array is empty and associative, convert to stdClass object
+            if (empty($data) && $isAssociative) {
+                return new \stdClass();
+            }
+    
+            foreach ($data as $key => &$value) {
                 if (is_array($value)) {
-                    // If the array is empty, ensure it's preserved as an empty array
-                    if (empty($value)) {
-                        $value = new \stdClass();
-                    } else {
-                        // Recur for non-empty arrays
-                        $value = $this->transformEmptyArraysToObjects($value);
-                    }
+                    // Recursively handle nested arrays
+                    $value = $this->transformEmptyArraysToObjects($value);
                 }
             }
         }
@@ -96,6 +99,7 @@ class API
         $jsonBody = empty($body) ? '{}' : json_encode($body);
 
         try {
+            print_r($jsonBody);
             $response = $this->httpClient->post(
                 $uri,
                 [

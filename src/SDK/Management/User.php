@@ -147,39 +147,42 @@ class User
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
         ?UserPassword $password = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null
+        ?array $roleNames = [],
+        ?array $userTenants = []
     ): array {
-        $roleNames = $roleNames ?? [];
-        $userTenants = $userTenants ?? [];
-
+        $body = [
+            'loginId' => $loginId,
+            'email' => $email,
+            'phone' => $phone,
+            'displayName' => $displayName,
+            'givenName' => $givenName,
+            'middleName' => $middleName,
+            'familyName' => $familyName,
+            'picture' => $picture,
+            'customAttributes' => $customAttributes ? json_decode(json_encode($customAttributes), true) : null,
+            'verifiedEmail' => $verifiedEmail,
+            'verifiedPhone' => $verifiedPhone,
+            'inviteUrl' => $inviteUrl,
+            'additionalLoginIds' => $additionalLoginIds,
+            'ssoAppIds' => $ssoAppIds,
+            'password' => $password ? json_decode(json_encode($password), true) : null,
+            'roleNames' => $roleNames,
+            'userTenants' => $userTenants
+        ];
+    
+        $body = array_filter($body, function ($value) {
+            if (is_array($value)) {
+                return !empty($value);
+            }
+            return $value !== null && $value !== '';
+        });
+    
         $response = $this->api->doPost(
             MgmtV1::$USER_CREATE_PATH,
-            $this->composeCreateBody(
-                $loginId,
-                $email,
-                $phone,
-                $displayName,
-                $givenName,
-                $middleName,
-                $familyName,
-                $roleNames,
-                $userTenants,
-                false,
-                false,
-                $picture,
-                $customAttributes,
-                $verifiedEmail,
-                $verifiedPhone,
-                $inviteUrl,
-                null,
-                null,
-                $additionalLoginIds,
-                $ssoAppIds,
-                $password
-            ),
+            $body,
             true
         );
+    
         return $this->api->generateJwtResponse($response);
     }
 
@@ -402,31 +405,37 @@ class User
         ?bool $verifiedPhone = null,
         ?array $additionalIdentifiers = null,
         ?array $ssoAppIds = null,
-        ?array $roleNames = null,
-        ?array $userTenants = null
+        ?array $roleNames = [],
+        ?array $userTenants = []
     ): void {
-        $roleNames = $roleNames ?? [];
-        $userTenants = $userTenants ?? [];
+        $body = [
+            'loginId' => $loginId,
+            'email' => $email,
+            'phone' => $phone,
+            'displayName' => $displayName,
+            'givenName' => $givenName,
+            'middleName' => $middleName,
+            'familyName' => $familyName,
+            'picture' => $picture,
+            'customAttributes' => $customAttributes ? json_decode(json_encode($customAttributes), true) : null,
+            'verifiedEmail' => $verifiedEmail,
+            'verifiedPhone' => $verifiedPhone,
+            'additionalIdentifiers' => $additionalIdentifiers,
+            'ssoAppIds' => $ssoAppIds,
+            'roleNames' => $roleNames,
+            'userTenants' => $userTenants,
+        ];
 
-        $this->api->doPost(
+        $body = array_filter($body, function ($value) {
+            if (is_array($value)) {
+                return !empty($value);
+            }
+            return $value !== null && $value !== '';
+        });
+
+        $response = $this->api->doPost(
             MgmtV1::$USER_UPDATE_PATH,
-            $this->composeUpdateBody(
-                $loginId,
-                $email,
-                $phone,
-                $displayName,
-                $givenName,
-                $middleName,
-                $familyName,
-                $roleNames,
-                $userTenants,
-                $picture,
-                $customAttributes,
-                $verifiedEmail,
-                $verifiedPhone,
-                $additionalIdentifiers,
-                $ssoAppIds
-            ),
+            $body,
             true
         );
     }
@@ -528,66 +537,51 @@ class User
      * @throws AuthException if search operation fails.
      */
     public function searchAll(
-        ?array $tenantIds = null,
-        ?array $roleNames = null,
-        int $limit = 0,
-        int $page = 0,
-        bool $testUsersOnly = false,
-        bool $withTestUser = false,
-        ?array $customAttributes = null,
-        ?array $statuses = null,
-        ?array $emails = null,
-        ?array $phones = null,
-        ?array $ssoAppIds = null,
-        ?array $sort = null,
-        ?string $text = null
-    ): array {
-        // Initialize arrays if they are null
-        $tenantIds = $tenantIds ?? [];
-        $roleNames = $roleNames ?? [];
-        $statuses = $statuses ?? [];
-        $emails = $emails ?? [];
-        $phones = $phones ?? [];
-        $ssoAppIds = $ssoAppIds ?? [];
-        $sort = $sort ?? [];
-        $customAttributes = $customAttributes ?? (object)[];
-
-        if ($limit < 0) {
-            throw new AuthException(
-                400,
-                'ERROR_TYPE_INVALID_ARGUMENT',
-                'limit must be non-negative'
-            );
-        }
-
-        if ($page < 0) {
-            throw new AuthException(
-                400,
-                'ERROR_TYPE_INVALID_ARGUMENT',
-                'page must be non-negative'
-            );
-        }
-
-        // Prepare the request body
+        $loginId = null,
+        $tenantIds = null,
+        $roleNames = null,
+        $limit = 0,
+        $text = null,
+        $page = 0,
+        $ssoOnly = false,
+        $testUsersOnly = false,
+        $withTestUser = false,
+        $customAttributes = null,
+        $statuses = null,
+        $emails = null,
+        $phones = null,
+        $ssoAppIds = null,
+        $sort = null
+    ) {
+        // Prepare the request body ensuring PHP 7.x compatibility
         $body = [
-            'loginId' => '',
-            'tenantIds' => $tenantIds,
-            'roleNames' => $roleNames,
-            'limit' => (string)$limit,
-            'page' => (string)$page,
+            'loginId' => $loginId ?? '',
+            'tenantIds' => is_array($tenantIds) ? $tenantIds : [],
+            'roleNames' => is_array($roleNames) ? $roleNames : [],
+            'limit' => $limit > 0 ? $limit : 0,
             'text' => $text ?? '',
-            'ssoOnly' => '',
-            'withTestUser' => $withTestUser ? true : false,
-            'testUsersOnly' => $testUsersOnly ? true : false,
-            'customAttributes' => $customAttributes,
-            'statuses' => $statuses,
-            'emails' => $emails,
-            'phones' => $phones,
-            'ssoAppIds' => $ssoAppIds,
-            'sort' => $sort,
-            'loginIds' => [],
+            'page' => $page > 0 ? $page : 0,
+            'ssoOnly' => (bool)$ssoOnly,
+            'testUsersOnly' => (bool)$testUsersOnly,
+            'withTestUser' => (bool)$withTestUser,
+            'customAttributes' => $customAttributes !== null ? (array)$customAttributes : new \stdClass(),
+            'statuses' => is_array($statuses) ? $statuses : [],
+            'emails' => is_array($emails) ? $emails : [],
+            'phones' => is_array($phones) ? $phones : [],
+            'ssoAppIds' => is_array($ssoAppIds) ? $ssoAppIds : [],
+            'sort' => is_array($sort) ? array_map(function ($item) {
+                return [
+                    'field' => isset($item['field']) ? $item['field'] : '',
+                    'desc' => isset($item['desc']) ? (bool)$item['desc'] : false
+                ];
+            }, $sort) : [],
+            'loginIds' => []
         ];
-
+    
+        $body = array_filter($body, function ($value) {
+            return $value !== null && $value !== '';
+        });
+    
         try {
             return $this->api->doPost(
                 MgmtV1::$USERS_SEARCH_PATH,
