@@ -97,52 +97,54 @@ $descopeSDK = new DescopeSDK([
 
 Once you've configured your caching, you're ready to use the SDK. This SDK will easily allow you integrate Descope functionality with the following built-in functions:
 
-## Password Authentication
+## Authentication Methods
 
-### Sign Up
+### Passwords
+
+#### Sign Up
 
 ```php
 $response = $descopeSDK->auth->password->signUp("loginId", "password123");
 print_r($response);
 ```
 
-### Sign In
+#### Sign In
 
 ```php
 $response = $descopeSDK->auth->password->signIn("loginId", "password123");
 print_r($response);
 ```
 
-### Send Reset Password
+#### Send Reset Password
 
 ```php
 $response = $descopeSDK->auth->password->sendReset("loginId", "https://example.com/reset");
 print_r($response);
 ```
 
-### Update Password
+#### Update Password
 
 ```php
 $descopeSDK->auth->password->update("loginId", "newPassword123", "refreshToken");
 ```
 
-### Replace Password
+#### Replace Password
 
 ```php
 $response = $descopeSDK->auth->password->replace("loginId", "oldPassword123", "newPassword123");
 print_r($response);
 ```
 
-### Get Password Policy
+#### Get Password Policy
 
 ```php
 $response = $descopeSDK->auth->password->getPolicy();
 print_r($response);
 ```
 
-## SSO Authentication
+### SSO
 
-### SSO Sign In
+#### SSO Sign In
 
 ```php
 $response = $descopeSDK->auth->sso->signIn(
@@ -157,106 +159,215 @@ $response = $descopeSDK->auth->sso->signIn(
 print_r($response);
 ```
 
-### Exchange Token
+#### Exchange Token
 
 ```php
 $response = $descopeSDK->auth->sso->exchangeToken("code");
 print_r($response);
 ```
 
-## Session Management
+### Session Management
 
-1. `DescopeSDK->verify($sessionToken)` - will validate the JWT signature and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired
-2. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format
-3. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token
+1. `DescopeSDK->verify($sessionToken)` - will validate the session token and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired.
+2. `DescopeSDK->refreshSession($refreshToken)` - will refresh your session and return a new session token, with the refresh token.
+3. `DescopeSDK->verifyAndRefreshSession($sessionToken, $refreshToken)` - will validate the session token and return either **TRUE** or **FALSE**, and will refresh your session and return a new session token.
+4. `DescopeSDK->logout($refreshToken)` - will invalidate the refresh token and log the user out of the current session.
+5. `DescopeSDK->logoutAll($refreshToken)` - will invalidate all refresh tokens associated with a given project, thereby signing out of all sessions across multiple applications.
+---
+6. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format.
+7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
 
-> **Note**: To use `verify()` and `getClaims()`, you will need to pass in your session token into the function argument. To use `getUserDetails()`, you will need to pass in your refresh token.
+### User Management Functions
 
-## User Management Functions
+Each of these functions have code examples on how to use them. 
 
-### Create User
+> Some of these values may be incorrect for your environment, they exist purely as an example for your own implementation.
+
+#### Create User
 
 ```php
 $response = $descopeSDK->management->user->create(
-    "testuser1",
-    "user@example.com",
-    "1234567890",
-    "Test User",
-    "Test",
-    "Middle",
-    "User"
+    'testuser1',                // loginId
+    'newemail@example.com',     // email
+    '+1234567890',              // phone
+    'Updated User',             // displayName
+    'Updated',                  // givenName
+    'Middle',                   // middleName
+    'User',                     // familyName
+    null,                       // picture
+    null,                       // customAttributes
+    true,                       // verifiedEmail
+    true,                       // verifiedPhone
+    null,                       // inviteUrl
+    ['altUser1'],               // additionalLoginIds
+    ['app123'],                 // ssoAppIds
+    null,                       // password
+    ['admin', 'editor'],        // roleNames
+    [['tenantId' => 'tenant1']] // userTenants
 );
 print_r($response);
 ```
 
-### Update User
+#### Update User
 
 ```php
-$descopeSDK->management->user->update(
-    "testuser1",
-    "newemail@example.com",
-    "0987654321",
-    "Updated User",
-    "Updated",
-    "Middle",
-    "User"
+$response = $descopeSDK->management->user->update(
+    'testuser1',                // loginId
+    'updatedemail@example.com', // email
+    '+1234567890',              // phone
+    'Updated User',             // displayName
+    'Updated',                  // givenName
+    'Middle',                   // middleName
+    'User',                     // familyName
+    'https://example.com/newpic.jpg', // picture
+    ['department' => 'HR'],     // customAttributes
+    true,                       // verifiedEmail
+    true,                       // verifiedPhone
+    ['altUser1'],               // additionalLoginIds
+    [''],                 // ssoAppIds
 );
 ```
 
-### Delete User
+#### Invite User
+
+```php
+$response = $descopeSDK->management->user->invite(
+    'newuser1',                       // loginId
+    'invite@example.com',             // email
+    '+1234567890',                    // phone
+    'New User',                       // displayName
+    'John',                           // givenName
+    'Middle',                        // middleName
+    'Doe',                           // familyName
+    'https://example.com/profile.jpg', // picture
+    ['department' => 'Engineering'], // customAttributes
+    true,                           // verifiedEmail
+    true,                           // verifiedPhone
+    'https://myapp.com/invite',     // inviteUrl
+    true,                           // sendMail
+    true                            // sendSms
+);
+print_r($response);
+```
+
+#### Batch Invite
+
+```php
+$users = [
+    new Descope\SDK\Management\UserObj(
+        'batchuser1',                 // loginId
+        'batch1@example.com',         // email
+        null,                         // phone
+        'Batch User One',             // displayName
+        null,                         // givenName
+        null,                         // middleName
+        null,                         // familyName
+        ['admin'],                    // roleNames
+        [['tenantId' => 'tenant1']]   // userTenants (can be an empty array if no tenant)
+    ),
+
+    new Descope\SDK\Management\UserObj(
+        'batchuser2',                 // loginId
+        'batch2@example.com',         // email
+        null,                         // phone
+        'Batch User Two',             // displayName
+        null,                         // givenName
+        null,                         // middleName
+        null,                         // familyName
+        ['viewer'],                   // roleNames
+        [['tenantId' => 'tenant2']]   // userTenants (can be an empty array if no tenant)
+    )
+];
+
+$response = $descopeSDK->management->user->inviteBatch(
+    $users,                           
+    'https://myapp.com/batch-invite',  // inviteUrl
+    true,                              // sendMail
+    true                               // sendSms
+);
+
+print_r($response);
+```
+
+#### Delete User
 
 ```php
 $descopeSDK->management->user->delete("testuser1");
 ```
 
-### Add Tenant
+#### Search All Users
+
+```php
+$response = $descopeSDK->management->user->searchAll(
+    "",                       // loginId
+    [],                       // tenantIds
+    ['admin', 'viewer'],      // roleNames
+    50,                       // limit
+    "",                       // text
+    1,                        // page
+    false,                    // ssoOnly
+    false,                    // testUsersOnly
+    false,                    // withTestUser
+    null,                     // customAttributes
+    ['enabled'],              // statuses
+    ['user@example.com'],     // emails
+    ['+1234567890'],          // phones
+    ['ssoApp123'],            // ssoAppIds
+    [                         // sort
+        ['field' => 'displayName', 'desc' => true]
+    ]
+);
+print_r($response);
+```
+
+#### Add Tenant
 
 ```php
 $response = $descopeSDK->management->user->addTenant("testuser1", "tenantId1");
 print_r($response);
 ```
 
-### Remove Tenant
+#### Remove Tenant
 
 ```php
 $response = $descopeSDK->management->user->removeTenant("testuser1", "tenantId1");
 print_r($response);
 ```
 
-### Set Tenant Roles
+#### Set Tenant Roles
 
 ```php
 $response = $descopeSDK->management->user->setTenantRoles("testuser1", "tenantId1", ["admin"]);
 print_r($response);
 ```
 
-### Add Tenant Roles
+#### Add Tenant Roles
 
 ```php
 $response = $descopeSDK->management->user->addTenantRoles("testuser1", "tenantId1", ["user"]);
 print_r($response);
 ```
 
-### Remove Tenant Roles
+#### Remove Tenant Roles
 
 ```php
 $response = $descopeSDK->management->user->removeTenantRoles("testuser1", "tenantId1", ["admin"]);
 print_r($response);
 ```
 
-### Set Temporary Password
+#### Set Temporary Password
 
 ```php
 $descopeSDK->management->user->setTemporaryPassword("testuser1", new UserPassword(cleartext: "temporaryPassword123"));
 ```
 
-### Set Active Password
+#### Set Active Password
 
 ```php
 $descopeSDK->management->user->setActivePassword("testuser1", new UserPassword(cleartext: "activePassword123"));
 ```
 
-### Set Password
+#### Set Password
 
 ```php
 $descopeSDK->management->user->setPassword("testuser1", new UserPassword(cleartext: "password123"), true);
@@ -287,10 +398,6 @@ php -S localhost:3000 -t sample/
 The app should now be accessible at http://localhost:3000/ from your web browser.
 
 This sample app showcases a Descope Flow using the WebJS SDK and PHP sessions to retain user information across multiple pages. It also showcases initializing the SDK and using it to validate the session token from formData sent from `login.php`.
-
-## Other Code Samples
-
-1. [WordPress Plugin](https://github.com/descope-sample-apps/wordpress-plugin)
 
 ## Feedback
 
