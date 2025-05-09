@@ -97,9 +97,7 @@ class API
 
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
-
         try {
-            print_r($jsonBody);
             $response = $this->httpClient->post(
                 $uri,
                 [
