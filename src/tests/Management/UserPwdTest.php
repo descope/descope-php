@@ -9,6 +9,7 @@ use Descope\SDK\Management\Password\UserPasswordFirebase;
 use Descope\SDK\Management\Password\UserPasswordPbkdf2;
 use Descope\SDK\Management\Password\UserPasswordDjango;
 use Descope\SDK\Management\Password\UserPasswordMD5;
+use Descope\SDK\Management\Password\UserPasswordSha;
 
 class UserPwdTest extends TestCase
 {
@@ -119,5 +120,19 @@ class UserPwdTest extends TestCase
         ];
 
         $this->assertEquals($expectedArray, $userPassword->toArray());
+    }
+
+    public function testUserPasswordSha()
+    {
+        $shaHash = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8';
+        $userPasswordSha = new UserPasswordSha($shaHash, 'sha256');
+        $expectedArray = [
+            'sha' => [
+                'hash' => $shaHash,
+                'type' => 'sha256',
+            ],
+        ];
+
+        $this->assertEquals($expectedArray, $userPasswordSha->toArray());
     }
 }

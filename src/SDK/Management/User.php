@@ -154,7 +154,7 @@ class User
             'loginId' => $loginId,
             'email' => $email,
             'phone' => $phone,
-            'displayName' => $displayName,
+            'name' => $displayName,
             'givenName' => $givenName,
             'middleName' => $middleName,
             'familyName' => $familyName,
@@ -163,12 +163,20 @@ class User
             'verifiedEmail' => $verifiedEmail,
             'verifiedPhone' => $verifiedPhone,
             'inviteUrl' => $inviteUrl,
-            'additionalLoginIds' => $additionalLoginIds,
+            'additionalIdentifiers' => $additionalLoginIds,
             'ssoAppIds' => $ssoAppIds,
-            'password' => $password ? json_decode(json_encode($password), true) : null,
             'roleNames' => $roleNames,
             'userTenants' => $userTenants
         ];
+    
+        // Handle password - if it's cleartext, set as string, if hashed, set as hashedPassword object
+        if ($password !== null) {
+            if (isset($password->cleartext)) {
+                $body['password'] = $password->cleartext;
+            } else if (isset($password->hashed)) {
+                $body['hashedPassword'] = $password->hashed->toArray();
+            }
+        }
     
         $body = array_filter($body, function ($value) {
             if (is_array($value)) {
@@ -383,9 +391,8 @@ class User
      * @param array|null $customAttributes Updated custom attributes for the user.
      * @param bool|null $verifiedEmail Indicates if the user's email is verified.
      * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
-     * @param array|null $additionalLoginIds Additional login IDs for the user.
+     * @param array|null $additionalIdentifiers Additional login IDs for the user.
      * @param array|null $ssoAppIds SSO app IDs associated with the user.
-     * @param UserPassword|null $password The user's new password.
      * @param array|null $roleNames Updated roles for the user.
      * @param array|null $userTenants Updated tenants associated with the user.
      * @return void
@@ -1411,7 +1418,7 @@ class User
             'loginId' => $loginId ?? null,
             'email' => $email ?? null,
             'phone' => $phone ?? null,
-            'displayName' => $displayName ?? null,
+            'name' => $displayName ?? null,
             'givenName' => $givenName ?? null,
             'middleName' => $middleName ?? null,
             'familyName' => $familyName ?? null,
@@ -1436,7 +1443,7 @@ class User
             if (isset($password->cleartext)) {
                 $res['password'] = $password->cleartext;
             } else if (isset($password->hashed)) {
-                $res['hashedPassword'] = $password->hashed;
+                $res['hashedPassword'] = $password->hashed->toArray();
             }
         }
 

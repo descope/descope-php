@@ -55,7 +55,7 @@ The SDK allows you to provide a custom caching mechanism by implementing the `Ca
 - `set(string $key, $value, int $ttl = 3600): bool`: Store a value with a specified time-to-live (TTL).
 - `delete(string $key): bool`: Remove a value by key.
 
-You can provide your custom caching implementation by creating a class that implements `CacheInterface`. Here’s an example using Laravel’s cache system:
+You can provide your custom caching implementation by creating a class that implements `CacheInterface`. Here's an example using Laravel's cache system:
 
 ```php
 namespace App\Cache;
@@ -173,13 +173,15 @@ print_r($response);
 3. `DescopeSDK->verifyAndRefreshSession($sessionToken, $refreshToken)` - will validate the session token and return either **TRUE** or **FALSE**, and will refresh your session and return a new session token.
 4. `DescopeSDK->logout($refreshToken)` - will invalidate the refresh token and log the user out of the current session.
 5. `DescopeSDK->logoutAll($refreshToken)` - will invalidate all refresh tokens associated with a given project, thereby signing out of all sessions across multiple applications.
+
 ---
+
 6. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format.
 7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
 
 ### User Management Functions
 
-Each of these functions have code examples on how to use them. 
+Each of these functions have code examples on how to use them.
 
 > Some of these values may be incorrect for your environment, they exist purely as an example for your own implementation.
 
@@ -280,7 +282,7 @@ $users = [
 ];
 
 $response = $descopeSDK->management->user->inviteBatch(
-    $users,                           
+    $users,
     'https://myapp.com/batch-invite',  // inviteUrl
     true,                              // sendMail
     true                               // sendSms
@@ -371,6 +373,163 @@ $descopeSDK->management->user->setActivePassword("testuser1", new UserPassword(c
 
 ```php
 $descopeSDK->management->user->setPassword("testuser1", new UserPassword(cleartext: "password123"), true);
+```
+
+## Password Management
+
+The SDK provides several classes for handling different types of passwords and password hashes. Here's how to use them:
+
+### Cleartext Passwords
+
+For cleartext (plain text) passwords:
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+
+// Create a password with cleartext
+$password = new UserPassword(cleartext: "mysecretpassword");
+
+// Use it in user creation
+$response = $descopeSDK->management->user->create(
+    "user123",                // loginId
+    "user@example.com",       // email
+    "+1234567890",           // phone
+    "John Doe",              // displayName
+    "John",                  // givenName
+    null,                    // middleName
+    "Doe",                   // familyName
+    null,                    // picture
+    null,                    // customAttributes
+    true,                    // verifiedEmail
+    true,                    // verifiedPhone
+    null,                    // inviteUrl
+    null,                    // additionalLoginIds
+    null,                    // ssoAppIds
+    $password,               // password
+    ["user"],               // roleNames
+    null                     // userTenants
+);
+```
+
+### Hashed Passwords
+
+The SDK supports multiple hash types. Here's how to use each:
+
+#### BCrypt
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordBcrypt;
+
+// Create a bcrypt hashed password
+$hashedPassword = new UserPasswordBcrypt('$2a$12$XlQwF3/7ohdzYrE0LC4A.O');
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation
+$response = $descopeSDK->management->user->create(
+    "user123",                // loginId
+    "user@example.com",       // email
+    null,                     // phone
+    "John Doe",              // displayName
+    null,                    // givenName
+    null,                    // middleName
+    null,                    // familyName
+    null,                    // picture
+    null,                    // customAttributes
+    true,                    // verifiedEmail
+    false,                   // verifiedPhone
+    null,                    // inviteUrl
+    null,                    // additionalLoginIds
+    null,                    // ssoAppIds
+    $password,               // password
+    ["user"],               // roleNames
+    null                     // userTenants
+);
+```
+
+#### SHA
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordSha;
+
+// Create a SHA hashed password
+$hashedPassword = new UserPasswordSha(
+    '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',    // hash
+    'sha256'                                                               // type
+);
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation or password replacement
+...
+```
+
+#### MD5
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordMD5;
+
+// Create an MD5 hashed password
+$hashedPassword = new UserPasswordMD5('87f77988ccb5aa917c93201ba314fcd4');
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation or password replacement
+...
+```
+
+#### PBKDF2
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordPbkdf2;
+
+// Create a PBKDF2 hashed password
+$hashedPassword = new UserPasswordPbkdf2(
+    'hashvalue',    // hash
+    'saltvalue',    // salt
+    10000,          // iterations
+    'sha256'        // variant (sha1, sha256, sha512)
+);
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation or password replacement
+...
+```
+
+#### Django
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordDjango;
+
+// Create a Django hashed password
+$hashedPassword = new UserPasswordDjango('pbkdf2_sha256$30000$hashvalue');
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation or password replacement
+...
+```
+
+#### Firebase
+
+```php
+use Descope\SDK\Management\Password\UserPassword;
+use Descope\SDK\Management\Password\UserPasswordFirebase;
+
+// Create a Firebase hashed password
+$hashedPassword = new UserPasswordFirebase(
+    'hashvalue',    // hash
+    'saltvalue',    // salt
+    'saltsep',      // salt separator
+    'signerkey',    // signer key
+    14,             // memory cost
+    8               // rounds
+);
+$password = new UserPassword(null, $hashedPassword);
+
+// Use it in user creation or password replacement
+...
 ```
 
 ## Unit Testing
