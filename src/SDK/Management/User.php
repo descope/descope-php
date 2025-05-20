@@ -1121,7 +1121,7 @@ class User
     }
 
     /**
-     * Set a password for a user.
+     * Set a password for a user. - DEPRECATED
      *
      * @param string $loginId The login ID of the user.
      * @param string $password The new password.

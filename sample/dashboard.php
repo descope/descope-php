@@ -1,7 +1,8 @@
 <?php
 require '../vendor/autoload.php';
 use Descope\SDK\DescopeSDK;
-
+use Descope\SDK\Management\Password\UserPasswordBcrypt;
+use Descope\SDK\Management\Password\UserPassword;
 session_start();
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
@@ -16,6 +17,7 @@ if (!isset($_SESSION["user"])) {
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
+
 ?>
 
 <!DOCTYPE html>
