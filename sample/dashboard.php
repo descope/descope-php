@@ -18,36 +18,6 @@ if (!isset($_SESSION["user"])) {
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
 
-$descopeSDK = new DescopeSDK([
-    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
-    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY']
-]);
-
-
-$hashedPassword = new UserPasswordBcrypt('$2y$10$tXOQ5ZmZCuIMo80AzqTp2OhNjCCK6PZyEpzGwY18tgi0gidV.y5su');
-print_r($hashedPassword);
-$password = new UserPassword(null, $hashedPassword);
-
-$response = $descopeSDK->management->user->create(
-    "kevin@descope.com",                // loginId
-    "kevin@descope.com",     // email
-    "+14152464801",             // phone
-    "Kevin Gao",             // displayName
-    null,                  // givenName
-    null,                   // middleName
-    null,                     // familyName
-    null,                       // picture
-    null,                       // customAttributes
-    true,                       // verifiedEmail
-    true,                       // verifiedPhone
-    null,                       // inviteUrl
-    ["kevin+123123@descope.com"],              // additionalLoginIds
-    [],                // ssoAppIds
-    $password,                      // password
-    [],       // roleNames
-    [] // userTenants
-);
-
 ?>
 
 <!DOCTYPE html>
