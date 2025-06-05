@@ -120,8 +120,7 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "RequestException: " . $e->getMessage() . "\n";
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody\n";
+
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
@@ -169,7 +168,7 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
@@ -210,7 +209,7 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
