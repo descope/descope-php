@@ -151,6 +151,59 @@ class UserTest extends TestCase
         $this->assertArrayHasKey('createdUsers', $response);
     }
 
+    public function testInviteBatchUsersWithStatus()
+    {
+        $users = [
+            new UserObj(
+                "batchstatususer1",
+                "batchstatususer1@example.com",
+                "+14152464801",
+                "Batch Status User 1",
+                "Batch",
+                "Middle",
+                "User",
+                ["user"],
+                [new AssociatedTenant("T2o2zKibuWuCVH4lqJrSfFuXss06", ["Tenant Admin"])],
+                "http://example.com/picture1.jpg",
+                [],
+                true,
+                true,
+                ["additionalLoginId1"],
+                [],
+                new UserPassword("Password123!"),
+                "enabled"  // status set to enabled
+            ),
+            new UserObj(
+                "batchstatususer2",
+                "batchstatususer2@example.com",
+                "+14152464801",
+                "Batch Status User 2",
+                "Batch",
+                "Middle",
+                "User",
+                ["user"],
+                [],
+                "http://example.com/picture2.jpg",
+                [],
+                true,
+                true,
+                ["additionalLoginId2"],
+                [],
+                new UserPassword("Password456!"),
+                "disabled"  // status set to disabled
+            )
+        ];
+
+        $response = $this->descopeSDK->management->user->inviteBatch($users, "http://example.com/invitebatch", true, true);
+        $this->assertArrayHasKey('createdUsers', $response);
+        
+        // Verify that users were created with the correct status
+        foreach ($response['createdUsers'] as $createdUser) {
+            $this->assertArrayHasKey('status', $createdUser);
+            $this->assertContains($createdUser['status'], ['enabled', 'disabled']);
+        }
+    }
+
     public function testUpdateUser()
     {
         $this->descopeSDK->management->user->update(

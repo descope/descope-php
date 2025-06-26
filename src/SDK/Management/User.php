@@ -33,6 +33,7 @@ class UserObj
     public ?array $additionalLoginIds;
     public ?array $ssoAppIds;
     public ?UserPassword $password;
+    public ?string $status;
 
     /**
      * Constructor for UserObj.
@@ -53,6 +54,7 @@ class UserObj
      * @param array|null $additionalLoginIds Additional login IDs for the user.
      * @param array|null $ssoAppIds SSO app IDs associated with the user.
      * @param UserPassword|null $password The user's password.
+     * @param string|null $status The user's status ("enabled", "disabled", "invited").
      */
     public function __construct(
         string $loginId,
@@ -70,7 +72,8 @@ class UserObj
         ?bool $verifiedPhone = null,
         ?array $additionalLoginIds = null,
         ?array $ssoAppIds = null,
-        ?UserPassword $password = null
+        ?UserPassword $password = null,
+        ?string $status = null
     ) {
         $this->loginId = $loginId;
         $this->email = $email;
@@ -88,6 +91,7 @@ class UserObj
         $this->additionalLoginIds = $additionalLoginIds;
         $this->ssoAppIds = $ssoAppIds;
         $this->password = $password;
+        $this->status = $status;
     }
 }
 
@@ -262,7 +266,8 @@ class User
                 null,
                 $additionalLoginIds,
                 $ssoAppIds,
-                $password
+                $password,
+                null
             ),
             true
         );
@@ -341,7 +346,8 @@ class User
                 $sendSms,
                 $additionalLoginIds,
                 $ssoAppIds,
-                $password
+                $password,
+                null
             ),
             true
         );
@@ -1389,6 +1395,7 @@ class User
      * @param array|null $additionalLoginIds Additional login IDs for the user.
      * @param array|null $ssoAppIds SSO app IDs associated with the user.
      * @param UserPassword|null $password User's password information (cleartext or hashed).
+     * @param string|null $status The user's status ("enabled", "disabled", "invited").
      * @return array The composed request body for user creation.
     */
     public function composeCreateBody(
@@ -1412,7 +1419,8 @@ class User
         ?bool $sendSms,
         ?array $additionalLoginIds,
         ?array $ssoAppIds,
-        ?UserPassword $password
+        ?UserPassword $password,
+        ?string $status = null
     ): array {
         $res = array_filter([
             'loginId' => $loginId ?? null,
@@ -1435,6 +1443,7 @@ class User
             'sendSMS' => $sendSms ?? null,
             'additionalLoginIds' => $additionalLoginIds ?? null,
             'ssoAppIds' => $ssoAppIds ?? null,
+            'status' => $status ?? null,
         ], static function ($value) {
             return !empty($value);
         });
@@ -1493,7 +1502,8 @@ class User
                 $sendSms,
                 $user->additionalLoginIds,
                 $user->ssoAppIds,
-                $user->password
+                $user->password,
+                $user->status
             );
         }
 
