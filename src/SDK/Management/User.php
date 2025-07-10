@@ -628,7 +628,7 @@ class User
         return $sortArray;
     }
 
-    private function mapToValuesObject($inputMap): array|\stdClass 
+    private function mapToValuesObject($inputMap)
     {
         if (!is_array($inputMap)) {
             return new \stdClass();
