@@ -546,6 +546,8 @@ class User
      * @param  array|null  $ssoAppIds        Optional list of SSO application IDs to filter by.
      * @param  array|null  $sort             Optional list of fields to sort by.
      * @param  string|null $text             Optional string, allows free text search among all user's attributes.
+     * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs to filter by.
+     * @param  array|null  $tenantRoleNamess    Optional map of tenants and list of role names to filter by.
      * @return array Return dict in the format {"users": []}. "users" contains a list of all of the found users and their information.
      * @throws AuthException if search operation fails.
      */
@@ -564,7 +566,9 @@ class User
         $emails = null,
         $phones = null,
         $ssoAppIds = null,
-        $sort = null
+        $sort = null,
+        $tenantRoleIds = null,
+        $tenantRoleNames = null
     ) {
         // Prepare the request body ensuring PHP 7.x compatibility
         $body = [
@@ -588,7 +592,9 @@ class User
                     'desc' => isset($item['desc']) ? (bool)$item['desc'] : false
                 ];
             }, $sort) : [],
-            'loginIds' => []
+            'loginIds' => [],
+            'tenantRoleIds' => $this->mapToValuesObject($tenantRoleIds),
+            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames)
         ];
     
         $body = array_filter($body, function ($value) {
@@ -621,6 +627,20 @@ class User
         }
         return $sortArray;
     }
+
+    private function mapToValuesObject($inputMap): array|\stdClass 
+    {
+        if (!is_array($inputMap)) {
+            return new \stdClass();
+        }
+        $result = [];
+        foreach ($inputMap as $key => $values) {
+            if (is_array($values)) {
+                $result[$key] = ['values' => array_values($values)];
+            }
+        }
+        return empty($result) ? new \stdClass() : $result;
+    } 
 
     /**
      * Retrieve the provider token for a user.
