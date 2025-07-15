@@ -547,7 +547,7 @@ class User
      * @param  array|null  $sort             Optional list of fields to sort by.
      * @param  string|null $text             Optional string, allows free text search among all user's attributes.
      * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs to filter by.
-     * @param  array|null  $tenantRoleNamess    Optional map of tenants and list of role names to filter by.
+     * @param  array|null  $tenantRoleNames    Optional map of tenants and list of role names to filter by.
      * @return array Return dict in the format {"users": []}. "users" contains a list of all of the found users and their information.
      * @throws AuthException if search operation fails.
      */
