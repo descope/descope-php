@@ -266,7 +266,13 @@ class UserTest extends TestCase
             ["enabled"],
             ["testuser1@example.com"],
             ["+14152464801"],
-            []
+            [],
+            [
+                "tenant1" => ["roleA", "roleB"]
+            ],
+            [
+                "tenant1" => ["Admin", "Editor"]
+            ]
         );
         $this->assertArrayHasKey('users', $response);
     }
