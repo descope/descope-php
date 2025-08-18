@@ -17,7 +17,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@34a5396826718e0013f08e3e639d1c315d5f6b23 # 2.35.0
+        uses: shivammathur/setup-php@2282b6a082fc605c8320908a4cca3a5d1ca6c6fe # 2.35.1
         with:
           php-version: "8.1"
           tools: composer
