@@ -265,7 +265,15 @@ $users = [
         null,                         // middleName
         null,                         // familyName
         ['admin'],                    // roleNames
-        [['tenantId' => 'tenant1']]   // userTenants (can be an empty array if no tenant)
+        [['tenantId' => 'tenant1']],   // userTenants (can be an empty array if no tenant)
+        null,                         // picture
+        null,                         // customAttributes
+        null,                         // verifiedEmail
+        null,                         // verifiedPhone
+        null,                         // additionalLoginIds
+        null,                         // ssoAppIds
+        null,                         // password
+        'enabled'                     // status (optional: "enabled", "disabled", "invited")
     ),
 
     new Descope\SDK\Management\UserObj(
@@ -277,7 +285,15 @@ $users = [
         null,                         // middleName
         null,                         // familyName
         ['viewer'],                   // roleNames
-        [['tenantId' => 'tenant2']]   // userTenants (can be an empty array if no tenant)
+        [['tenantId' => 'tenant2']],   // userTenants (can be an empty array if no tenant)
+        null,                         // picture
+        null,                         // customAttributes
+        null,                         // verifiedEmail
+        null,                         // verifiedPhone
+        null,                         // additionalLoginIds
+        null,                         // ssoAppIds
+        null,                         // password
+        'disabled'                    // status (optional: "enabled", "disabled", "invited")
     )
 ];
 
