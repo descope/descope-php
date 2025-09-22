@@ -15,6 +15,7 @@ final class Verifier
 {
     private SDKConfig $config;
     private API $api;
+    private Extractor $extractor;
 
     /**
      * Constructor for Verifier class.

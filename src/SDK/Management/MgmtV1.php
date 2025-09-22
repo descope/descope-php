@@ -118,6 +118,19 @@ class MgmtV1
     }
 
     /**
+     * Set the base URL directly from a string.
+     * This allows for manual override of the base URL for different clusters.
+     *
+     * @param string $baseUrl The base URL to use for API endpoints.
+     * @return void
+     */
+    public static function setBaseUrlFromString(string $baseUrl): void
+    {
+        self::$baseUrl = $baseUrl;
+        self::updatePaths();
+    }
+
+    /**
      * Extracts the region from a given project ID.
      *
      * @param string $projectId The project ID to extract the region from.
