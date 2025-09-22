@@ -106,7 +106,7 @@ class MgmtV1
      */
     public static function setBaseUrl(string $projectId): void
     {
-        $region = self::extractRegionFromProjectId($projectId);
+        $region = EndpointsV1::extractRegionFromProjectId($projectId);
         $urlPrefix = DEFAULT_URL_PREFIX;
 
         if ($region) {
@@ -130,20 +130,6 @@ class MgmtV1
         self::updatePaths();
     }
 
-    /**
-     * Extracts the region from a given project ID.
-     *
-     * @param string $projectId The project ID to extract the region from.
-     * @return string|null The extracted region or null if not found.
-     */
-    private static function extractRegionFromProjectId(string $projectId): ?string
-    {
-        if (strlen($projectId) >= 32) {
-            $region = substr($projectId, 1, 5);
-            return !empty($region) ? $region : null;
-        }
-        return null;
-    }
 
     /**
      * Updates all API endpoint paths based on the current base URL.

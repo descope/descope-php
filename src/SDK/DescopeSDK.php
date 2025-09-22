@@ -128,7 +128,7 @@ class DescopeSDK
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
         if (empty($sessionToken) || empty($refreshToken)) {
-            throw new ValidateException('Session or refresh token cannot be null or empty.');
+            throw new ValidationException('Session or refresh token cannot be null or empty.');
         }
         
         try {
