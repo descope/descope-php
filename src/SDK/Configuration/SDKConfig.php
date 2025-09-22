@@ -36,12 +36,7 @@ final class SDKConfig
             error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
         }
         
-        // Set baseUrl - use manual baseUrl if provided, otherwise derive from projectId
-        if ($this->baseUrl) {
-            EndpointsV2::setBaseUrlFromString($this->baseUrl);
-        } else {
-            EndpointsV2::setBaseUrl($config['projectId']);
-        }
+        // Base URL handling is managed by DescopeSDK constructor; no need to duplicate here.
     }
 
     /**
