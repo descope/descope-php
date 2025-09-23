@@ -25,6 +25,7 @@ class DescopeSDK
     public SSO $sso;
     public Management $management;
     public API $api;
+    private Verifier $verifier;
 
     /**
      * Constructor for DescopeSDK class.
@@ -37,8 +38,14 @@ class DescopeSDK
             throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
         }
 
-        EndpointsV1::setBaseUrl($config['projectId']);
-        EndpointsV2::setBaseUrl($config['projectId']);
+        // Set baseUrl for all endpoint classes - use manual baseUrl if provided, otherwise derive from projectId
+        if (isset($config['baseUrl']) && !empty($config['baseUrl'])) {
+            EndpointsV1::setBaseUrlFromString($config['baseUrl']);
+            EndpointsV2::setBaseUrlFromString($config['baseUrl']);
+        } else {
+            EndpointsV1::setBaseUrl($config['projectId']);
+            EndpointsV2::setBaseUrl($config['projectId']);
+        }
 
         $this->config = new SDKConfig($config);
 
@@ -46,7 +53,11 @@ class DescopeSDK
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
             $this->management = new Management($this->api);
-            MgmtV1::setBaseUrl($config['projectId']);
+            if (isset($config['baseUrl']) && !empty($config['baseUrl'])) {
+                MgmtV1::setBaseUrlFromString($config['baseUrl']);
+            } else {
+                MgmtV1::setBaseUrl($config['projectId']);
+            }
         }
 
         $this->verifier = new Verifier($this->config, $this->api);
@@ -81,7 +92,7 @@ class DescopeSDK
      * @return array The new session information.
      * @throws AuthException
      */
-    public function refreshSession($refreshToken = null): array
+    public function refreshSession(?string $refreshToken = null): array
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
@@ -111,13 +122,13 @@ class DescopeSDK
      * @return array The refreshed session information.
      * @throws AuthException
      */
-    public function verifyAndRefreshSession($sessionToken = null, $refreshToken = null): array
+    public function verifyAndRefreshSession(?string $sessionToken = null, ?string $refreshToken = null): array
     {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
         if (empty($sessionToken) || empty($refreshToken)) {
-            throw new ValidateException('Session or refresh token cannot be null or empty.');
+            throw new ValidationException('Session or refresh token cannot be null or empty.');
         }
         
         try {
@@ -154,7 +165,7 @@ class DescopeSDK
      * @return array The user details.
      * @throws AuthException
      */
-    public function getUserDetails(string $refreshToken = null): array
+    public function getUserDetails(?string $refreshToken = null): array
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
@@ -182,7 +193,7 @@ class DescopeSDK
      * @return void
      * @throws AuthException
      */
-    public function logout(string $refreshToken = null): void
+    public function logout(?string $refreshToken = null): void
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
@@ -212,7 +223,7 @@ class DescopeSDK
      * @return void
      * @throws AuthException
      */
-    public function logoutAll(string $refreshToken = null): void
+    public function logoutAll(?string $refreshToken = null): void
     {
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 

@@ -16,6 +16,7 @@ final class SDKConfig
     public $client;
     public $projectId;
     public $managementKey;
+    public $baseUrl;
     private $cache;
     private const JWKS_CACHE_KEY = 'descope_jwks';
 
@@ -24,6 +25,7 @@ final class SDKConfig
         $this->client = new Client();
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
+        $this->baseUrl = $config['baseUrl'] ?? null;
         
         if ($cache) {
             $this->cache = $cache;
@@ -33,8 +35,6 @@ final class SDKConfig
             $this->cache = new NullCache();
             error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
         }
-        
-        EndpointsV2::setBaseUrl($config['projectId']);
     }
 
     /**

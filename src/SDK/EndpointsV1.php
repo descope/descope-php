@@ -103,6 +103,19 @@ class EndpointsV1
     }
 
     /**
+     * Set the base URL directly from a string.
+     * This allows for manual override of the base URL for different clusters.
+     *
+     * @param string $baseUrl The base URL to use for API endpoints.
+     * @return void
+     */
+    public static function setBaseUrlFromString(string $baseUrl): void
+    {
+        self::$baseUrl = $baseUrl;
+        self::updatePaths();
+    }
+
+    /**
      * Extracts the region information from the given project ID.
      *
      * @param string $projectId The project ID for the Descope project.
@@ -194,6 +207,18 @@ class EndpointsV2
         }
 
         self::$baseUrl = "$urlPrefix." . DEFAULT_DOMAIN;
+    }
+
+    /**
+     * Set the base URL directly from a string.
+     * This allows for manual override of the base URL for different clusters.
+     *
+     * @param string $baseUrl The base URL to use for API endpoints.
+     * @return void
+     */
+    public static function setBaseUrlFromString(string $baseUrl): void
+    {
+        self::$baseUrl = $baseUrl;
     }
 
     /**
