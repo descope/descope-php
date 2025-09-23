@@ -35,8 +35,6 @@ final class SDKConfig
             $this->cache = new NullCache();
             error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
         }
-        
-        // Base URL handling is managed by DescopeSDK constructor; no need to duplicate here.
     }
 
     /**
