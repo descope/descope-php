@@ -247,6 +247,9 @@ class API
         $headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
+            'x-descope-sdk-name' => 'php',
+            'x-descope-sdk-php-version' => PHP_VERSION,
+            'x-descope-sdk-version' => EndpointsV1::SDK_VERSION,
         ];
 
         $headers['Authorization'] = "Bearer $authToken";
