@@ -8,6 +8,7 @@ use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
+use Descope\SDK\Auth\OAuth;
 use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
@@ -23,6 +24,7 @@ class DescopeSDK
     private SDKConfig $config;
     public Password $password;
     public SSO $sso;
+    public OAuth $oauth;
     public Management $management;
     public API $api;
     private Verifier $verifier;
@@ -64,6 +66,7 @@ class DescopeSDK
 
         $this->password = new Password($this->api);
         $this->sso = new SSO($this->api);
+        $this->oauth = new OAuth($this->api);
     }
 
      /**
@@ -264,6 +267,16 @@ class DescopeSDK
     public function sso(): SSO
     {
         return $this->sso;
+    }
+
+    /**
+     * Get the OAuth component.
+     *
+     * @return OAuth The OAuth instance.
+     */
+    public function oauth(): OAuth
+    {
+        return $this->oauth;
     }
 
     /**

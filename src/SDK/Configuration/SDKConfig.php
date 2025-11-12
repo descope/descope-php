@@ -5,6 +5,7 @@ namespace Descope\SDK\Configuration;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
+use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\API;
 use Descope\SDK\Cache\CacheInterface;
@@ -33,7 +34,10 @@ final class SDKConfig
             $this->cache = new APCuCache();
         } else {
             $this->cache = new NullCache();
-            error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
+            // Only log warning in development/debug mode
+            if (isset($_ENV['DESCOPE_DEBUG']) && $_ENV['DESCOPE_DEBUG'] === 'true') {
+                error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
+            }
         }
     }
 
@@ -61,7 +65,9 @@ final class SDKConfig
     {
         try {
             $url = EndpointsV2::getPublicKeyPath() . '/' . $this->projectId;
-            $response = $this->client->request('GET', $url);
+            $response = $this->client->request('GET', $url, [
+                'headers' => $this->getSDKHeaders()
+            ]);
             $jwkSets = json_decode($response->getBody(), true);
 
             if (!isset($jwkSets['keys']) || !is_array($jwkSets['keys'])) {
@@ -72,5 +78,21 @@ final class SDKConfig
         } catch (RequestException $e) {
             throw new \Exception('Failed to fetch JWK KeySet: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Generates SDK identification headers for HTTP requests.
+     *
+     * @return array Headers array with SDK identification.
+     */
+    private function getSDKHeaders(): array
+    {
+        return [
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'x-descope-sdk-name' => 'php',
+            'x-descope-sdk-php-version' => PHP_VERSION,
+            'x-descope-sdk-version' => EndpointsV1::SDK_VERSION,
+        ];
     }
 }

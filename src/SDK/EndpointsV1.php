@@ -23,6 +23,8 @@ const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)
 
 class EndpointsV1
 {
+    public const SDK_VERSION = '0.5.0';
+    
     public static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
 
     public static $SESSION_COOKIE_NAME = SESSION_COOKIE;

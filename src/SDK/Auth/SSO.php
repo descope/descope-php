@@ -66,12 +66,16 @@ class SSO
      */
     public function exchangeToken(?string $code = null): array
     {
+        if (empty($code)) {
+            throw new AuthException(400, 'invalid argument', 'code cannot be empty');
+        }
+
         $uri = EndpointsV1::$SSO_EXCHANGE_TOKEN_PATH;
         $body = ['code' => $code];
 
-        $response = $this->api->doPost($uri, $body);
+        $response = $this->api->doPost($uri, $body, false);
 
-        return json_decode((string) $response->getBody(), true);
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
     /**
