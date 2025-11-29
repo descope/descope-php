@@ -80,4 +80,3 @@ final class APIDebugTest extends TestCase
         $this->assertTrue($debugProperty->getValue($api), 'Debug should be enabled when DESCOPE_DEBUG env var is set to "true"');
     }
 }
-
