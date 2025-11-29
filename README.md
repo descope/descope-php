@@ -37,9 +37,52 @@ use Descope\SDK\DescopeSDK;
 
 $descopeSDK = new DescopeSDK([
     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
-    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'] // Optional, only used for Management functions
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'], // Optional, only used for Management functions
+    'debug' => false // Optional, enables verbose error logging (default: false)
 ]);
 ```
+
+### Debug/Verbose Logging
+
+The SDK supports optional debug/verbose logging to help troubleshoot API request issues. **Debug logging is disabled by default** to keep your application logs clean in production.
+
+When enabled, the SDK will log detailed error information to PHP's error log (via `error_log()`) when API requests fail, including:
+
+- HTTP status codes
+- Error response bodies
+- Request exceptions
+
+You can enable debug logging in three ways:
+
+1. **Via Config Array** (recommended):
+
+   ```php
+   $descopeSDK = new DescopeSDK([
+       'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+       'debug' => true  // Enable verbose logging
+   ]);
+   ```
+
+2. **Via Environment Variable**:
+
+   ```bash
+   export DESCOPE_DEBUG=true
+   ```
+
+   Then initialize the SDK normally (it will automatically detect the environment variable):
+
+   ```php
+   $descopeSDK = new DescopeSDK([
+       'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+   ]);
+   ```
+
+3. **Via `.env` file**:
+   ```
+   DESCOPE_DEBUG=true
+   ```
+
+**Note:** Debug logging uses PHP's `error_log()` function, so logs will appear in your configured PHP error log location (typically defined by `error_log` in `php.ini` or your server configuration).
 
 ### Caching Mechanism
 
