@@ -13,7 +13,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
-          persist-credentials: false
+          persist-credentials: true
           ref: ${{ github.ref }}
 
       - name: Setup PHP
@@ -55,6 +55,28 @@ jobs:
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
+
+      - name: Update SDK Version Constant
+        env:
+          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+        run: |
+          # Extract version from tag (e.g., release/v1.0.0 -> 1.0.0)
+          VERSION=$(echo "$NEW_TAG" | sed 's/release\/v//')
+          echo "Updating SDK_VERSION to $VERSION"
+
+          # Update the SDK_VERSION constant in EndpointsV1.php (GitHub Actions runs on Linux)
+          sed -i "s/public const SDK_VERSION = '[^']*';/public const SDK_VERSION = '$VERSION';/" src/SDK/EndpointsV1.php
+
+          # Verify the change
+          grep "public const SDK_VERSION = '$VERSION';" src/SDK/EndpointsV1.php
+
+          # Commit and push the change
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/SDK/EndpointsV1.php
+          git commit -m "chore: Update SDK_VERSION to $VERSION [skip ci]" || echo "No changes to commit"
+          git push https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}.git HEAD:main || echo "Nothing to push"
 
       - name: Update Packagist
         run: |
