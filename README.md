@@ -591,6 +591,53 @@ $password = new UserPassword(null, $hashedPassword);
 ...
 ```
 
+## Outbound Apps Management
+
+Outbound Apps allow users to authenticate with third-party services through Descope. These functions manage OAuth tokens for outbound applications.
+
+### Fetch User Token
+
+Retrieve an access token for a user to interact with a third-party outbound application:
+
+```php
+$response = $descopeSDK->management->outboundApps->fetchUserToken(
+    'google',                // appId - the outbound application ID
+    'user123',               // userId - the Descope user ID
+    ['email', 'profile'],    // scopes - requested OAuth scopes (optional)
+    true,                    // withRefreshToken - include refresh token (optional, default: false)
+    false,                   // forceRefresh - force token refresh (optional, default: false)
+    'tenant123'              // tenantId - for multi-tenant apps (optional)
+);
+
+// Access the token data
+$accessToken = $response['token']['accessToken'];
+$scopes = $response['token']['scopes'];
+$expiry = $response['token']['accessTokenExpiry'];
+```
+
+### Delete User Tokens
+
+Delete outbound application tokens by app ID and/or user ID:
+
+```php
+// Delete all tokens for a specific app
+$descopeSDK->management->outboundApps->deleteUserTokens('google', null);
+
+// Delete all tokens for a specific user
+$descopeSDK->management->outboundApps->deleteUserTokens(null, 'user123');
+
+// Delete tokens for a specific app and user combination
+$descopeSDK->management->outboundApps->deleteUserTokens('google', 'user123');
+```
+
+### Delete Token By ID
+
+Delete a specific outbound application token by its unique ID:
+
+```php
+$descopeSDK->management->outboundApps->deleteTokenById('token_abc123');
+```
+
 ## Unit Testing
 
 The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the `src/tests/DescopeSDKTest.php` file, and run to validate whether or not the functions are operating properly.
