@@ -428,12 +428,6 @@ $descopeSDK->management->user->setTemporaryPassword("testuser1", new UserPasswor
 $descopeSDK->management->user->setActivePassword("testuser1", new UserPassword(cleartext: "activePassword123"));
 ```
 
-#### Set Password
-
-```php
-$descopeSDK->management->user->setPassword("testuser1", new UserPassword(cleartext: "password123"), true);
-```
-
 ## Password Management
 
 The SDK provides several classes for handling different types of passwords and password hashes. Here's how to use them:
