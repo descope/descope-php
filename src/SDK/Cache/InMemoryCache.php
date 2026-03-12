@@ -68,7 +68,7 @@ class InMemoryCache implements CacheInterface
     {
         $this->maybeCleanup();
 
-        // Enforce max cache size by removing oldest entry if needed
+        // Enforce max cache size by removing earliest-expiring entry if needed
         if (count(self::$cache) >= self::MAX_CACHE_SIZE && !isset(self::$cache[$key])) {
             $this->evictOldest();
         }
@@ -120,8 +120,7 @@ class InMemoryCache implements CacheInterface
     }
 
     /**
-     * Evict the oldest entry when cache is full.
-     * Uses the entry with the earliest expiration time.
+     * Evict the entry with the earliest expiration time when cache is full.
      */
     private function evictOldest(): void
     {

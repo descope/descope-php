@@ -21,115 +21,83 @@ final class SDKConfigCacheTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Clean up in-memory cache after each test
         InMemoryCache::clear();
     }
 
     public function testDefaultCacheFallsBackToInMemory()
     {
-        // Without APCu (most CI environments), should use InMemoryCache
+        // Without APCu (most CI environments), should use InMemoryCache.
+        // Verify by using reflection to inspect the private $cache field.
         $sdkConfig = new SDKConfig($this->config);
 
-        // We can't directly access the private cache property,
-        // but we can verify caching works by testing JWKS caching behavior
-        // This indirectly confirms InMemoryCache is being used
+        $ref = new \ReflectionProperty(SDKConfig::class, 'cache');
+        $ref->setAccessible(true);
+        $cache = $ref->getValue($sdkConfig);
 
-        $this->assertInstanceOf(SDKConfig::class, $sdkConfig);
+        $this->assertInstanceOf(InMemoryCache::class, $cache);
     }
 
-    public function testCustomCacheCanBeProvided()
+    public function testCustomCacheIsUsed()
     {
-        // Create a mock cache
         $mockCache = $this->createMock(CacheInterface::class);
         $mockCache->method('get')->willReturn(null);
         $mockCache->method('set')->willReturn(true);
 
         $sdkConfig = new SDKConfig($this->config, $mockCache);
 
-        $this->assertInstanceOf(SDKConfig::class, $sdkConfig);
+        $ref = new \ReflectionProperty(SDKConfig::class, 'cache');
+        $ref->setAccessible(true);
+
+        $this->assertSame($mockCache, $ref->getValue($sdkConfig));
     }
 
-    public function testCustomJWKSCacheTTL()
+    public function testCustomJWKSCacheTTLIsStored()
     {
-        // Test that custom TTL can be specified
         $customConfig = array_merge($this->config, [
-            'jwksCacheTTL' => 300 // 5 minutes
+            'jwksCacheTTL' => 300
         ]);
 
         $sdkConfig = new SDKConfig($customConfig);
 
-        $this->assertInstanceOf(SDKConfig::class, $sdkConfig);
+        $ref = new \ReflectionProperty(SDKConfig::class, 'jwksCacheTTL');
+        $ref->setAccessible(true);
+
+        $this->assertSame(300, $ref->getValue($sdkConfig));
     }
 
-    public function testDefaultJWKSCacheTTL()
+    public function testDefaultJWKSCacheTTLIs600()
     {
-        // Test that default TTL is used when not specified
         $sdkConfig = new SDKConfig($this->config);
 
-        $this->assertInstanceOf(SDKConfig::class, $sdkConfig);
+        $ref = new \ReflectionProperty(SDKConfig::class, 'jwksCacheTTL');
+        $ref->setAccessible(true);
+
+        $this->assertSame(600, $ref->getValue($sdkConfig));
     }
 
-    public function testJWKSCachingWorks()
+    public function testInvalidTTLFallsBackToDefault()
     {
-        // Create a custom cache to track calls
-        $mockCache = $this->createMock(CacheInterface::class);
+        // Negative
+        $sdkConfig = new SDKConfig(array_merge($this->config, ['jwksCacheTTL' => -10]));
+        $ref = new \ReflectionProperty(SDKConfig::class, 'jwksCacheTTL');
+        $ref->setAccessible(true);
+        $this->assertSame(600, $ref->getValue($sdkConfig));
 
-        // Expect get to be called first
-        $mockCache->expects($this->once())
-            ->method('get')
-            ->with('descope_jwks')
-            ->willReturn([
-                'keys' => [
-                    [
-                        'kty' => 'RSA',
-                        'kid' => 'test-key-id',
-                        'use' => 'sig',
-                        'n' => 'test-modulus',
-                        'e' => 'AQAB'
-                    ]
-                ]
-            ]);
+        // Zero
+        $sdkConfig = new SDKConfig(array_merge($this->config, ['jwksCacheTTL' => 0]));
+        $this->assertSame(600, $ref->getValue($sdkConfig));
 
-        $sdkConfig = new SDKConfig($this->config, $mockCache);
+        // Non-numeric string
+        $sdkConfig = new SDKConfig(array_merge($this->config, ['jwksCacheTTL' => 'abc']));
+        $this->assertSame(600, $ref->getValue($sdkConfig));
 
-        // This would normally fetch from API, but should use cache
-        try {
-            $jwks = $sdkConfig->getJWKSets();
-            $this->assertIsArray($jwks);
-            $this->assertArrayHasKey('keys', $jwks);
-        } catch (\Exception $e) {
-            // Expected in test environment without actual API
-            $this->assertStringContainsString('Failed to fetch', $e->getMessage());
-        }
+        // Numeric string is accepted
+        $sdkConfig = new SDKConfig(array_merge($this->config, ['jwksCacheTTL' => '120']));
+        $this->assertSame(120, $ref->getValue($sdkConfig));
     }
 
-    public function testJWKSForceRefreshSkipsCacheGet()
+    public function testGetJWKSetsReturnsCachedData()
     {
-        // This test verifies that when forceRefresh is true, the cache behavior is correct
-        // We test this indirectly by verifying cache works correctly
-
-        $cache = new InMemoryCache();
-
-        // Pre-populate cache with stale data
-        $staleData = ['keys' => [['kid' => 'stale-key']]];
-        $cache->set('descope_jwks', $staleData, 600);
-
-        // Verify stale data is in cache
-        $this->assertEquals($staleData, $cache->get('descope_jwks'));
-
-        // The force refresh logic is tested at the integration level
-        // This test confirms the cache infrastructure works
-        $this->assertIsArray($staleData);
-    }
-
-    public function testInMemoryCacheActuallyWorks()
-    {
-        // Integration test to verify InMemoryCache actually caches data
-        InMemoryCache::clear();
-
-        $cache = new InMemoryCache();
-
-        // Simulate JWKS data
         $jwksData = [
             'keys' => [
                 [
@@ -142,14 +110,66 @@ final class SDKConfigCacheTest extends TestCase
             ]
         ];
 
-        // Set in cache
-        $cache->set('descope_jwks', $jwksData, 600);
+        $mockCache = $this->createMock(CacheInterface::class);
 
-        // Retrieve from cache
-        $retrieved = $cache->get('descope_jwks');
+        // Expect get() to be called with project-scoped key
+        $mockCache->expects($this->once())
+            ->method('get')
+            ->with('descope_jwks:test_project_id')
+            ->willReturn($jwksData);
 
-        $this->assertEquals($jwksData, $retrieved);
-        $this->assertArrayHasKey('keys', $retrieved);
-        $this->assertCount(1, $retrieved['keys']);
+        $sdkConfig = new SDKConfig($this->config, $mockCache);
+        $result = $sdkConfig->getJWKSets();
+
+        $this->assertSame($jwksData, $result);
+    }
+
+    public function testForceRefreshSkipsCacheGet()
+    {
+        $mockCache = $this->createMock(CacheInterface::class);
+
+        // When forceRefresh is true, get() should NEVER be called
+        $mockCache->expects($this->never())
+            ->method('get');
+
+        // Allow set() to be called when fresh JWKS is stored
+        $mockCache->expects($this->any())
+            ->method('set');
+
+        $sdkConfig = new SDKConfig($this->config, $mockCache);
+
+        try {
+            $sdkConfig->getJWKSets(true);
+        } catch (\Exception $e) {
+            // Expected: no real API in test. The assertion is that get() was never called.
+            $this->assertStringContainsString('Failed to fetch', $e->getMessage());
+        }
+    }
+
+    public function testCacheKeyIsScopedByProjectId()
+    {
+        $cacheA = $this->createMock(CacheInterface::class);
+        $cacheB = $this->createMock(CacheInterface::class);
+
+        $jwksA = ['keys' => [['kid' => 'key-a']]];
+        $jwksB = ['keys' => [['kid' => 'key-b']]];
+
+        // Project A uses key scoped to projectA
+        $cacheA->expects($this->once())
+            ->method('get')
+            ->with('descope_jwks:projectA')
+            ->willReturn($jwksA);
+
+        // Project B uses key scoped to projectB
+        $cacheB->expects($this->once())
+            ->method('get')
+            ->with('descope_jwks:projectB')
+            ->willReturn($jwksB);
+
+        $configA = new SDKConfig(['projectId' => 'projectA', 'managementKey' => ''], $cacheA);
+        $configB = new SDKConfig(['projectId' => 'projectB', 'managementKey' => ''], $cacheB);
+
+        $this->assertSame($jwksA, $configA->getJWKSets());
+        $this->assertSame($jwksB, $configB->getJWKSets());
     }
 }

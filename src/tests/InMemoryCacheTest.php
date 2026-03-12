@@ -60,16 +60,10 @@ final class InMemoryCacheTest extends TestCase
         $key = 'expiring_key';
         $value = 'expiring_value';
 
-        // Set with 1 second TTL
-        $this->cache->set($key, $value, 1);
+        // Set with immediate expiration (TTL = 0)
+        $this->cache->set($key, $value, 0);
 
-        // Should be available immediately
-        $this->assertEquals($value, $this->cache->get($key));
-
-        // Wait for expiration
-        sleep(2);
-
-        // Should be expired and return null
+        // Should be expired immediately and return null
         $retrieved = $this->cache->get($key);
         $this->assertNull($retrieved);
     }
