@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\DescopeException;
 use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\Token\Verifier;
@@ -249,7 +250,7 @@ class API
      *
      * @throws AuthException|RateLimitException
      */
-    private function createExceptionFromRequestException(RequestException $e): AuthException|RateLimitException
+    private function createExceptionFromRequestException(RequestException $e): DescopeException
     {
         $response = $e->getResponse();
         $statusCode = $response ? $response->getStatusCode() : 0;

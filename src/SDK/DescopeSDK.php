@@ -15,6 +15,7 @@ use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\Exception\ValidationException;
 
 use Descope\SDK\Management\MgmtV1;
@@ -95,7 +96,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token to use.
      * @return array The new session information.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function refreshSession(?string $refreshToken = null): array
     {
@@ -119,7 +120,7 @@ class DescopeSDK
      * @param  string|null $sessionToken The session token.
      * @param  string|null $refreshToken The refresh token.
      * @return array The refreshed session information.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function verifyAndRefreshSession(?string $sessionToken = null, ?string $refreshToken = null): array
     {
@@ -162,7 +163,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return array The user details.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function getUserDetails(?string $refreshToken = null): array
     {
@@ -184,7 +185,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function logout(?string $refreshToken = null): void
     {
@@ -207,7 +208,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function logoutAll(?string $refreshToken = null): void
     {
