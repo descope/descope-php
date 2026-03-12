@@ -98,6 +98,11 @@ class MgmtV1
     public static string $AUDIT_SEARCH;
     public static string $AUDIT_CREATE_EVENT;
 
+    // Outbound Apps
+    public static string $OUTBOUND_APP_USER_TOKEN_PATH;
+    public static string $OUTBOUND_APP_DELETE_USER_TOKENS_PATH;
+    public static string $OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH;
+
     /**
      * Sets the base URL based on the project ID, taking into account the region.
      *
@@ -236,6 +241,11 @@ class MgmtV1
         // Audit 
         self::$AUDIT_SEARCH = self::$baseUrl . "/v1/mgmt/audit/search";
         self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
+
+        // Outbound Apps
+        self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token";
+        self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/user/tokens";
+        self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outbound/token";
     }
 }
 

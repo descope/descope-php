@@ -17,6 +17,7 @@ class Management
      */
     public User $user;
     public Audit $audit;
+    public OutboundApps $outboundApps;
 
     /**
      * Constructor for Management class.
@@ -27,6 +28,7 @@ class Management
     {
         $this->user = new User($auth);
         $this->audit = new Audit($auth);
+        $this->outboundApps = new OutboundApps($auth);
     }
 
     /**
@@ -47,5 +49,15 @@ class Management
     public function audit(): Audit
     {
         return $this->audit;
+    }
+
+    /**
+     * Get the Outbound Apps Management component.
+     *
+     * @return OutboundApps The Outbound Apps management instance.
+     */
+    public function outboundApps(): OutboundApps
+    {
+        return $this->outboundApps;
     }
 }

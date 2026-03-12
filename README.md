@@ -37,9 +37,52 @@ use Descope\SDK\DescopeSDK;
 
 $descopeSDK = new DescopeSDK([
     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
-    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'] // Optional, only used for Management functions
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'], // Optional, only used for Management functions
+    'debug' => false // Optional, enables verbose error logging (default: false)
 ]);
 ```
+
+### Debug/Verbose Logging
+
+The SDK supports optional debug/verbose logging to help troubleshoot API request issues. **Debug logging is disabled by default** to keep your application logs clean in production.
+
+When enabled, the SDK will log detailed error information to PHP's error log (via `error_log()`) when API requests fail, including:
+
+- HTTP status codes
+- Error response bodies
+- Request exceptions
+
+You can enable debug logging in three ways:
+
+1. **Via Config Array** (recommended):
+
+   ```php
+   $descopeSDK = new DescopeSDK([
+       'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+       'debug' => true  // Enable verbose logging
+   ]);
+   ```
+
+2. **Via Environment Variable**:
+
+   ```bash
+   export DESCOPE_DEBUG=true
+   ```
+
+   Then initialize the SDK normally (it will automatically detect the environment variable):
+
+   ```php
+   $descopeSDK = new DescopeSDK([
+       'projectId' => $_ENV['DESCOPE_PROJECT_ID']
+   ]);
+   ```
+
+3. **Via `.env` file**:
+   ```
+   DESCOPE_DEBUG=true
+   ```
+
+**Note:** Debug logging uses PHP's `error_log()` function, so logs will appear in your configured PHP error log location (typically defined by `error_log` in `php.ini` or your server configuration).
 
 ### Caching Mechanism
 
@@ -546,6 +589,53 @@ $password = new UserPassword(null, $hashedPassword);
 
 // Use it in user creation or password replacement
 ...
+```
+
+## Outbound Apps Management
+
+Outbound Apps allow users to authenticate with third-party services through Descope. These functions manage OAuth tokens for outbound applications.
+
+### Fetch User Token
+
+Retrieve an access token for a user to interact with a third-party outbound application:
+
+```php
+$response = $descopeSDK->management->outboundApps->fetchUserToken(
+    'google',                // appId - the outbound application ID
+    'user123',               // userId - the Descope user ID
+    ['email', 'profile'],    // scopes - requested OAuth scopes (optional)
+    true,                    // withRefreshToken - include refresh token (optional, default: false)
+    false,                   // forceRefresh - force token refresh (optional, default: false)
+    'tenant123'              // tenantId - for multi-tenant apps (optional)
+);
+
+// Access the token data
+$accessToken = $response['token']['accessToken'];
+$scopes = $response['token']['scopes'];
+$expiry = $response['token']['accessTokenExpiry'];
+```
+
+### Delete User Tokens
+
+Delete outbound application tokens by app ID and/or user ID:
+
+```php
+// Delete all tokens for a specific app
+$descopeSDK->management->outboundApps->deleteUserTokens('google', null);
+
+// Delete all tokens for a specific user
+$descopeSDK->management->outboundApps->deleteUserTokens(null, 'user123');
+
+// Delete tokens for a specific app and user combination
+$descopeSDK->management->outboundApps->deleteUserTokens('google', 'user123');
+```
+
+### Delete Token By ID
+
+Delete a specific outbound application token by its unique ID:
+
+```php
+$descopeSDK->management->outboundApps->deleteTokenById('token_abc123');
 ```
 
 ## Unit Testing

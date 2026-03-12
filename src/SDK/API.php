@@ -16,14 +16,16 @@ class API
     private $httpClient;
     private $projectId;
     private $managementKey;
+    private $debug;
 
     /**
      * Constructor for API class.
      *
      * @param string      $projectId
      * @param string|null $managementKey Management key for authentication.
+     * @param bool|null   $debug         Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
      */
-    public function __construct(string $projectId, ?string $managementKey)
+    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null)
     {
         $this->httpClient = new Client();
 
@@ -44,6 +46,13 @@ class API
 
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
+        
+        // Set debug flag from parameter, environment variable, or default to false
+        if ($debug !== null) {
+            $this->debug = $debug;
+        } else {
+            $this->debug = isset($_ENV['DESCOPE_DEBUG']) && $_ENV['DESCOPE_DEBUG'] === 'true';
+        }
     }
 
     /**
@@ -120,8 +129,12 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "RequestException: " . $e->getMessage() . "\n";
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody\n";
+            
+            if ($this->debug) {
+                error_log("Descope SDK [POST] RequestException: " . $e->getMessage());
+                error_log("Descope SDK [POST] Error: HTTP Status Code: $statusCode, Response: $responseBody");
+            }
+            
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
@@ -169,7 +182,11 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+            
+            if ($this->debug) {
+                error_log("Descope SDK [GET] Error: HTTP Status Code: $statusCode, Response: $responseBody");
+            }
+            
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
@@ -210,7 +227,11 @@ class API
         } catch (RequestException $e) {
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
             $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            echo "Error: HTTP Status Code: $statusCode, Response: $responseBody";
+            
+            if ($this->debug) {
+                error_log("Descope SDK [DELETE] Error: HTTP Status Code: $statusCode, Response: $responseBody");
+            }
+            
             return [
                 'statusCode' => $statusCode,
                 'response' => $responseBody,
