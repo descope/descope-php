@@ -10,7 +10,7 @@ use Descope\SDK\EndpointsV2;
 use Descope\SDK\API;
 use Descope\SDK\Cache\CacheInterface;
 use Descope\SDK\Cache\APCuCache;
-use Descope\SDK\Cache\NullCache;
+use Descope\SDK\Cache\InMemoryCache;
 
 final class SDKConfig
 {
@@ -19,7 +19,9 @@ final class SDKConfig
     public $managementKey;
     public $baseUrl;
     private $cache;
+    private $jwksCacheTTL;
     private const JWKS_CACHE_KEY = 'descope_jwks';
+    private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
 
     public function __construct(array $config, ?CacheInterface $cache = null)
     {
@@ -27,16 +29,21 @@ final class SDKConfig
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
         $this->baseUrl = $config['baseUrl'] ?? null;
-        
+        $this->jwksCacheTTL = $config['jwksCacheTTL'] ?? self::DEFAULT_JWKS_TTL;
+
         if ($cache) {
             $this->cache = $cache;
         } elseif (extension_loaded('apcu') && ini_get('apc.enable_cli')) {
             $this->cache = new APCuCache();
         } else {
-            $this->cache = new NullCache();
-            // Only log warning in development/debug mode
-            if (isset($_ENV['DESCOPE_DEBUG']) && $_ENV['DESCOPE_DEBUG'] === 'true') {
-                error_log('APCu is not enabled. Falling back to NullCache. Caching is disabled.');
+            // Fallback to in-memory cache instead of NullCache
+            $this->cache = new InMemoryCache();
+
+            // Log warning when APCu is not available
+            // This helps operators identify performance implications
+            if (php_sapi_name() === 'cli' || (isset($_ENV['DESCOPE_DEBUG']) && $_ENV['DESCOPE_DEBUG'] === 'true')) {
+                error_log('[Descope SDK] APCu extension not available or not enabled. Using in-memory cache fallback. ' .
+                          'For better performance in production, enable APCu extension.');
             }
         }
     }
@@ -54,7 +61,7 @@ final class SDKConfig
         }
 
         $jwks = $this->fetchJWKSets();
-        $this->cache->set(self::JWKS_CACHE_KEY, $jwks, 3600); // Cache for 1 hour
+        $this->cache->set(self::JWKS_CACHE_KEY, $jwks, $this->jwksCacheTTL);
         return $jwks;
     }
 
