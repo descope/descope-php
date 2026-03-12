@@ -10,7 +10,6 @@ use Descope\SDK\Management\MgmtV1;
 use Descope\SDK\Management\LoginOptions;
 use Descope\SDK\Management\Password\UserPassword;
 use Descope\SDK\API;
-use GuzzleHttp\Exception\RequestException;
 
 /**
  * UserObj class represents the details of a user.
@@ -601,17 +600,11 @@ class User
             return $value !== null && $value !== '';
         });
     
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USERS_SEARCH_PATH,
                 $body,
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     private function sortToArray(array $sort): array
@@ -652,16 +645,10 @@ class User
      */
     public function getProviderToken(string $loginId, string $provider): array
     {
-        try {
-            return $this->api->doGet(
+        return $this->api->doGet(
                 MgmtV1::$USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider. "&withRefreshToken=true",
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -673,17 +660,11 @@ class User
      */
     public function activate(string $loginId): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_STATUS_PATH,
                 ['loginId' => $loginId, 'status' => 'enabled'],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -695,17 +676,11 @@ class User
      */
     public function deactivate(string $loginId): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_STATUS_PATH,
                 ['loginId' => $loginId, 'status' => 'disabled'],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -718,17 +693,11 @@ class User
      */
     public function updateLoginId(string $loginId, string $newLoginId): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_LOGIN_ID_PATH,
                 ['loginId' => $loginId, 'newLoginId' => $newLoginId],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -742,17 +711,11 @@ class User
      */
     public function updateEmail(string $loginId, string $email, bool $verified): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_EMAIL_PATH,
                 ['loginId' => $loginId, 'email' => $email, 'verified' => $verified],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -766,17 +729,11 @@ class User
      */
     public function updatePhone(string $loginId, string $phone, bool $verified): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_PHONE_PATH,
                 ['loginId' => $loginId, 'phone' => $phone, 'verified' => $verified],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -808,17 +765,11 @@ class User
             $body['familyName'] = $familyName;
         }
 
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_NAME_PATH,
                 $body,
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -831,17 +782,11 @@ class User
      */
     public function updatePicture(string $loginId, string $picture): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_PICTURE_PATH,
                 ['loginId' => $loginId, 'picture' => $picture],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -855,17 +800,11 @@ class User
      */
     public function updateCustomAttribute(string $loginId, string $attributeKey, $attributeValue): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_UPDATE_CUSTOM_ATTRIBUTE_PATH,
                 ['loginId' => $loginId, 'attributeKey' => $attributeKey, 'attributeValue' => $attributeValue],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -878,17 +817,11 @@ class User
      */
     public function setRoles(string $loginId, array $roleNames): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_SET_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -901,17 +834,11 @@ class User
      */
     public function addRoles(string $loginId, array $roleNames): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_ADD_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -924,17 +851,11 @@ class User
      */
     public function removeRoles(string $loginId, array $roleNames): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_REMOVE_ROLE_PATH,
                 ['loginId' => $loginId, 'roleNames' => $roleNames],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -947,17 +868,11 @@ class User
      */
     public function setSsoApps(string $loginId, array $ssoAppIds): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_SET_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -970,17 +885,11 @@ class User
      */
     public function addSsoApps(string $loginId, array $ssoAppIds): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_ADD_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -993,17 +902,11 @@ class User
      */
     public function removeSsoApps(string $loginId, array $ssoAppIds): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_REMOVE_SSO_APPS,
                 ['loginId' => $loginId, 'ssoAppIds' => $ssoAppIds],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1016,17 +919,11 @@ class User
      */
     public function addTenant(string $loginId, string $tenantId): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_ADD_TENANT_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1039,17 +936,11 @@ class User
      */
     public function removeTenant(string $loginId, string $tenantId): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_REMOVE_TENANT_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1063,17 +954,11 @@ class User
      */
     public function setTenantRoles(string $loginId, string $tenantId, array $roleNames): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_SET_ROLE_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1087,17 +972,11 @@ class User
      */
     public function removeTenantRoles(string $loginId, string $tenantId, array $roleNames): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_REMOVE_ROLE_PATH,
                 ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roleNames],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1110,17 +989,11 @@ class User
      */
     public function setTemporaryPassword(string $loginId, UserPassword $password): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_SET_TEMPORARY_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => false],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1133,17 +1006,11 @@ class User
      */
     public function setActivePassword(string $loginId, UserPassword $password): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_SET_ACTIVE_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => true],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1157,17 +1024,11 @@ class User
      */
     public function setPassword(string $loginId, string $password, bool $setActive = false): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_SET_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1181,17 +1042,11 @@ class User
      */
     public function updatePassword(string $loginId, string $password, bool $setActive): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_UPDATE_PASSWORD_PATH,
                 ['loginId' => $loginId, 'password' => $password, 'setActive' => $setActive],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1203,17 +1058,11 @@ class User
      */
     public function expirePassword(string $loginId): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_EXPIRE_PASSWORD_PATH,
                 ['loginId' => $loginId],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1225,17 +1074,11 @@ class User
      */
     public function removeAllPasskeys(string $loginId): void
     {
-        try {
-            $this->api->doPost(
+        $this->api->doPost(
                 MgmtV1::$USER_REMOVE_ALL_PASSKEYS_PATH,
                 ['loginId' => $loginId],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1249,8 +1092,7 @@ class User
      */
     public function generateOtpForTestUser(string $loginId, int $method, ?LoginOptions $loginOptions = null): array
     {
-        try {
-            $response = $this->api->doPost(
+        $response = $this->api->doPost(
                 MgmtV1::$USER_GENERATE_OTP_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
@@ -1260,11 +1102,6 @@ class User
                 true
             );
             return $response;
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1279,8 +1116,7 @@ class User
      */
     public function generateMagicLinkForTestUser(string $loginId, int $method, string $uri, ?LoginOptions $loginOptions = null): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_GENERATE_MAGIC_LINK_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
@@ -1290,11 +1126,6 @@ class User
                 ],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1309,8 +1140,7 @@ class User
      */
     public function generateEnchantedLinkForTestUser(string $loginId, string $uri, ?LoginOptions $loginOptions = null): array
     {
-        try {
-            return $this->api->doPost(
+        return $this->api->doPost(
                 MgmtV1::$USER_GENERATE_ENCHANTED_LINK_FOR_TEST_PATH,
                 [
                     'loginId' => $loginId,
@@ -1319,11 +1149,6 @@ class User
                 ],
                 true
             );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1337,8 +1162,7 @@ class User
      */
     public function generateEmbeddedLink(string $loginId, ?array $customClaims = null): string
     {
-        try {
-            $response = $this->api->doPost(
+        $response = $this->api->doPost(
                 MgmtV1::$USER_GENERATE_EMBEDDED_LINK_PATH,
                 [
                     'loginId' => $loginId, 
@@ -1348,11 +1172,6 @@ class User
             );
     
             return $response['token'];
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**
@@ -1363,8 +1182,7 @@ class User
      * @throws AuthException
     */
     public function history(array $userIds): array {
-        try {
-            $response = $this->api->doPost(
+        $response = $this->api->doPost(
                 MgmtV1::$USER_HISTORY_PATH,
                 ['userIds' => $userIds],
                 true
@@ -1380,10 +1198,6 @@ class User
                     'ip' => $historyItem['ip'] ?? '',
                 ];
             }, $response['usersAuthHistory'] ?? []);
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
     }
 
     /**

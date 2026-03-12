@@ -105,18 +105,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            return $this->api->doPost(
-                EndpointsV1::$REFRESH_TOKEN_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        return $this->api->doPost(
+            EndpointsV1::$REFRESH_TOKEN_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -178,17 +172,11 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            return $this->api->doGet(
-                EndpointsV1::$ME_PATH,
-                false,
-                $refreshToken
-            );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        return $this->api->doGet(
+            EndpointsV1::$ME_PATH,
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -206,19 +194,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            $this->api->doPost(
-                EndpointsV1::$LOGOUT_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-            return;
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        $this->api->doPost(
+            EndpointsV1::$LOGOUT_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -236,19 +217,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            $this->api->doPost(
-                EndpointsV1::$LOGOUT_ALL_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-            return;
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        $this->api->doPost(
+            EndpointsV1::$LOGOUT_ALL_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**

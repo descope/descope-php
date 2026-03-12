@@ -84,6 +84,39 @@ You can enable debug logging in three ways:
 
 **Note:** Debug logging uses PHP's `error_log()` function, so logs will appear in your configured PHP error log location (typically defined by `error_log` in `php.ini` or your server configuration).
 
+### Error Handling
+
+When an API request fails (e.g. 4xx/5xx response, network error), the SDK throws exceptions instead of returning error arrays.
+
+- **Success:** Methods return the decoded JSON response (or `void` where applicable).
+- **Failure:** The SDK throws:
+  - **`Descope\SDK\Exception\AuthException`** — for most request failures (bad request, unauthorized, server errors, etc.). The exception includes the HTTP status code, error type, and message (from the API when available).
+  - **`Descope\SDK\Exception\RateLimitException`** — for HTTP 429 (rate limit) responses.
+
+You can catch these and react accordingly:
+
+```php
+use Descope\SDK\DescopeSDK;
+use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\RateLimitException;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'],
+]);
+
+try {
+    $descopeSDK->management->user->update('loginId', 'new@example.com', ...);
+    // Success — update completed
+} catch (AuthException $e) {
+    // Request failed — use $e->getMessage(), status code, etc.
+} catch (RateLimitException $e) {
+    // Rate limited (429)
+}
+```
+
+The original Guzzle `RequestException` is available via `$e->getPrevious()` for logging or debugging.
+
 ### Caching Mechanism
 
 The Descope PHP SDK uses a caching mechanism to store frequently accessed data, such as JSON Web Key Sets (JWKs) for session token validation. By default, the SDK uses **APCu** for caching, provided it is enabled and configured in your environment. If APCu is not available, and no other caching mechanism is provided, caching is disabled.
@@ -589,53 +622,6 @@ $password = new UserPassword(null, $hashedPassword);
 
 // Use it in user creation or password replacement
 ...
-```
-
-## Outbound Apps Management
-
-Outbound Apps allow users to authenticate with third-party services through Descope. These functions manage OAuth tokens for outbound applications.
-
-### Fetch User Token
-
-Retrieve an access token for a user to interact with a third-party outbound application:
-
-```php
-$response = $descopeSDK->management->outboundApps->fetchUserToken(
-    'google',                // appId - the outbound application ID
-    'user123',               // userId - the Descope user ID
-    ['email', 'profile'],    // scopes - requested OAuth scopes (optional)
-    true,                    // withRefreshToken - include refresh token (optional, default: false)
-    false,                   // forceRefresh - force token refresh (optional, default: false)
-    'tenant123'              // tenantId - for multi-tenant apps (optional)
-);
-
-// Access the token data
-$accessToken = $response['token']['accessToken'];
-$scopes = $response['token']['scopes'];
-$expiry = $response['token']['accessTokenExpiry'];
-```
-
-### Delete User Tokens
-
-Delete outbound application tokens by app ID and/or user ID:
-
-```php
-// Delete all tokens for a specific app
-$descopeSDK->management->outboundApps->deleteUserTokens('google', null);
-
-// Delete all tokens for a specific user
-$descopeSDK->management->outboundApps->deleteUserTokens(null, 'user123');
-
-// Delete tokens for a specific app and user combination
-$descopeSDK->management->outboundApps->deleteUserTokens('google', 'user123');
-```
-
-### Delete Token By ID
-
-Delete a specific outbound application token by its unique ID:
-
-```php
-$descopeSDK->management->outboundApps->deleteTokenById('token_abc123');
 ```
 
 ## Unit Testing
