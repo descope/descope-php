@@ -624,6 +624,43 @@ $password = new UserPassword(null, $hashedPassword);
 ...
 ```
 
+### Outbound Apps
+
+The SDK also supports **Outbound Apps** management via `management->outboundApps`. This allows you to fetch and manage user tokens for third-party outbound applications configured in Descope.
+
+#### Fetch outbound app user token
+
+```php
+$response = $descopeSDK->management->outboundApps->fetchUserToken(
+    'app123',            // appId
+    'user123',           // userId
+    ['read', 'write'],   // scopes (optional)
+    true,                // withRefreshToken (optional)
+    false,               // forceRefresh (optional)
+    'tenant123'          // tenantId (optional)
+);
+print_r($response);
+```
+
+#### Delete outbound app user tokens (by appId and/or userId)
+
+```php
+// Delete by appId
+$descopeSDK->management->outboundApps->deleteUserTokens('app123', null);
+
+// Delete by userId
+$descopeSDK->management->outboundApps->deleteUserTokens(null, 'user123');
+
+// Delete by both
+$descopeSDK->management->outboundApps->deleteUserTokens('app123', 'user123');
+```
+
+#### Delete outbound app token by token id
+
+```php
+$descopeSDK->management->outboundApps->deleteTokenById('token123');
+```
+
 ## Unit Testing
 
 The PHP directory includes unit testing using PHPUnit. You can insert values for session token and refresh tokens in the `src/tests/DescopeSDKTest.php` file, and run to validate whether or not the functions are operating properly.

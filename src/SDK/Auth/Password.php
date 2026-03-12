@@ -98,8 +98,7 @@ class Password
         }
 
         $uri = EndpointsV1::$SEND_RESET_PASSWORD_PATH;
-        $response = $this->api->doPost($uri, $body, false);
-        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
+        return $this->api->doPost($uri, $body, false);
     }
 
     /**
@@ -151,16 +150,12 @@ class Password
         }
 
         $uri = EndpointsV1::$REPLACE_PASSWORD_PATH;
-        $response = $this->api->doPost(
-            $uri,
-            [
+        $response = $this->api->doPost($uri, [
             'loginId' => $loginId,
             'oldPassword' => $oldPassword,
             'newPassword' => $newPassword,
-            ]
-        );
+        ], false);
 
-        $resp = json_decode($response->getBody(), true);
         return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
     }
 
@@ -171,8 +166,7 @@ class Password
      */
     public function getPolicy(): array
     {
-        $response = $this->api->doGet(EndpointsV1::$PASSWORD_POLICY_PATH);
-        return json_decode($response->getBody(), true);
+        return $this->api->doGet(EndpointsV1::$PASSWORD_POLICY_PATH, false);
     }
 
     /**
