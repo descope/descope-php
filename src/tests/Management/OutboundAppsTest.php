@@ -75,7 +75,6 @@ class OutboundAppsTest extends TestCase
         $this->descopeSDK->management->outboundApps->deleteUserTokens('app123', 'user123');
         $this->assertTrue(true);
     }
-
     public function testDeleteTokenById()
     {
         $this->descopeSDK->management->outboundApps->deleteTokenById('token123');
