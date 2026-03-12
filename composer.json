@@ -30,7 +30,7 @@
     }
   },
   "scripts": {
-    "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php src/tests",
+    "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php --configuration phpunit.xml",
     "license-check": "php src/tests/CheckLicense.php"
   }
 }

@@ -2,7 +2,9 @@
 <phpunit bootstrap="vendor/autoload.php">
     <testsuites>
         <testsuite name="DescopeSDK Test Suite">
-            <directory>src/tests</directory>
+            <file>src/tests/DescopeSDKTest.php</file>
+            <file>src/tests/InMemoryCacheTest.php</file>
+            <file>src/tests/SDKConfigCacheTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit> 
