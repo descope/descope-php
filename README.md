@@ -10,7 +10,7 @@ The Descope SDK for PHP provides convenient access to Descope authentication. Yo
 
 ### Requirements
 
-- [PHP 7.4+](https://www.php.net/)
+- [PHP 7.3+](https://www.php.net/)
 
 ### Installation
 
@@ -83,6 +83,39 @@ You can enable debug logging in three ways:
    ```
 
 **Note:** Debug logging uses PHP's `error_log()` function, so logs will appear in your configured PHP error log location (typically defined by `error_log` in `php.ini` or your server configuration).
+
+### Error Handling
+
+When an API request fails (e.g. 4xx/5xx response, network error), the SDK throws exceptions instead of returning error arrays.
+
+- **Success:** Methods return the decoded JSON response (or `void` where applicable).
+- **Failure:** The SDK throws:
+  - **`Descope\SDK\Exception\AuthException`** — for most request failures (bad request, unauthorized, server errors, etc.). The exception includes the HTTP status code, error type, and message (from the API when available).
+  - **`Descope\SDK\Exception\RateLimitException`** — for HTTP 429 (rate limit) responses.
+
+You can catch these and react accordingly:
+
+```php
+use Descope\SDK\DescopeSDK;
+use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\RateLimitException;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'],
+]);
+
+try {
+    $descopeSDK->management->user->update('loginId', 'new@example.com', ...);
+    // Success — update completed
+} catch (AuthException $e) {
+    // Request failed — use $e->getMessage(), status code, etc.
+} catch (RateLimitException $e) {
+    // Rate limited (429)
+}
+```
+
+The original Guzzle `RequestException` is available via `$e->getPrevious()` for logging or debugging.
 
 ### Caching Mechanism
 
@@ -591,51 +624,41 @@ $password = new UserPassword(null, $hashedPassword);
 ...
 ```
 
-## Outbound Apps Management
+### Outbound Apps
 
-Outbound Apps allow users to authenticate with third-party services through Descope. These functions manage OAuth tokens for outbound applications.
+The SDK also supports **Outbound Apps** management via `management->outboundApps`. This allows you to fetch and manage user tokens for third-party outbound applications configured in Descope.
 
-### Fetch User Token
-
-Retrieve an access token for a user to interact with a third-party outbound application:
+#### Fetch outbound app user token
 
 ```php
 $response = $descopeSDK->management->outboundApps->fetchUserToken(
-    'google',                // appId - the outbound application ID
-    'user123',               // userId - the Descope user ID
-    ['email', 'profile'],    // scopes - requested OAuth scopes (optional)
-    true,                    // withRefreshToken - include refresh token (optional, default: false)
-    false,                   // forceRefresh - force token refresh (optional, default: false)
-    'tenant123'              // tenantId - for multi-tenant apps (optional)
+    'app123',            // appId
+    'user123',           // userId
+    ['read', 'write'],   // scopes (optional)
+    true,                // withRefreshToken (optional)
+    false,               // forceRefresh (optional)
+    'tenant123'          // tenantId (optional)
 );
-
-// Access the token data
-$accessToken = $response['token']['accessToken'];
-$scopes = $response['token']['scopes'];
-$expiry = $response['token']['accessTokenExpiry'];
+print_r($response);
 ```
 
-### Delete User Tokens
-
-Delete outbound application tokens by app ID and/or user ID:
+#### Delete outbound app user tokens (by appId and/or userId)
 
 ```php
-// Delete all tokens for a specific app
-$descopeSDK->management->outboundApps->deleteUserTokens('google', null);
+// Delete by appId
+$descopeSDK->management->outboundApps->deleteUserTokens('app123', null);
 
-// Delete all tokens for a specific user
+// Delete by userId
 $descopeSDK->management->outboundApps->deleteUserTokens(null, 'user123');
 
-// Delete tokens for a specific app and user combination
-$descopeSDK->management->outboundApps->deleteUserTokens('google', 'user123');
+// Delete by both
+$descopeSDK->management->outboundApps->deleteUserTokens('app123', 'user123');
 ```
 
-### Delete Token By ID
-
-Delete a specific outbound application token by its unique ID:
+#### Delete outbound app token by token id
 
 ```php
-$descopeSDK->management->outboundApps->deleteTokenById('token_abc123');
+$descopeSDK->management->outboundApps->deleteTokenById('token123');
 ```
 
 ## Unit Testing

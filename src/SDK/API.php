@@ -8,6 +8,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\DescopeException;
+use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\Token\Verifier;
 
@@ -92,7 +94,7 @@ class API
      * @param  array  $body             Request body.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doPost(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
@@ -127,18 +129,13 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [POST] RequestException: " . $e->getMessage());
                 error_log("Descope SDK [POST] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -148,7 +145,7 @@ class API
      * @param  string $uri              URI endpoint.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doGet(string $uri, bool $useManagementKey, ?string $refreshToken = null): array
     {
@@ -180,17 +177,12 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [GET] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -199,7 +191,7 @@ class API
      *
      * @param  string $uri URI endpoint.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doDelete(string $uri): array
     {
@@ -225,17 +217,12 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [DELETE] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -255,6 +242,44 @@ class API
         $jwtResponse['firstSeen'] = $responseBody['firstSeen'] ?? true;
 
         return $jwtResponse;
+    }
+
+    /**
+     * Builds an AuthException or RateLimitException from a Guzzle RequestException.
+     * Parses the response body for Descope error fields when present.
+     *
+     * @throws AuthException|RateLimitException
+     */
+    private function createExceptionFromRequestException(RequestException $e): DescopeException
+    {
+        $response = $e->getResponse();
+        $statusCode = $response ? $response->getStatusCode() : 0;
+        $responseBody = $response ? $response->getBody()->getContents() : '';
+
+        $errorType = 'RequestException';
+        $errorMessage = $e->getMessage();
+
+        if ($responseBody !== '') {
+            $decoded = json_decode($responseBody, true);
+            if (is_array($decoded)) {
+                $errorType = $decoded['errorCode'] ?? $decoded['error'] ?? $errorType;
+                $errorMessage = $decoded['errorDescription'] ?? $decoded['errorMessage'] ?? $decoded['message'] ?? $errorMessage;
+            }
+        }
+
+        if ($statusCode === 429) {
+            return new RateLimitException(
+                $statusCode,
+                $errorType,
+                $errorMessage,
+                $errorMessage,
+                [],
+                [],
+                $e
+            );
+        }
+
+        return new AuthException($statusCode, $errorType, $errorMessage, [], $e);
     }
 
     /**

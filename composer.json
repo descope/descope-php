@@ -29,6 +29,14 @@
       "Descope\\SDK\\": "src/SDK/"
     }
   },
+  "config": {
+    "audit": {
+      "ignore": ["PKSA-z3gr-8qht-p93v"]
+    },
+    "platform": {
+      "php": "7.3.0"
+    }
+  },
   "scripts": {
     "test": "./vendor/bin/phpunit --bootstrap vendor/autoload.php --configuration phpunit.xml",
     "license-check": "php src/tests/CheckLicense.php"
