@@ -6,6 +6,7 @@
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
+      "bootstrap-sha": "62232743a6ca0d0ec862a142e64adf4ec22a7328",
       "extra-files": [
         {
           "type": "php",
