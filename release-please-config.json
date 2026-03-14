@@ -9,9 +9,8 @@
       "bootstrap-sha": "62232743a6ca0d0ec862a142e64adf4ec22a7328",
       "extra-files": [
         {
-          "type": "php",
-          "path": "src/SDK/EndpointsV1.php",
-          "glob": false
+          "type": "generic",
+          "path": "src/SDK/EndpointsV1.php"
         }
       ]
     }
