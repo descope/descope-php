@@ -66,9 +66,9 @@ $sessionToken = $_SESSION["sessionToken"];
     <div class="container">
         <h1>Welcome, <?php echo htmlspecialchars($user["name"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>!</h1>
         <p>Your email: <?php echo htmlspecialchars($user["email"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></p>
-        <img class="rounded-circle" src="<?php if (isset($user["picture"])) {
-            echo htmlspecialchars($user["picture"], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                                         } ?>">
+        <?php if (!empty($user["picture"])): ?>
+        <img class="rounded-circle" src="<?php echo htmlspecialchars($user["picture"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">
+        <?php endif; ?>
         <div class="token-box">
             <p>Your Session Token: <?php echo htmlspecialchars($sessionToken, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></p>
         </div>
