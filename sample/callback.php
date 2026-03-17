@@ -24,7 +24,13 @@
 
     if (isset($_POST["sessionToken"])) {
         if ($descopeSDK->verify($_POST["sessionToken"])) {
-            $_SESSION["user"] = json_decode($_POST["userDetails"], true);
+            // Extract user details from verified token claims — never trust client-supplied userDetails
+            $claims = $descopeSDK->getClaims($_POST["sessionToken"]);
+            $_SESSION["user"] = [
+                "name"    => $claims["name"] ?? '',
+                "email"   => $claims["email"] ?? '',
+                "picture" => $claims["picture"] ?? '',
+            ];
             $_SESSION["sessionToken"] = $_POST["sessionToken"];
             session_write_close();
     
