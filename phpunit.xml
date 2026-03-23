@@ -5,6 +5,8 @@
             <file>src/tests/DescopeSDKTest.php</file>
             <file>src/tests/InMemoryCacheTest.php</file>
             <file>src/tests/SDKConfigCacheTest.php</file>
+            <file>src/tests/APIExceptionMappingTest.php</file>
+            <file>src/tests/APIRetryTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit> 
