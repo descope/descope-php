@@ -15,10 +15,15 @@ use Descope\SDK\Token\Verifier;
 
 class API
 {
+    private const RETRYABLE_STATUS_CODES = [503, 521, 522, 524, 530];
+
     private $httpClient;
     private $projectId;
     private $managementKey;
     private $debug;
+
+    /** @var int[] Delays between retries in microseconds: 100ms, 5s, 5s */
+    protected $retryDelaysUs = [100000, 5000000, 5000000];
 
     /**
      * Constructor for API class.
@@ -109,14 +114,11 @@ class API
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
-            $response = $this->httpClient->post(
-                $uri,
-                [
-                    'headers' => $this->getHeaders($authToken),
-                    'body' => $jsonBody,
-                ]
-            );
-            
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
+                return $this->httpClient->post($uri, ['headers' => $headers, 'body' => $jsonBody]);
+            });
+
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
                 throw new AuthException(500, 'internal error', 'Invalid response from API');
@@ -158,12 +160,10 @@ class API
         }
 
         try {
-            $response = $this->httpClient->get(
-                $uri,
-                [
-                'headers' => $this->getHeaders($authToken),
-                ]
-            );
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $headers) {
+                return $this->httpClient->get($uri, ['headers' => $headers]);
+            });
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -198,12 +198,10 @@ class API
         $authToken = $this->getAuthToken(true);
 
         try {
-            $response = $this->httpClient->delete(
-                $uri,
-                [
-                'headers' => $this->getHeaders($authToken),
-                ]
-            );
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $headers) {
+                return $this->httpClient->delete($uri, ['headers' => $headers]);
+            });
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -242,6 +240,32 @@ class API
         $jwtResponse['firstSeen'] = $responseBody['firstSeen'] ?? true;
 
         return $jwtResponse;
+    }
+
+    /**
+     * Executes an HTTP request callable, retrying on transient status codes
+     * (503, 521, 522, 524, 530) with delays of 100ms, 5s, 5s.
+     * Non-retryable RequestExceptions are re-thrown immediately.
+     *
+     * @param  callable $requestFn Zero-argument callable that performs the Guzzle request.
+     * @return mixed Guzzle response on success.
+     * @throws RequestException On non-retryable errors or after all retries are exhausted.
+     */
+    private function executeWithRetry(callable $requestFn)
+    {
+        foreach ($this->retryDelaysUs as $delay) {
+            try {
+                return $requestFn();
+            } catch (RequestException $e) {
+                $response = $e->getResponse();
+                $statusCode = $response ? $response->getStatusCode() : 0;
+                if (!in_array($statusCode, self::RETRYABLE_STATUS_CODES, true)) {
+                    throw $e;
+                }
+                usleep($delay);
+            }
+        }
+        return $requestFn();
     }
 
     /**
