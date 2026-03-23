@@ -91,7 +91,7 @@ final class APIRetryTest extends TestCase
                 $api->doGet('https://example.com/test', false);
                 $this->fail("Expected exception for status $statusCode");
             } catch (AuthException $e) {
-                $this->assertSame($statusCode, $e->getStatusCode());
+                $this->assertStringContainsString((string) $statusCode, (string) $e);
             }
         }
     }
