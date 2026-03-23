@@ -13,26 +13,23 @@ use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
-/**
- * API subclass with zero retry delays to keep tests fast.
- */
-class ZeroDelayAPI extends API
-{
-    protected array $retryDelaysUs = [0, 0, 0];
-}
-
 final class APIRetryTest extends TestCase
 {
-    private function apiWithMockedClient(MockHandler $mockHandler): ZeroDelayAPI
+    private function apiWithMockedClient(MockHandler $mockHandler): API
     {
         $handlerStack = HandlerStack::create($mockHandler);
         $client = new Client(['handler' => $handlerStack]);
 
-        $api = new ZeroDelayAPI('project', null, false);
-        $reflection = new ReflectionClass($api);
+        $api = new API('project', null, false);
+        $reflection = new ReflectionClass(API::class);
+
         $httpClientProp = $reflection->getProperty('httpClient');
         $httpClientProp->setAccessible(true);
         $httpClientProp->setValue($api, $client);
+
+        $retryDelaysProp = $reflection->getProperty('retryDelaysUs');
+        $retryDelaysProp->setAccessible(true);
+        $retryDelaysProp->setValue($api, [0, 0, 0]);
 
         return $api;
     }
@@ -74,7 +71,7 @@ final class APIRetryTest extends TestCase
             $this->retryableException(503),
             $this->retryableException(503),
             $this->retryableException(503),
-            $this->retryableException(503), // 4th call = original + 3 retries
+            $this->retryableException(503),
         ]));
 
         $this->expectException(AuthException::class);
@@ -88,7 +85,6 @@ final class APIRetryTest extends TestCase
             $response = new Response($statusCode, [], '');
             $exception = new RequestException('error', $request, $response);
 
-            // Only one exception queued — if retry happened it would fail with "No more responses"
             $api = $this->apiWithMockedClient(new MockHandler([$exception]));
 
             try {
@@ -124,7 +120,6 @@ final class APIRetryTest extends TestCase
 
     public function testSucceedsImmediatelyWithNoRetry(): void
     {
-        // Only one response queued — confirms no retry attempted
         $api = $this->apiWithMockedClient(new MockHandler([
             $this->successResponse(),
         ]));
