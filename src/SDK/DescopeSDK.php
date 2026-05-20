@@ -5,6 +5,7 @@ namespace Descope\SDK;
 use Descope\SDK\API;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
+use Descope\SDK\Token\DPoP;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
@@ -224,6 +225,27 @@ class DescopeSDK
             false,
             $refreshToken
         );
+    }
+
+    /**
+     * Validate a DPoP proof for a DPoP-bound session token (RFC 9449).
+     *
+     * If the session token does not contain a cnf.jkt claim, this method
+     * returns immediately (the token is not DPoP-bound).
+     *
+     * @param  string $sessionToken The session JWT (already verified).
+     * @param  string $dpopProof    The value of the DPoP HTTP header sent by the client.
+     * @param  string $method       The HTTP method of the incoming request (e.g. "GET", "POST").
+     * @param  string $requestUrl   The full URL of the incoming request.
+     * @throws \Exception If the DPoP proof is missing or invalid.
+     */
+    public function validateDPoP(
+        string $sessionToken,
+        string $dpopProof,
+        string $method,
+        string $requestUrl
+    ): void {
+        DPoP::validateProof($dpopProof, $method, $requestUrl, $sessionToken);
     }
 
     /**

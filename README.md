@@ -255,6 +255,32 @@ print_r($response);
 6. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format.
 7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
 
+### DPoP Sender-Constrained Tokens (RFC 9449)
+
+When a Descope session token contains a `cnf.jkt` claim it is DPoP-bound, meaning every request must include a signed `DPoP` proof JWT that demonstrates possession of the corresponding private key.
+
+Use `validateDPoP` **after** a successful `verify` call to enforce the sender-constraint:
+
+```php
+// 1. Verify the session token as usual
+$descopeSDK->verify($sessionToken);
+
+// 2. If the token is DPoP-bound, validate the DPoP proof
+//    (does nothing if the token has no cnf.jkt claim)
+$descopeSDK->validateDPoP(
+    $sessionToken,               // the verified session JWT
+    $_SERVER['HTTP_DPOP'],       // DPoP header sent by the client
+    $_SERVER['REQUEST_METHOD'],  // e.g. "GET" or "POST"
+    'https://example.com/api/resource'  // full request URL
+);
+```
+
+`validateDPoP` throws `\Exception` if:
+
+- The session token is DPoP-bound but no proof is provided.
+- The proof signature, `htm` (method), `htu` (URL), `iat` (timestamp), or `ath` (access token hash) is invalid.
+- The proof key does not match the `cnf.jkt` thumbprint in the session token.
+
 ### User Management Functions
 
 Each of these functions have code examples on how to use them.
