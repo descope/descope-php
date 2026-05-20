@@ -237,7 +237,7 @@ class DescopeSDK
      * @param  string $dpopProof    The value of the DPoP HTTP header sent by the client.
      * @param  string $method       The HTTP method of the incoming request (e.g. "GET", "POST").
      * @param  string $requestUrl   The full URL of the incoming request.
-     * @throws \Exception If the DPoP proof is missing or invalid.
+     * @throws \Descope\SDK\Exception\TokenException If the DPoP proof is missing or invalid.
      */
     public function validateDPoP(
         string $sessionToken,

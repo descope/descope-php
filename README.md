@@ -269,13 +269,13 @@ $descopeSDK->verify($sessionToken);
 //    (does nothing if the token has no cnf.jkt claim)
 $descopeSDK->validateDPoP(
     $sessionToken,               // the verified session JWT
-    $_SERVER['HTTP_DPOP'],       // DPoP header sent by the client
+    $_SERVER['HTTP_DPOP'] ?? '', // DPoP header sent by the client (empty string if absent)
     $_SERVER['REQUEST_METHOD'],  // e.g. "GET" or "POST"
     'https://example.com/api/resource'  // full request URL
 );
 ```
 
-`validateDPoP` throws `\Exception` if:
+`validateDPoP` throws `\Descope\SDK\Exception\TokenException` if:
 
 - The session token is DPoP-bound but no proof is provided.
 - The proof signature, `htm` (method), `htu` (URL), `iat` (timestamp), or `ath` (access token hash) is invalid.

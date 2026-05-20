@@ -2,10 +2,16 @@
 
 namespace Descope\SDK\Token;
 
+use Descope\SDK\Exception\TokenException;
+
 /**
  * DPoP (Demonstrated Proof of Possession) validation per RFC 9449.
  *
  * Validates DPoP proof JWTs when a session token is DPoP-bound (cnf.jkt present).
+ *
+ * Note: jti replay protection (RFC 9449 §11.1) is intentionally out of scope for
+ * this stateless SDK. Callers that require replay protection should maintain their
+ * own jti store (e.g. a short-lived cache keyed on jti with TTL matching the iat window).
  */
 class DPoP
 {
@@ -41,7 +47,7 @@ class DPoP
      * @param  string $method       The HTTP method of the request (e.g. "GET", "POST").
      * @param  string $requestUrl   The full URL of the request.
      * @param  string $sessionToken The raw session JWT string.
-     * @throws \Exception if the DPoP proof is invalid.
+     * @throws TokenException if the DPoP proof is invalid.
      */
     public static function validateProof(
         string $dpopProof,
@@ -61,18 +67,18 @@ class DPoP
         // Step 1-2: Check proof length
         $dpopProof = trim($dpopProof);
         if (strlen($dpopProof) > self::MAX_PROOF_LEN) {
-            throw new \Exception('DPoP proof exceeds maximum length');
+            throw new TokenException('DPoP proof exceeds maximum length');
         }
 
         // Step 3: Require proof when token is DPoP-bound
         if ($dpopProof === '') {
-            throw new \Exception('DPoP proof required: access token is DPoP-bound (cnf.jkt present)');
+            throw new TokenException('DPoP proof required: access token is DPoP-bound (cnf.jkt present)');
         }
 
         // Step 4-5: Split JWT parts
         $parts = explode('.', $dpopProof);
         if (count($parts) !== 3) {
-            throw new \Exception('malformed DPoP JWT');
+            throw new TokenException('malformed DPoP JWT');
         }
 
         // Step 6: Decode header
@@ -80,25 +86,37 @@ class DPoP
 
         // Step 7: Verify typ
         if (($header['typ'] ?? '') !== 'dpop+jwt') {
-            throw new \Exception('typ must be dpop+jwt');
+            throw new TokenException('typ must be dpop+jwt');
         }
 
         // Steps 8-9: Verify alg
         $alg = $header['alg'] ?? '';
         if (!in_array($alg, self::ALLOWED_ALGS, true)) {
-            throw new \Exception('rejected algorithm: ' . $alg);
+            throw new TokenException('rejected algorithm: ' . $alg);
         }
 
         // Steps 10-13: Validate JWK header
         $jwk = $header['jwk'] ?? null;
         if (empty($jwk) || !is_array($jwk)) {
-            throw new \Exception('missing jwk header');
+            throw new TokenException('missing jwk header');
         }
         if (($jwk['kty'] ?? '') === 'oct') {
-            throw new \Exception('symmetric key not allowed');
+            throw new TokenException('symmetric key not allowed');
         }
         if (isset($jwk['d'])) {
-            throw new \Exception('jwk must not contain a private key');
+            throw new TokenException('jwk must not contain a private key');
+        }
+
+        // Cross-check alg/kty compatibility (RFC 7518)
+        $kty = $jwk['kty'] ?? '';
+        if (in_array($alg, ['RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512'], true) && $kty !== 'RSA') {
+            throw new TokenException('alg ' . $alg . ' requires kty=RSA, got kty=' . $kty);
+        }
+        if (in_array($alg, ['ES256', 'ES384', 'ES512'], true) && $kty !== 'EC') {
+            throw new TokenException('alg ' . $alg . ' requires kty=EC, got kty=' . $kty);
+        }
+        if ($alg === 'EdDSA' && $kty !== 'OKP') {
+            throw new TokenException('alg EdDSA requires kty=OKP, got kty=' . $kty);
         }
 
         // Step 14-15: Import JWK and verify signature
@@ -112,48 +130,48 @@ class DPoP
 
         // Steps 17-19: Validate required claims
         if (empty($payload['jti'])) {
-            throw new \Exception('missing jti');
+            throw new TokenException('missing jti');
         }
         if (empty($payload['htm'])) {
-            throw new \Exception('missing htm');
+            throw new TokenException('missing htm');
         }
         if (empty($payload['htu'])) {
-            throw new \Exception('missing htu');
+            throw new TokenException('missing htu');
         }
 
         // Step 20: Validate htm (HTTP method)
         if ($payload['htm'] !== strtoupper($method)) {
-            throw new \Exception('htm mismatch: expected ' . strtoupper($method) . ', got ' . $payload['htm']);
+            throw new TokenException('htm mismatch: expected ' . strtoupper($method) . ', got ' . $payload['htm']);
         }
 
         // Step 21: Validate htu (HTTP URI)
         if (!self::htuMatches($payload['htu'], $requestUrl)) {
-            throw new \Exception('htu does not match request URL');
+            throw new TokenException('htu does not match request URL');
         }
 
         // Steps 22-24: Validate iat (issued at)
         if (!isset($payload['iat']) || !is_int($payload['iat'])) {
-            throw new \Exception('missing or invalid iat');
+            throw new TokenException('missing or invalid iat');
         }
         $diff = time() - $payload['iat'];
         if ($diff <= -(self::IAT_FORWARD_WINDOW) || $diff >= self::IAT_BACKWARD_WINDOW) {
-            throw new \Exception('iat out of acceptable window');
+            throw new TokenException('iat out of acceptable window');
         }
 
         // Steps 25-30: Validate ath (access token hash)
         $ath = $payload['ath'] ?? '';
         if (empty($ath)) {
-            throw new \Exception('missing ath claim');
+            throw new TokenException('missing ath claim');
         }
         $expectedAth = self::base64urlEncode(hash('sha256', $sessionToken, true));
         if (!hash_equals($expectedAth, $ath)) {
-            throw new \Exception('ath does not match');
+            throw new TokenException('ath does not match');
         }
 
         // Steps 31-33: Validate JWK thumbprint matches cnf.jkt
         $thumbprint = self::computeJwkThumbprint($jwk);
         if (!hash_equals($storedJkt, $thumbprint)) {
-            throw new \Exception('DPoP proof key does not match cnf.jkt');
+            throw new TokenException('DPoP proof key does not match cnf.jkt');
         }
     }
 
@@ -168,7 +186,7 @@ class DPoP
     {
         $parts = explode('.', $jwt);
         if (count($parts) !== 3) {
-            throw new \Exception('Invalid session token format');
+            throw new TokenException('Invalid session token format');
         }
         $payload = self::base64urlDecodeJson($parts[1]);
         return $payload;
@@ -184,7 +202,10 @@ class DPoP
         $decoded = self::base64urlDecode($data);
         $result = json_decode($decoded, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Invalid JSON in JWT part: ' . json_last_error_msg());
+            throw new TokenException('Invalid JSON in JWT part: ' . json_last_error_msg());
+        }
+        if (!is_array($result)) {
+            throw new TokenException('JWT part JSON did not decode to an array');
         }
         return $result;
     }
@@ -201,7 +222,7 @@ class DPoP
         );
         $decoded = base64_decode($padded, true);
         if ($decoded === false) {
-            throw new \Exception('Invalid base64url encoding');
+            throw new TokenException('Invalid base64url encoding');
         }
         return $decoded;
     }
@@ -231,7 +252,7 @@ class DPoP
             case 'OKP':
                 return self::importOkpJwk($jwk);
             default:
-                throw new \Exception('Unsupported JWK key type: ' . $kty);
+                throw new TokenException('Unsupported JWK key type: ' . $kty);
         }
     }
 
@@ -241,7 +262,7 @@ class DPoP
     private static function importRsaJwk(array $jwk)
     {
         if (empty($jwk['n']) || empty($jwk['e'])) {
-            throw new \Exception('RSA JWK missing n or e parameters');
+            throw new TokenException('RSA JWK missing n or e parameters');
         }
 
         $modulus = self::base64urlDecode($jwk['n']);
@@ -262,7 +283,7 @@ class DPoP
         $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END PUBLIC KEY-----\n";
         $key = openssl_pkey_get_public($pem);
         if ($key === false) {
-            throw new \Exception('Failed to import RSA JWK as public key');
+            throw new TokenException('Failed to import RSA JWK as public key');
         }
         return $key;
     }
@@ -276,7 +297,7 @@ class DPoP
     {
         $crv = $jwk['crv'] ?? '';
         if (empty($jwk['x']) || empty($jwk['y'])) {
-            throw new \Exception('EC JWK missing x or y parameters');
+            throw new TokenException('EC JWK missing x or y parameters');
         }
 
         $x = self::base64urlDecode($jwk['x']);
@@ -290,7 +311,7 @@ class DPoP
         ];
 
         if (!isset($curveParams[$crv])) {
-            throw new \Exception('Unsupported EC curve: ' . $crv);
+            throw new TokenException('Unsupported EC curve: ' . $crv);
         }
 
         $coordLen = $curveParams[$crv]['len'];
@@ -320,7 +341,7 @@ class DPoP
         $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($spki), 64, "\n") . "-----END PUBLIC KEY-----\n";
         $key = openssl_pkey_get_public($pem);
         if ($key === false) {
-            throw new \Exception('Failed to import EC JWK as public key: ' . openssl_error_string());
+            throw new TokenException('Failed to import EC JWK as public key: ' . openssl_error_string());
         }
         return $key;
     }
@@ -333,10 +354,10 @@ class DPoP
     {
         $crv = $jwk['crv'] ?? '';
         if ($crv !== 'Ed25519') {
-            throw new \Exception('Unsupported OKP curve: ' . $crv . ' (only Ed25519 is supported)');
+            throw new TokenException('Unsupported OKP curve: ' . $crv . ' (only Ed25519 is supported)');
         }
         if (empty($jwk['x'])) {
-            throw new \Exception('OKP JWK missing x parameter');
+            throw new TokenException('OKP JWK missing x parameter');
         }
 
         $x = self::base64urlDecode($jwk['x']);
@@ -353,7 +374,7 @@ class DPoP
         $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($spki), 64, "\n") . "-----END PUBLIC KEY-----\n";
         $key = openssl_pkey_get_public($pem);
         if ($key === false) {
-            throw new \Exception('EdDSA (Ed25519) is not supported by this PHP/OpenSSL version');
+            throw new TokenException('EdDSA (Ed25519) is not supported by this PHP/OpenSSL version');
         }
         return $key;
     }
@@ -408,7 +429,7 @@ class DPoP
                 self::verifyEdDsa($signingInput, $signature, $publicKey);
                 return;
             default:
-                throw new \Exception('Unsupported algorithm: ' . $alg);
+                throw new TokenException('Unsupported algorithm: ' . $alg);
         }
 
         if ($kty === 'EC') {
@@ -418,7 +439,7 @@ class DPoP
 
         $result = openssl_verify($signingInput, $signature, $publicKey, $opensslAlg);
         if ($result !== 1) {
-            throw new \Exception('DPoP proof signature verification failed');
+            throw new TokenException('DPoP proof signature verification failed');
         }
     }
 
@@ -431,7 +452,7 @@ class DPoP
     {
         $len = strlen($rawSig);
         if ($len % 2 !== 0) {
-            throw new \Exception('Invalid EC signature length');
+            throw new TokenException('Invalid EC signature length');
         }
         $half = $len / 2;
         $r = substr($rawSig, 0, $half);
@@ -439,7 +460,7 @@ class DPoP
 
         // Encode as ASN.1 INTEGER (prepend 0x00 if high bit set)
         $r = ltrim($r, "\x00");
-        if (ord($r[0]) > 0x7f) {
+        if (strlen($r) === 0 || ord($r[0]) > 0x7f) {
             $r = "\x00" . $r;
         }
         $s = ltrim($s, "\x00");
@@ -472,14 +493,6 @@ class DPoP
         $hashMap = ['PS256' => 'sha256', 'PS384' => 'sha384', 'PS512' => 'sha512'];
         $hashAlg = $hashMap[$alg];
 
-        // PHP 8.x: openssl_verify supports RSA-PSS via algorithm string
-        // We try using the OpenSSL algorithm identifier directly
-        $opensslAlgMap = [
-            'PS256' => defined('OPENSSL_ALGO_SHA256') ? 'SHA256' : null,
-            'PS384' => defined('OPENSSL_ALGO_SHA384') ? 'SHA384' : null,
-            'PS512' => defined('OPENSSL_ALGO_SHA512') ? 'SHA512' : null,
-        ];
-
         // Use openssl_public_decrypt with manual PSS verification
         // Compute the digest of the signing input
         $digest = hash($hashAlg, $signingInput, true);
@@ -489,12 +502,12 @@ class DPoP
         $decrypted = '';
         $decryptResult = openssl_public_decrypt($signature, $decrypted, $publicKey, OPENSSL_NO_PADDING);
         if (!$decryptResult) {
-            throw new \Exception('RSA-PSS signature verification failed (decrypt step)');
+            throw new TokenException('RSA-PSS signature verification failed (decrypt step)');
         }
 
         // Verify PSS encoding manually
         if (!self::emsaPssVerify($digest, $decrypted, $hashAlg)) {
-            throw new \Exception('RSA-PSS signature verification failed');
+            throw new TokenException('RSA-PSS signature verification failed');
         }
     }
 
@@ -579,11 +592,11 @@ class DPoP
     private static function verifyEdDsa(string $signingInput, string $signature, $publicKey): void
     {
         if (!function_exists('openssl_sign') || PHP_VERSION_ID < 80100) {
-            throw new \Exception('EdDSA requires PHP 8.1+ with OpenSSL 1.1.1+');
+            throw new TokenException('EdDSA requires PHP 8.1+ with OpenSSL 1.1.1+');
         }
         $result = openssl_verify($signingInput, $signature, $publicKey, OPENSSL_ALGO_SHA512);
         if ($result !== 1) {
-            throw new \Exception('EdDSA signature verification failed');
+            throw new TokenException('EdDSA signature verification failed');
         }
     }
 
@@ -621,7 +634,7 @@ class DPoP
                 ];
                 break;
             default:
-                throw new \Exception('Unsupported JWK key type for thumbprint: ' . $kty);
+                throw new TokenException('Unsupported JWK key type for thumbprint: ' . $kty);
         }
         ksort($members); // alphabetical sort per RFC 7638
         $json = json_encode($members, JSON_UNESCAPED_SLASHES);
