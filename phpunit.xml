@@ -7,6 +7,7 @@
             <file>src/tests/SDKConfigCacheTest.php</file>
             <file>src/tests/APIExceptionMappingTest.php</file>
             <file>src/tests/APIRetryTest.php</file>
+            <file>src/tests/DPoPTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit> 

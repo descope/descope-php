@@ -15,7 +15,7 @@ jobs:
       - name: 🛠️ Setup PHP
         uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
-          php-version: "8.1"
+          php-version: "8.3"
           tools: composer, cs2pr
 
       - name: 🔍 Validate composer.json and composer.lock
