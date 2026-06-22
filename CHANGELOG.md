@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.3](https://github.com/descope/descope-php/compare/descope-php-v0.6.2...descope-php-v0.6.3) (2026-06-22)
+
+
+### Features
+
+* **http:** also retry on transient status code 520 ([#111](https://github.com/descope/descope-php/issues/111)) ([9a4d769](https://github.com/descope/descope-php/commit/9a4d769506e12635e902e3c04be40d1f8f058aff))
+* **http:** retry requests on transient error status codes ([#104](https://github.com/descope/descope-php/issues/104)) ([4c6d78c](https://github.com/descope/descope-php/commit/4c6d78cf6750dc5f0d7e0e362647cc04e0a40b31))
+
+
+### Bug Fixes
+
+* stored XSS and client-trust vulnerabilities in sample app ([#102](https://github.com/descope/descope-php/issues/102)) ([f79156b](https://github.com/descope/descope-php/commit/f79156b5c0b748e4b2bac267a0ba910fc7494fc2))
+
 ## [0.6.2](https://github.com/descope/descope-php/compare/descope-php-v0.6.1...descope-php-v0.6.2) (2026-03-14)
 
 
