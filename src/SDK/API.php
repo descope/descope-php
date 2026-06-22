@@ -15,7 +15,7 @@ use Descope\SDK\Token\Verifier;
 
 class API
 {
-    private const RETRYABLE_STATUS_CODES = [503, 521, 522, 524, 530];
+    private const RETRYABLE_STATUS_CODES = [503, 520, 521, 522, 524, 530];
 
     private $httpClient;
     private $projectId;
@@ -244,7 +244,7 @@ class API
 
     /**
      * Executes an HTTP request callable, retrying on transient status codes
-     * (503, 521, 522, 524, 530) with delays of 100ms, 5s, 5s.
+     * (503, 520, 521, 522, 524, 530) with delays of 100ms, 5s, 5s.
      * Non-retryable RequestExceptions are re-thrown immediately.
      *
      * @param  callable $requestFn Zero-argument callable that performs the Guzzle request.

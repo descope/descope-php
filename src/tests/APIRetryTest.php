@@ -62,7 +62,7 @@ final class APIRetryTest extends TestCase
 
     public static function retryableStatusCodeProvider(): array
     {
-        return [[503], [521], [522], [524], [530]];
+        return [[503], [520], [521], [522], [524], [530]];
     }
 
     public function testRetriesUpToThreeTimesAndThrowsOnExhaustion(): void
