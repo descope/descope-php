@@ -16,7 +16,7 @@
   ],
   "require": {
     "php": "^7.3 || ^8.0",
-    "guzzlehttp/guzzle": "7.9.2 as 7.9.3",
+    "guzzlehttp/guzzle": "^7.12.1",
     "paragonie/constant_time_encoding": "2.8.2",
     "vlucas/phpdotenv": "^5.6.1"
   },
@@ -30,9 +30,6 @@
     }
   },
   "config": {
-    "audit": {
-      "ignore": ["PKSA-z3gr-8qht-p93v"]
-    },
     "platform": {
       "php": "7.3.0"
     }
