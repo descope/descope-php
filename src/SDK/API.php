@@ -8,15 +8,22 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\DescopeException;
+use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\Token\Verifier;
 
 class API
 {
+    private const RETRYABLE_STATUS_CODES = [503, 520, 521, 522, 524, 530];
+
     private $httpClient;
     private $projectId;
     private $managementKey;
     private $debug;
+
+    /** @var int[] Delays between retries in microseconds: 100ms, 5s, 5s */
+    protected $retryDelaysUs = [100000, 5000000, 5000000];
 
     /**
      * Constructor for API class.
@@ -92,7 +99,7 @@ class API
      * @param  array  $body             Request body.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doPost(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
@@ -107,14 +114,11 @@ class API
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
-            $response = $this->httpClient->post(
-                $uri,
-                [
-                    'headers' => $this->getHeaders($authToken),
-                    'body' => $jsonBody,
-                ]
-            );
-            
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
+                return $this->httpClient->post($uri, ['headers' => $headers, 'body' => $jsonBody]);
+            });
+
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
                 throw new AuthException(500, 'internal error', 'Invalid response from API');
@@ -127,18 +131,13 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [POST] RequestException: " . $e->getMessage());
                 error_log("Descope SDK [POST] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -148,7 +147,7 @@ class API
      * @param  string $uri              URI endpoint.
      * @param  bool   $useManagementKey Whether to use the management key for authentication.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doGet(string $uri, bool $useManagementKey, ?string $refreshToken = null): array
     {
@@ -161,12 +160,10 @@ class API
         }
 
         try {
-            $response = $this->httpClient->get(
-                $uri,
-                [
-                'headers' => $this->getHeaders($authToken),
-                ]
-            );
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $headers) {
+                return $this->httpClient->get($uri, ['headers' => $headers]);
+            });
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -180,17 +177,12 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [GET] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -199,19 +191,17 @@ class API
      *
      * @param  string $uri URI endpoint.
      * @return array JWT response array.
-     * @throws AuthException|GuzzleException|\JsonException If the request fails.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
      */
     public function doDelete(string $uri): array
     {
         $authToken = $this->getAuthToken(true);
 
         try {
-            $response = $this->httpClient->delete(
-                $uri,
-                [
-                'headers' => $this->getHeaders($authToken),
-                ]
-            );
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $headers) {
+                return $this->httpClient->delete($uri, ['headers' => $headers]);
+            });
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -225,17 +215,12 @@ class API
 
             return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            
             if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
                 error_log("Descope SDK [DELETE] Error: HTTP Status Code: $statusCode, Response: $responseBody");
             }
-            
-            return [
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
+            throw $this->createExceptionFromRequestException($e);
         }
     }
 
@@ -255,6 +240,70 @@ class API
         $jwtResponse['firstSeen'] = $responseBody['firstSeen'] ?? true;
 
         return $jwtResponse;
+    }
+
+    /**
+     * Executes an HTTP request callable, retrying on transient status codes
+     * (503, 520, 521, 522, 524, 530) with delays of 100ms, 5s, 5s.
+     * Non-retryable RequestExceptions are re-thrown immediately.
+     *
+     * @param  callable $requestFn Zero-argument callable that performs the Guzzle request.
+     * @return mixed Guzzle response on success.
+     * @throws RequestException On non-retryable errors or after all retries are exhausted.
+     */
+    private function executeWithRetry(callable $requestFn)
+    {
+        foreach ($this->retryDelaysUs as $delay) {
+            try {
+                return $requestFn();
+            } catch (RequestException $e) {
+                $response = $e->getResponse();
+                $statusCode = $response ? $response->getStatusCode() : 0;
+                if (!in_array($statusCode, self::RETRYABLE_STATUS_CODES, true)) {
+                    throw $e;
+                }
+                usleep($delay);
+            }
+        }
+        return $requestFn();
+    }
+
+    /**
+     * Builds an AuthException or RateLimitException from a Guzzle RequestException.
+     * Parses the response body for Descope error fields when present.
+     *
+     * @throws AuthException|RateLimitException
+     */
+    private function createExceptionFromRequestException(RequestException $e): DescopeException
+    {
+        $response = $e->getResponse();
+        $statusCode = $response ? $response->getStatusCode() : 0;
+        $responseBody = $response ? $response->getBody()->getContents() : '';
+
+        $errorType = 'RequestException';
+        $errorMessage = $e->getMessage();
+
+        if ($responseBody !== '') {
+            $decoded = json_decode($responseBody, true);
+            if (is_array($decoded)) {
+                $errorType = $decoded['errorCode'] ?? $decoded['error'] ?? $errorType;
+                $errorMessage = $decoded['errorDescription'] ?? $decoded['errorMessage'] ?? $decoded['message'] ?? $errorMessage;
+            }
+        }
+
+        if ($statusCode === 429) {
+            return new RateLimitException(
+                $statusCode,
+                $errorType,
+                $errorMessage,
+                $errorMessage,
+                [],
+                [],
+                $e
+            );
+        }
+
+        return new AuthException($statusCode, $errorType, $errorMessage, [], $e);
     }
 
     /**

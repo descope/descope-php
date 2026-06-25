@@ -1,0 +1,69 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Get token
+        id: get_token
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+        with:
+          private_key: ${{ secrets.RELEASE_APP_PEM }}
+          app_id: ${{ secrets.RELEASE_APP_ID }}
+
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  post-release:
+    runs-on: ubuntu-latest
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: true
+          ref: main
+
+      - name: 🛠️ Setup PHP
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
+        with:
+          php-version: "8.1"
+          tools: composer
+
+      - name: 📦 Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: 🧪 Run tests
+        run: composer run-script test
+
+      - name: ✨ Run linter
+        run: vendor/bin/phpcs --standard=PSR2 --extensions=php --exclude=Generic.Files.LineLength src
+
+      - name: 📢 Update Packagist
+        env:
+          PACKAGIST_USERNAME: ${{ vars.PACKAGIST_USERNAME || 'gaokevin1' }}
+        run: |
+          curl -XPOST -H 'content-type:application/json' "https://packagist.org/api/update-package?username=${PACKAGIST_USERNAME}&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}" -d '{
+            "repository": {
+              "url": "https://github.com/descope/descope-php"
+            }
+          }'

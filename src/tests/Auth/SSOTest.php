@@ -5,9 +5,8 @@ namespace Descope\Tests\Auth;
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\API;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\EndpointsV1;
 
 final class SSOTest extends TestCase
 {
@@ -37,15 +36,9 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        $mockStream = $this->createMock(StreamInterface::class);
-        $mockStream->method('getContents')->willReturn(json_encode($response));
-
-        $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn($mockStream);
-
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->willReturn($mockResponse);
+            ->willReturn($response);
 
         $result = $this->sso->signIn($tenant, $redirectUrl, $prompt, $stepup, $mfa, $customClaims, $ssoAppId);
 
@@ -65,15 +58,14 @@ final class SSOTest extends TestCase
             'sessionToken' => 'fake_session_token'
         ];
 
-        $mockStream = $this->createMock(StreamInterface::class);
-        $mockStream->method('getContents')->willReturn(json_encode($response));
-
-        $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('getBody')->willReturn($mockStream);
-
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->willReturn($mockResponse);
+            ->willReturn($response);
+
+        $this->apiMock->expects($this->once())
+            ->method('generateJwtResponse')
+            ->with($response, null, null)
+            ->willReturn($response);
 
         $result = $this->sso->exchangeToken($code);
 

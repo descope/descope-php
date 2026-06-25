@@ -5,7 +5,6 @@ namespace Descope\Tests\Auth;
 use PHPUnit\Framework\TestCase;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\API;
-use Descope\Exception\AuthException;
 use Descope\SDK\EndpointsV1;
 
 class PasswordTest extends TestCase
@@ -29,7 +28,7 @@ class PasswordTest extends TestCase
         $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/signup/password', ['loginId' => $loginId, 'password' => $password, 'user' => $user])
+            ->with(EndpointsV1::$SIGN_UP_PASSWORD_PATH, ['loginId' => $loginId, 'password' => $password, 'user' => $user], false)
             ->willReturn($response);
 
         $this->apiMock->expects($this->once())
@@ -49,7 +48,7 @@ class PasswordTest extends TestCase
         $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/signin/password', ['loginId' => $loginId, 'password' => $password])
+            ->with(EndpointsV1::$SIGN_IN_PASSWORD_PATH, ['loginId' => $loginId, 'password' => $password], false)
             ->willReturn($response);
 
         $this->apiMock->expects($this->once())
@@ -70,7 +69,7 @@ class PasswordTest extends TestCase
         $response = ['status' => 'success'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/password/reset', ['loginId' => $loginId, 'redirectUrl' => $redirectUrl, 'templateOptions' => $templateOptions])
+            ->with(EndpointsV1::$SEND_RESET_PASSWORD_PATH, ['loginId' => $loginId, 'redirectUrl' => $redirectUrl, 'templateOptions' => $templateOptions], false)
             ->willReturn($response);
 
         $result = $this->password->sendReset($loginId, $redirectUrl, $templateOptions);
@@ -85,7 +84,7 @@ class PasswordTest extends TestCase
 
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/password/update', ['loginId' => $loginId, 'newPassword' => $newPassword], $refreshToken)
+            ->with(EndpointsV1::$UPDATE_PASSWORD_PATH, ['loginId' => $loginId, 'newPassword' => $newPassword], false, $refreshToken)
             ->willReturn([]);
 
         $this->password->update($loginId, $newPassword, $refreshToken);
@@ -100,7 +99,7 @@ class PasswordTest extends TestCase
         $response = ['jwt' => 'jwt_token'];
         $this->apiMock->expects($this->once())
             ->method('doPost')
-            ->with('/v1/auth/password/replace', ['loginId' => $loginId, 'oldPassword' => $oldPassword, 'newPassword' => $newPassword])
+            ->with(EndpointsV1::$REPLACE_PASSWORD_PATH, ['loginId' => $loginId, 'oldPassword' => $oldPassword, 'newPassword' => $newPassword], false)
             ->willReturn($response);
 
         $this->apiMock->expects($this->once())
@@ -117,7 +116,7 @@ class PasswordTest extends TestCase
         $response = ['policy' => 'password_policy'];
         $this->apiMock->expects($this->once())
             ->method('doGet')
-            ->with('/v1/auth/password/policy')
+            ->with(EndpointsV1::$PASSWORD_POLICY_PATH, false)
             ->willReturn($response);
 
         $result = $this->password->getPolicy();

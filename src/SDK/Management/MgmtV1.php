@@ -243,9 +243,9 @@ class MgmtV1
         self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
 
         // Outbound Apps
-        self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token";
-        self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/user/tokens";
-        self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outbound/token";
+        self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/usertoken";
+        self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/usertokens";
+        self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/token";
     }
 }
 

@@ -23,16 +23,23 @@
     ]);
 
     if (isset($_POST["sessionToken"])) {
-        if ($descopeSDK->verify($_POST["sessionToken"])) {
-            $_SESSION["user"] = json_decode($_POST["userDetails"], true);
+        try {
+            $descopeSDK->verify($_POST["sessionToken"]);
+            // Extract user details from verified token claims — never trust client-supplied userDetails
+            $claims = $descopeSDK->getClaims($_POST["sessionToken"]);
+            $_SESSION["user"] = [
+                "name"    => $claims["name"] ?? '',
+                "email"   => $claims["email"] ?? '',
+                "picture" => !empty($claims["picture"]) ? $claims["picture"] : null,
+            ];
             $_SESSION["sessionToken"] = $_POST["sessionToken"];
             session_write_close();
     
             // Redirect to dashboard
             header('Location: dashboard.php');
             exit();
-        } else {
-            error_log("Session token verification failed.");
+        } catch (\Exception $e) {
+            error_log("Session token verification failed: " . $e->getMessage());
             $descopeSDK->logout();
             // Redirect to login page
             header('Location: login.php');

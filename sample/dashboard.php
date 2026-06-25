@@ -1,7 +1,8 @@
 <?php
 require '../vendor/autoload.php';
 use Descope\SDK\DescopeSDK;
-
+use Descope\SDK\Management\Password\UserPasswordBcrypt;
+use Descope\SDK\Management\Password\UserPassword;
 session_start();
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
@@ -16,6 +17,7 @@ if (!isset($_SESSION["user"])) {
 // Get user details and session token from session variables
 $user = $_SESSION["user"];
 $sessionToken = $_SESSION["sessionToken"];
+
 ?>
 
 <!DOCTYPE html>
@@ -64,13 +66,13 @@ $sessionToken = $_SESSION["sessionToken"];
         <button class="btn btn-light logout-button" onclick="location.href='logout.php'">Logout</button>
     </div>
     <div class="container">
-        <h1>Welcome, <?php echo ($user["name"]) ?>!</h1>
-        <p>Your email: <?php echo ($user["email"]) ?></p>
-        <img class="rounded-circle" src="<?php if (isset($user["picture"])) {
-            echo ($user["picture"]);
-                                         } ?>">
+        <h1>Welcome, <?php echo htmlspecialchars($user["name"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>!</h1>
+        <p>Your email: <?php echo htmlspecialchars($user["email"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></p>
+        <?php if (!empty($user["picture"])): ?>
+        <img class="rounded-circle" src="<?php echo htmlspecialchars($user["picture"], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">
+        <?php endif; ?>
         <div class="token-box">
-            <p>Your Session Token: <?php echo ($sessionToken) ?></p>
+            <p>Your Session Token: <?php echo htmlspecialchars($sessionToken, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></p>
         </div>
     </div>
 </body>

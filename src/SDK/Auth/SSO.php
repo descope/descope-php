@@ -53,9 +53,7 @@ class SSO
             $requestParams['ssoAppId'] = $ssoAppId;
         }
 
-        $response = $this->api->doPost($uri, $requestParams);
-
-        return json_decode((string) $response->getBody(), true);
+        return $this->api->doPost($uri, $requestParams, false);
     }
 
     /**

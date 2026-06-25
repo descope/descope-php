@@ -15,6 +15,7 @@ use Descope\SDK\Auth\Management\Audit;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\Exception\AuthException;
+use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\Exception\ValidationException;
 
 use Descope\SDK\Management\MgmtV1;
@@ -95,7 +96,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token to use.
      * @return array The new session information.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function refreshSession(?string $refreshToken = null): array
     {
@@ -105,18 +106,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            return $this->api->doPost(
-                EndpointsV1::$REFRESH_TOKEN_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        return $this->api->doPost(
+            EndpointsV1::$REFRESH_TOKEN_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -125,7 +120,7 @@ class DescopeSDK
      * @param  string|null $sessionToken The session token.
      * @param  string|null $refreshToken The refresh token.
      * @return array The refreshed session information.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function verifyAndRefreshSession(?string $sessionToken = null, ?string $refreshToken = null): array
     {
@@ -168,7 +163,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return array The user details.
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function getUserDetails(?string $refreshToken = null): array
     {
@@ -178,17 +173,11 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            return $this->api->doGet(
-                EndpointsV1::$ME_PATH,
-                false,
-                $refreshToken
-            );
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        return $this->api->doGet(
+            EndpointsV1::$ME_PATH,
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -196,7 +185,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function logout(?string $refreshToken = null): void
     {
@@ -206,19 +195,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            $this->api->doPost(
-                EndpointsV1::$LOGOUT_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-            return;
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        $this->api->doPost(
+            EndpointsV1::$LOGOUT_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**
@@ -226,7 +208,7 @@ class DescopeSDK
      *
      * @param  string|null $refreshToken The refresh token of the user.
      * @return void
-     * @throws AuthException
+     * @throws AuthException|RateLimitException
      */
     public function logoutAll(?string $refreshToken = null): void
     {
@@ -236,19 +218,12 @@ class DescopeSDK
             throw ValidationException::forMissingRefreshToken();
         }
 
-        try {
-            $this->api->doPost(
-                EndpointsV1::$LOGOUT_ALL_PATH,
-                [],
-                false,
-                $refreshToken
-            );
-            return;
-        } catch (RequestException $e) {
-            $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
-            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
-            throw new AuthException($statusCode, 'RequestException', $e->getMessage());
-        }
+        $this->api->doPost(
+            EndpointsV1::$LOGOUT_ALL_PATH,
+            [],
+            false,
+            $refreshToken
+        );
     }
 
     /**

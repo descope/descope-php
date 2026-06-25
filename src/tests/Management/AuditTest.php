@@ -11,9 +11,16 @@ class AuditTest extends TestCase
 
     protected function setUp(): void
     {
+        $projectId = $_ENV['DESCOPE_PROJECT_ID'] ?? null;
+        $managementKey = $_ENV['DESCOPE_MANAGEMENT_KEY'] ?? null;
+
+        if (empty($projectId) || empty($managementKey)) {
+            $this->markTestSkipped('Management integration tests require DESCOPE_PROJECT_ID and DESCOPE_MANAGEMENT_KEY in env.');
+        }
+
         $config = [
-            'projectId' => 'descope_project_id',
-            'managementKey' => 'descope_management_key',
+            'projectId' => $projectId,
+            'managementKey' => $managementKey,
         ];
 
         $this->descopeSDK = new DescopeSDK($config);
