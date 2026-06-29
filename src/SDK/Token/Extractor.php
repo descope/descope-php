@@ -23,11 +23,48 @@ final class Extractor
     }
 
     /**
-     * Return an array representing the Token's claims.
+     * Return an array representing the Token's claims, but only after the
+     * token's signature and expiration have been cryptographically verified.
      *
-     * @return array<string,mixed>
+     * The claims returned by this method can be trusted for authorization
+     * decisions (roles, permissions, subject, tenants, etc.). A token with an
+     * invalid or forged signature, an unknown key ID, or an expired lifetime
+     * will cause a {@see TokenException} to be thrown instead of returning the
+     * attacker-controlled payload.
+     *
+     * If you need to read claims WITHOUT verifying the signature (for example,
+     * to inspect the `kid` before key resolution), use
+     * {@see self::getClaimsUnverified()} and treat the result as untrusted.
+     *
+     * @param  string $sessionToken The session token to verify and decode.
+     * @return array<string,mixed> The verified JWT claims.
+     * @throws TokenException If the signature is invalid or the token is expired.
      */
     public function getClaims(string $sessionToken): array
+    {
+        $claims = $this->validateJWT($sessionToken);
+
+        if (isset($claims['exp']) && time() > $claims['exp']) {
+            throw new TokenException('Token has expired');
+        }
+
+        return $claims;
+    }
+
+    /**
+     * Decode and return the Token's claims WITHOUT verifying its signature.
+     *
+     * WARNING: The returned claims are NOT trustworthy. The signature is not
+     * checked, so any field (roles, permissions, sub, tenants, exp, ...) may
+     * have been forged by the caller of your application. NEVER use the result
+     * of this method for authentication or authorization decisions. Use
+     * {@see self::getClaims()} for any trusted use.
+     *
+     * @param  string $sessionToken The session token to decode.
+     * @return array<string,mixed> The unverified JWT claims.
+     * @throws TokenException If the token is malformed.
+     */
+    public function getClaimsUnverified(string $sessionToken): array
     {
         $parts = $this->parseToken($sessionToken);
         return $parts['payload'] ?? [];
@@ -70,15 +107,20 @@ final class Extractor
      */
     public function validateJWT(string $sessionToken): array
     {
+        // Parse and structurally validate the token before any network call:
+        // the token's contents do not change between key-refresh retries, so a
+        // malformed token or unsupported algorithm should fail fast without
+        // fetching the JWKS.
+        $jwt = $this->parseToken($sessionToken);
+
+        if (!isset($jwt['header']['kid'])) {
+            throw new TokenException('Missing key ID in JWT header');
+        }
+
         $useRefreshedKey = false;
         do {
             try {
                 $jwkSet = $this->config->getJWKSets($useRefreshedKey);
-                $jwt = $this->parseToken($sessionToken);
-                
-                if (!isset($jwt['header']['kid'])) {
-                    throw new TokenException('Missing key ID in JWT header');
-                }
 
                 $matchingKey = null;
                 foreach ($jwkSet['keys'] as $key) {

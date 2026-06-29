@@ -140,10 +140,16 @@ class DescopeSDK
     }
 
     /**
-     * Get the JWT claims if the token is valid.
+     * Get the JWT claims after verifying the token's signature and expiration.
      *
-     * @param  string|null $token The token to extract claims from.
-     * @return array The JWT claims.
+     * The returned claims are safe to use for authorization decisions. A token
+     * with a forged/invalid signature, an unknown key ID, or an expired
+     * lifetime causes an exception to be thrown rather than returning the
+     * untrusted payload. To read claims without verification, use
+     * {@see self::getClaimsUnverified()}.
+     *
+     * @param  string|null $token The token to verify and extract claims from.
+     * @return array The verified JWT claims.
      * @throws AuthException
      */
     public function getClaims($token = null): array
@@ -156,6 +162,29 @@ class DescopeSDK
 
         $extractor = new Extractor($this->config);
         return $extractor->getClaims($token);
+    }
+
+    /**
+     * Get the JWT claims WITHOUT verifying the token's signature.
+     *
+     * WARNING: The returned claims are untrusted and may be forged by whoever
+     * supplied the token. NEVER use them for authentication or authorization.
+     * Use {@see self::getClaims()} for any trusted use.
+     *
+     * @param  string|null $token The token to decode.
+     * @return array The unverified JWT claims.
+     * @throws AuthException
+     */
+    public function getClaimsUnverified($token = null): array
+    {
+        $token = $token ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
+
+        if (!$token) {
+            throw ValidationException::forMissingSessionToken();
+        }
+
+        $extractor = new Extractor($this->config);
+        return $extractor->getClaimsUnverified($token);
     }
 
     /**

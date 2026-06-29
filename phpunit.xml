@@ -3,6 +3,7 @@
     <testsuites>
         <testsuite name="DescopeSDK Test Suite">
             <file>src/tests/DescopeSDKTest.php</file>
+            <file>src/tests/ExtractorClaimsTest.php</file>
             <file>src/tests/InMemoryCacheTest.php</file>
             <file>src/tests/SDKConfigCacheTest.php</file>
             <file>src/tests/APIExceptionMappingTest.php</file>
