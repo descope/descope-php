@@ -20,6 +20,7 @@ class API
     private $httpClient;
     private $projectId;
     private $managementKey;
+    private $baseUrl;
     private $debug;
 
     /** @var int[] Delays between retries in microseconds: 100ms, 5s, 5s */
@@ -31,8 +32,9 @@ class API
      * @param string      $projectId
      * @param string|null $managementKey Management key for authentication.
      * @param bool|null   $debug         Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
+     * @param string|null $baseUrl       Optional explicit base URL override (cluster/region).
      */
-    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null)
+    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null, ?string $baseUrl = null)
     {
         $this->httpClient = new Client();
 
@@ -53,7 +55,8 @@ class API
 
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
-        
+        $this->baseUrl = EndpointsV1::resolveBaseUrl($projectId, $baseUrl);
+
         // Set debug flag from parameter, environment variable, or default to false
         if ($debug !== null) {
             $this->debug = $debug;
@@ -111,6 +114,8 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
+        $this->assertCredentialHost($uri, $authToken);
+
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
@@ -159,6 +164,8 @@ class API
             $authToken = $this->getAuthToken($useManagementKey);
         }
 
+        $this->assertCredentialHost($uri, $authToken);
+
         try {
             $headers = $this->getHeaders($authToken);
             $response = $this->executeWithRetry(function () use ($uri, $headers) {
@@ -196,6 +203,8 @@ class API
     public function doDelete(string $uri): array
     {
         $authToken = $this->getAuthToken(true);
+
+        $this->assertCredentialHost($uri, $authToken);
 
         try {
             $headers = $this->getHeaders($authToken);
@@ -304,6 +313,38 @@ class API
         }
 
         return new AuthException($statusCode, $errorType, $errorMessage, [], $e);
+    }
+
+    /**
+     * Refuses to send bearer credentials (management key or refresh token) to any host
+     * other than the instance's configured base URL. The bare project ID is public, so
+     * requests carrying only the project ID as the auth token are not host-restricted.
+     *
+     * @param  string $uri       Target request URI.
+     * @param  string $authToken Auth token that will be sent as a bearer credential.
+     * @return void
+     * @throws AuthException If a credential would be sent to an unexpected host.
+     */
+    private function assertCredentialHost(string $uri, string $authToken): void
+    {
+        if ($authToken === $this->projectId) {
+            return;
+        }
+
+        $target = parse_url($uri);
+        $base = parse_url($this->baseUrl);
+
+        $sameHost = isset($target['host'], $base['host'])
+            && strcasecmp($target['host'], $base['host']) === 0
+            && ($target['scheme'] ?? '') === ($base['scheme'] ?? '');
+
+        if (!$sameHost) {
+            throw new AuthException(
+                400,
+                'ERROR_TYPE_INVALID_ARGUMENT',
+                'Refusing to send credentials to unexpected host: ' . ($target['host'] ?? 'unknown')
+            );
+        }
     }
 
     /**

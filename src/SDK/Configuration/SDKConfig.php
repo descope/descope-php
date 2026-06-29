@@ -6,7 +6,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Descope\SDK\EndpointsV1;
-use Descope\SDK\EndpointsV2;
 use Descope\SDK\API;
 use Descope\SDK\Cache\CacheInterface;
 use Descope\SDK\Cache\APCuCache;
@@ -78,7 +77,7 @@ final class SDKConfig
     private function fetchJWKSets(): array
     {
         try {
-            $url = EndpointsV2::getPublicKeyPath() . '/' . $this->projectId;
+            $url = EndpointsV1::resolveBaseUrl($this->projectId, $this->baseUrl) . '/v2/keys/' . $this->projectId;
             $response = $this->client->request('GET', $url, [
                 'headers' => $this->getSDKHeaders()
             ]);
