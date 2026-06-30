@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Exception\TokenException;
+use Descope\SDK\EndpointsV1;
+use Descope\SDK\EndpointsV2;
 
 /**
  * Regression tests for CWE-347: getClaims() must not return unverified claims.
@@ -22,6 +24,12 @@ final class ExtractorClaimsTest extends TestCase
 
     protected function setUp(): void
     {
+        // Reference EndpointsV1 first so EndpointsV1.php is autoloaded (it also
+        // defines EndpointsV2, which has no file of its own), then both classes
+        // are available when SDKConfig resolves the JWKS URL.
+        EndpointsV1::setBaseUrlFromString('https://api.descope.com');
+        EndpointsV2::setBaseUrlFromString('https://api.descope.com');
+
         $config = new SDKConfig([
             'projectId' => 'test_project_id',
         ]);
@@ -53,9 +61,10 @@ final class ExtractorClaimsTest extends TestCase
         ]);
 
         // getClaims() must fail closed: it must throw rather than return the
-        // attacker-controlled payload. The exact throwable depends on whether
-        // JWKS resolution can reach the network, but it must never succeed.
-        $this->expectException(\Throwable::class);
+        // attacker-controlled payload. JWKS resolution failures are surfaced
+        // as TokenException so validateJWT()'s key-refresh retry engages and
+        // the error never propagates as an uncaught generic exception.
+        $this->expectException(TokenException::class);
         $this->extractor->getClaims($forged);
     }
 

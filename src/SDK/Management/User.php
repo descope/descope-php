@@ -509,7 +509,7 @@ class User
     public function load(string $loginId): array
     {
         return $this->api->doGet(
-            MgmtV1::$USER_LOAD_PATH . "?loginId=" . $loginId,
+            MgmtV1::$USER_LOAD_PATH . '?' . http_build_query(['loginId' => $loginId]),
             true
         );
     }
@@ -524,7 +524,7 @@ class User
     public function loadByUserId(string $userId): array
     {
         return $this->api->doGet(
-            MgmtV1::$USER_LOAD_PATH . "?userId=" . $userId,
+            MgmtV1::$USER_LOAD_PATH . '?' . http_build_query(['userId' => $userId]),
             true
         );
     }
@@ -646,7 +646,11 @@ class User
     public function getProviderToken(string $loginId, string $provider): array
     {
         return $this->api->doGet(
-                MgmtV1::$USER_GET_PROVIDER_TOKEN . "?loginId=" . $loginId . "&provider=" . $provider. "&withRefreshToken=true",
+                MgmtV1::$USER_GET_PROVIDER_TOKEN . '?' . http_build_query([
+                    'loginId' => $loginId,
+                    'provider' => $provider,
+                    'withRefreshToken' => 'true',
+                ]),
                 true
             );
     }

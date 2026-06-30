@@ -11,6 +11,7 @@ use Descope\SDK\API;
 use Descope\SDK\Cache\CacheInterface;
 use Descope\SDK\Cache\APCuCache;
 use Descope\SDK\Cache\InMemoryCache;
+use Descope\SDK\Exception\TokenException;
 
 final class SDKConfig
 {
@@ -25,7 +26,8 @@ final class SDKConfig
 
     public function __construct(array $config, ?CacheInterface $cache = null)
     {
-        $this->client = new Client();
+        // Explicitly enable TLS certificate verification for JWKS/key fetches.
+        $this->client = new Client(['verify' => true]);
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
         $this->baseUrl = $config['baseUrl'] ?? null;
@@ -85,12 +87,14 @@ final class SDKConfig
             $jwkSets = json_decode($response->getBody(), true);
 
             if (!isset($jwkSets['keys']) || !is_array($jwkSets['keys'])) {
-                throw new \Exception('Invalid JWK response');
+                // Throw TokenException so Extractor::validateJWT()'s key-refresh
+                // retry engages instead of the error propagating uncaught.
+                throw new TokenException('Invalid JWK response');
             }
 
             return $jwkSets;
         } catch (RequestException $e) {
-            throw new \Exception('Failed to fetch JWK KeySet: ' . $e->getMessage());
+            throw new TokenException('Failed to fetch JWK KeySet: ' . $e->getMessage());
         }
     }
 

@@ -50,6 +50,11 @@ final class Verifier
                 throw new TokenException('Token has expired');
             }
 
+            // Verify not-before
+            if (isset($validatedToken['nbf']) && time() < $validatedToken['nbf']) {
+                throw new TokenException('Token is not yet valid');
+            }
+
             // Verify audience if provided
             if ($audience !== null) {
                 if (!isset($validatedToken['aud'])) {

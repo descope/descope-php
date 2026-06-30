@@ -48,6 +48,10 @@ final class Extractor
             throw new TokenException('Token has expired');
         }
 
+        if (isset($claims['nbf']) && time() < $claims['nbf']) {
+            throw new TokenException('Token is not yet valid');
+        }
+
         return $claims;
     }
 
