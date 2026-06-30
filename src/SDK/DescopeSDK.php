@@ -54,7 +54,7 @@ class DescopeSDK
 
         // Determine debug flag from config or environment variable
         $debug = $config['debug'] ?? null;
-        $this->api = new API($config['projectId'], $config['managementKey'] ?? '', $debug);
+        $this->api = new API($config['projectId'], $config['managementKey'] ?? '', $debug, $config['baseUrl'] ?? null);
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
             $this->management = new Management($this->api);

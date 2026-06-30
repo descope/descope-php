@@ -133,6 +133,28 @@ class EndpointsV1
     }
 
     /**
+     * Resolves the base URL for a given project without mutating shared static state.
+     * Uses the explicit override when provided, otherwise derives it from the project's region.
+     *
+     * @param string      $projectId The project ID for the Descope project.
+     * @param string|null $baseUrl   Optional explicit base URL override.
+     * @return string The resolved base URL.
+     */
+    public static function resolveBaseUrl(string $projectId, ?string $baseUrl = null): string
+    {
+        if ($baseUrl !== null && $baseUrl !== '') {
+            return $baseUrl;
+        }
+
+        $region = self::extractRegionFromProjectId($projectId);
+        $urlPrefix = DEFAULT_URL_PREFIX;
+        if ($region) {
+            $urlPrefix .= ".$region";
+        }
+        return "$urlPrefix." . DEFAULT_DOMAIN;
+    }
+
+    /**
      * Updates the API endpoint paths to reflect the currently set base URL.
      *
      * @return void

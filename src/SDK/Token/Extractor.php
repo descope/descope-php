@@ -103,6 +103,8 @@ final class Extractor
                     throw new TokenException('Invalid signature');
                 }
 
+                $this->assertIssuerMatchesProject($jwt['payload']);
+
                 return $jwt['payload'];
             } catch (TokenException $e) {
                 if ($useRefreshedKey) {
@@ -113,6 +115,31 @@ final class Extractor
         } while ($useRefreshedKey);
 
         throw new TokenException('JWT validation failed');
+    }
+
+    /**
+     * Ensures the token issuer resolves to the project the SDK is configured for.
+     * Descope issuers are either the bare project ID or a URL whose last path
+     * segment is the project ID (see API::adjustProperties).
+     *
+     * @throws TokenException if the issuer does not match the configured project ID.
+     */
+    private function assertIssuerMatchesProject(array $payload): void
+    {
+        $projectId = $this->config->projectId;
+        if (empty($projectId)) {
+            return;
+        }
+
+        $issuer = $payload['iss'] ?? '';
+        if ($issuer === '') {
+            throw new TokenException('Token is missing issuer claim');
+        }
+
+        $issuerParts = explode('/', $issuer);
+        if (end($issuerParts) !== $projectId) {
+            throw new TokenException('Token issuer does not match the configured project ID');
+        }
     }
 
     /**
