@@ -252,7 +252,7 @@ print_r($response);
 
 ---
 
-6. `DescopeSDK->getClaims($sessionToken)` - will return all of the claims from the JWT in an array format.
+6. `DescopeSDK->getClaims($sessionToken)` - will validate the JWT signature and return all of the verified claims in an array format.
 7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
 
 ### User Management Functions
