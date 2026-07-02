@@ -106,6 +106,10 @@ final class Extractor
                 throw new TokenException('Invalid signature');
             }
 
+            if (isset($jwt['payload']['exp']) && time() > $jwt['payload']['exp']) {
+                throw new TokenException('Token has expired');
+            }
+
             $this->assertIssuerMatchesProject($jwt['payload']);
 
             return $jwt['payload'];

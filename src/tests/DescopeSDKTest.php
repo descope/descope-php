@@ -46,35 +46,25 @@ final class DescopeSDKTest extends TestCase
 
     public function testGetClaimsRejectsForgedTokenClaims()
     {
-        $cache = new class implements CacheInterface {
-            public function get(string $key)
-            {
-                return [
-                    'keys' => [[
-                        'kid' => 'legit-key',
-                        'kty' => 'RSA',
-                        'n' => 'sXchf9VHkhPcxP3YXyUbKBo1hTvA2gBC2fD31cstjYb9dyG_rMXVNth5f-vY95bkXICnpPxPId2MnCpbne-Yj1FcGj8JM_2v3ERds43Le2psCIfDOtkKw_S01qK2JfUCpyXibSZ9OmUekR74y15I4z6w_sROF1Et1YYAfR8s',
-                        'e' => 'AQAB'
-                    ]]
-                ];
-            }
-
-            public function set(string $key, $value, int $ttl = 3600): bool
-            {
-                return true;
-            }
-
-            public function delete(string $key): bool
-            {
-                return true;
-            }
-        };
-
-        $extractor = new Extractor(new SDKConfig(['projectId' => 'test_project_id'], $cache));
+        $extractor = $this->extractorWithTestKey($this->privateKey());
         $token = $this->jwt(
             ['alg' => 'RS256', 'typ' => 'JWT', 'kid' => 'legit-key'],
-            ['sub' => 'attacker', 'roles' => ['admin'], 'exp' => time() + 3600],
+            ['iss' => 'test_project_id', 'sub' => 'attacker', 'roles' => ['admin'], 'exp' => time() + 3600],
             'not_a_real_rsa_signature'
+        );
+
+        $this->expectException(TokenException::class);
+        $extractor->getClaims($token);
+    }
+
+    public function testGetClaimsRejectsExpiredTokenClaims()
+    {
+        $privateKey = $this->privateKey();
+        $extractor = $this->extractorWithTestKey($privateKey);
+        $token = $this->signedJwt(
+            ['alg' => 'RS256', 'typ' => 'JWT', 'kid' => 'legit-key'],
+            ['iss' => 'test_project_id', 'sub' => 'user', 'roles' => ['admin'], 'exp' => time() - 1],
+            $privateKey
         );
 
         $this->expectException(TokenException::class);
@@ -179,6 +169,63 @@ final class DescopeSDKTest extends TestCase
         return $this->base64UrlEncode(json_encode($header)) . '.' .
             $this->base64UrlEncode(json_encode($payload)) . '.' .
             $this->base64UrlEncode($signature);
+    }
+
+    private function signedJwt(array $header, array $payload, $privateKey): string
+    {
+        $signedData = $this->base64UrlEncode(json_encode($header)) . '.' .
+            $this->base64UrlEncode(json_encode($payload));
+        openssl_sign($signedData, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        return $signedData . '.' . $this->base64UrlEncode($signature);
+    }
+
+    private function extractorWithTestKey($privateKey): Extractor
+    {
+        $key = $this->jwkFromPrivateKey($privateKey);
+        $cache = new class($key) implements CacheInterface {
+            private $key;
+
+            public function __construct(array $key)
+            {
+                $this->key = $key;
+            }
+
+            public function get(string $key)
+            {
+                return ['keys' => [$this->key]];
+            }
+
+            public function set(string $key, $value, int $ttl = 3600): bool
+            {
+                return true;
+            }
+
+            public function delete(string $key): bool
+            {
+                return true;
+            }
+        };
+
+        return new Extractor(new SDKConfig(['projectId' => 'test_project_id'], $cache));
+    }
+
+    private function privateKey()
+    {
+        return openssl_pkey_new([
+            'private_key_bits' => 1024,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA
+        ]);
+    }
+
+    private function jwkFromPrivateKey($privateKey): array
+    {
+        $details = openssl_pkey_get_details($privateKey);
+        return [
+            'kid' => 'legit-key',
+            'kty' => 'RSA',
+            'n' => $this->base64UrlEncode($details['rsa']['n']),
+            'e' => $this->base64UrlEncode($details['rsa']['e'])
+        ];
     }
 
     private function base64UrlEncode(string $value): string
