@@ -8,9 +8,13 @@ use Descope\SDK\API;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\Management\Management;
+use Descope\SDK\Cache\CacheInterface;
+use Descope\SDK\Configuration\SDKConfig;
+use Descope\SDK\Exception\TokenException;
 use Descope\SDK\Exception\ValidationException;
 use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
+use Descope\SDK\Token\Extractor;
 use Descope\SDK\Management\MgmtV1;
 
 final class DescopeSDKTest extends TestCase
@@ -38,6 +42,43 @@ final class DescopeSDKTest extends TestCase
     {
         $this->expectException(ValidationException::class);
         $this->sdk->verify(null);
+    }
+
+    public function testGetClaimsRejectsForgedTokenClaims()
+    {
+        $cache = new class implements CacheInterface {
+            public function get(string $key)
+            {
+                return [
+                    'keys' => [[
+                        'kid' => 'legit-key',
+                        'kty' => 'RSA',
+                        'n' => 'sXchf9VHkhPcxP3YXyUbKBo1hTvA2gBC2fD31cstjYb9dyG_rMXVNth5f-vY95bkXICnpPxPId2MnCpbne-Yj1FcGj8JM_2v3ERds43Le2psCIfDOtkKw_S01qK2JfUCpyXibSZ9OmUekR74y15I4z6w_sROF1Et1YYAfR8s',
+                        'e' => 'AQAB'
+                    ]]
+                ];
+            }
+
+            public function set(string $key, $value, int $ttl = 3600): bool
+            {
+                return true;
+            }
+
+            public function delete(string $key): bool
+            {
+                return true;
+            }
+        };
+
+        $extractor = new Extractor(new SDKConfig(['projectId' => 'test_project_id'], $cache));
+        $token = $this->jwt(
+            ['alg' => 'RS256', 'typ' => 'JWT', 'kid' => 'legit-key'],
+            ['sub' => 'attacker', 'roles' => ['admin'], 'exp' => time() + 3600],
+            'not_a_real_rsa_signature'
+        );
+
+        $this->expectException(TokenException::class);
+        $extractor->getClaims($token);
     }
 
     public function testRefreshSessionThrowsExceptionWithoutToken()
@@ -131,5 +172,17 @@ final class DescopeSDKTest extends TestCase
                 $this->assertStringContainsString('cannot be null or empty', $e->getMessage());
             }
         }
+    }
+
+    private function jwt(array $header, array $payload, string $signature): string
+    {
+        return $this->base64UrlEncode(json_encode($header)) . '.' .
+            $this->base64UrlEncode(json_encode($payload)) . '.' .
+            $this->base64UrlEncode($signature);
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     }
 }

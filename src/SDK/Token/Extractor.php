@@ -23,22 +23,21 @@ final class Extractor
     }
 
     /**
-     * Return an array representing the Token's claims.
+     * Return an array representing the validated Token's claims.
      *
      * @return array<string,mixed>
      */
     public function getClaims(string $sessionToken): array
     {
-        $parts = $this->parseToken($sessionToken);
-        return $parts['payload'] ?? [];
+        return $this->validateJWT($sessionToken);
     }
 
     /**
-     * Parse and validate the JWT token.
+     * Parse the JWT token structure.
      *
      * @throws TokenException if validation fails.
      */
-    public function parseToken(string $sessionToken): array
+    private function parseToken(string $sessionToken): array
     {
         $parts = explode('.', $sessionToken);
         if (count($parts) !== 3) {
@@ -70,48 +69,46 @@ final class Extractor
      */
     public function validateJWT(string $sessionToken): array
     {
+        $jwt = $this->parseToken($sessionToken);
+
+        if (!isset($jwt['header']['kid'])) {
+            throw new TokenException('Missing key ID in JWT header');
+        }
+
         $useRefreshedKey = false;
         do {
-            try {
-                $jwkSet = $this->config->getJWKSets($useRefreshedKey);
-                $jwt = $this->parseToken($sessionToken);
-                
-                if (!isset($jwt['header']['kid'])) {
-                    throw new TokenException('Missing key ID in JWT header');
+            $jwkSet = $this->config->getJWKSets($useRefreshedKey);
+
+            $matchingKey = null;
+            foreach ($jwkSet['keys'] as $key) {
+                if ($key['kid'] === $jwt['header']['kid']) {
+                    $matchingKey = $key;
+                    break;
                 }
+            }
 
-                $matchingKey = null;
-                foreach ($jwkSet['keys'] as $key) {
-                    if ($key['kid'] === $jwt['header']['kid']) {
-                        $matchingKey = $key;
-                        break;
-                    }
-                }
-
-                if (!$matchingKey) {
-                    throw new TokenException('No matching key found in JWKS');
-                }
-
-                $publicKeyPEM = $this->convertJWKToPEM($matchingKey);
-                $signatureValid = $this->verifySignature(
-                    $jwt['raw']['header'] . '.' . $jwt['raw']['payload'],
-                    $jwt['signature'],
-                    $publicKeyPEM
-                );
-
-                if (!$signatureValid) {
-                    throw new TokenException('Invalid signature');
-                }
-
-                $this->assertIssuerMatchesProject($jwt['payload']);
-
-                return $jwt['payload'];
-            } catch (TokenException $e) {
+            if (!$matchingKey) {
                 if ($useRefreshedKey) {
-                    throw new TokenException('JWT validation failed after retry: ' . $e->getMessage());
+                    throw new TokenException('JWT validation failed after retry: No matching key found in JWKS');
                 }
                 $useRefreshedKey = true;
+                continue;
             }
+
+            $publicKeyPEM = $this->convertJWKToPEM($matchingKey);
+            $signatureValid = $this->verifySignature(
+                $jwt['raw']['header'] . '.' . $jwt['raw']['payload'],
+                $jwt['signature'],
+                $publicKeyPEM
+            );
+
+            if (!$signatureValid) {
+                throw new TokenException('Invalid signature');
+            }
+
+            $this->assertIssuerMatchesProject($jwt['payload']);
+
+            return $jwt['payload'];
         } while ($useRefreshedKey);
 
         throw new TokenException('JWT validation failed');
