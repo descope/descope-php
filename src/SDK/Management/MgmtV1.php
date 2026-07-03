@@ -20,6 +20,9 @@ class MgmtV1
     // Paths for various management operations
     public static string $TEMPLATE_EXPORT_PATH;
     public static string $TEMPLATE_IMPORT_PATH;
+    public static string $THEME_IMPORT_PATH;
+    public static string $THEME_EXPORT_PATH;
+    public static string $FLOW_IMPORT_PATH;
     public static string $FLOW_EXPORT_PATH;
     public static string $FLOW_DELETE_PATH;
     public static string $FLOW_LIST_PATH;
@@ -235,6 +238,9 @@ class MgmtV1
         self::$FLOW_LIST_PATH = self::$baseUrl . "/v1/mgmt/flow/list";
         self::$FLOW_DELETE_PATH = self::$baseUrl . "/v1/mgmt/flow/delete";
         self::$FLOW_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/flow/export";
+        self::$FLOW_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/flow/import";
+        self::$THEME_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/theme/export";
+        self::$THEME_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/theme/import";
         self::$TEMPLATE_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/template/import";
         self::$TEMPLATE_EXPORT_PATH = self::$baseUrl . "/v1/mgmt/template/export";
 

@@ -461,6 +461,133 @@ $descopeSDK->management->user->setTemporaryPassword("testuser1", new UserPasswor
 $descopeSDK->management->user->setActivePassword("testuser1", new UserPassword(cleartext: "activePassword123"));
 ```
 
+### Tenant Management Functions
+
+Manage tenants for multi-tenant applications.
+
+```php
+// Create a tenant (id is optional; one is generated if omitted)
+$response = $descopeSDK->management->tenant->create("My Tenant", null, ["example.com"], ["plan" => "pro"]);
+$tenantId = $response["id"];
+
+// Update a tenant (overwrites all fields)
+$descopeSDK->management->tenant->update($tenantId, "My Renamed Tenant", ["example.com"]);
+
+// Load a single tenant / all tenants
+$tenant = $descopeSDK->management->tenant->load($tenantId);
+$all = $descopeSDK->management->tenant->loadAll();
+
+// Search tenants
+$found = $descopeSDK->management->tenant->searchAll([], ["My Renamed Tenant"]);
+
+// Delete a tenant (cascade removes its users/keys)
+$descopeSDK->management->tenant->delete($tenantId, false);
+```
+
+### Role Management Functions
+
+```php
+$descopeSDK->management->role->create("My Role", "role description", ["Read", "Write"]);
+$descopeSDK->management->role->update("My Role", "My Renamed Role", "updated", ["Read"]);
+$roles = $descopeSDK->management->role->loadAll();
+$matches = $descopeSDK->management->role->search([], ["My Renamed Role"]);
+$descopeSDK->management->role->delete("My Renamed Role");
+```
+
+### Permission Management Functions
+
+```php
+$descopeSDK->management->permission->create("Read", "can read");
+$descopeSDK->management->permission->update("Read", "ReadOnly", "can read only");
+$permissions = $descopeSDK->management->permission->loadAll();
+$descopeSDK->management->permission->delete("ReadOnly");
+```
+
+### Access Key Management Functions
+
+```php
+// Create an access key; the cleartext is only returned once, on creation
+$response = $descopeSDK->management->accessKey->create("My Key", 0, ["My Role"]);
+$cleartext = $response["cleartext"];
+$keyId = $response["key"]["id"];
+
+$descopeSDK->management->accessKey->load($keyId);
+$descopeSDK->management->accessKey->searchAll();
+$descopeSDK->management->accessKey->update($keyId, "My Renamed Key");
+$descopeSDK->management->accessKey->deactivate($keyId);
+$descopeSDK->management->accessKey->activate($keyId);
+$descopeSDK->management->accessKey->delete($keyId);
+```
+
+### SSO Application Management Functions
+
+Manage SSO (IdP) applications your project exposes to relying parties.
+
+```php
+// OIDC application
+$response = $descopeSDK->management->ssoApplication->createOidcApplication("My OIDC App", "https://login.example.com");
+$appId = $response["id"];
+$descopeSDK->management->ssoApplication->updateOidcApplication($appId, "My OIDC App", "https://login.example.com");
+
+// SAML application
+$descopeSDK->management->ssoApplication->createSamlApplication("My SAML App", "https://login.example.com");
+
+$descopeSDK->management->ssoApplication->load($appId);
+$descopeSDK->management->ssoApplication->loadAll();
+$descopeSDK->management->ssoApplication->delete($appId);
+```
+
+### SSO Settings (Tenant SSO Configuration)
+
+Configure the SSO provider used by a tenant. `management->sso` is the tenant SSO configuration component (distinct from the auth-flow `$descopeSDK->sso`).
+
+```php
+$settings = $descopeSDK->management->sso->loadSettings("tenantId1");
+
+// Configure OIDC for a tenant
+$descopeSDK->management->sso->configureOIDCSettings("tenantId1", [
+    "name" => "MyOIDC",
+    "clientId" => "clientId",
+    "clientSecret" => "clientSecret",
+    "redirectUrl" => "https://example.com/callback",
+    "authUrl" => "https://idp.example.com/authorize",
+    "tokenUrl" => "https://idp.example.com/token",
+    "userDataUrl" => "https://idp.example.com/userinfo",
+    "scope" => ["openid", "email"],
+], ["example.com"]);
+
+// Configure SAML for a tenant
+$descopeSDK->management->sso->configureSAMLSettings("tenantId1", [
+    "idpUrl" => "https://idp.example.com/sso",
+    "entityId" => "entityId",
+    "idpCert" => "-----BEGIN CERTIFICATE----- ...",
+], "https://example.com/callback", ["example.com"]);
+
+$descopeSDK->management->sso->deleteSettings("tenantId1");
+```
+
+### JWT Management Functions
+
+```php
+// Update a JWT with custom claims
+$newJwt = $descopeSDK->management->jwt->updateJWT($jwt, ["myClaim" => "value"]);
+
+// Impersonate a user (requires the impersonator to have permission)
+$impersonatedJwt = $descopeSDK->management->jwt->impersonate("impersonatorId", "targetLoginId", true);
+```
+
+### Flow & Theme Management Functions
+
+```php
+$flows = $descopeSDK->management->flow->listFlows();
+$exported = $descopeSDK->management->flow->exportFlow("sign-up-or-in");
+$descopeSDK->management->flow->importFlow("sign-up-or-in", $exported["flow"], $exported["screens"] ?? []);
+$descopeSDK->management->flow->delete(["old-flow-id"]);
+
+$theme = $descopeSDK->management->flow->exportTheme();
+$descopeSDK->management->flow->importTheme($theme["theme"]);
+```
+
 ## Password Management
 
 The SDK provides several classes for handling different types of passwords and password hashes. Here's how to use them:
