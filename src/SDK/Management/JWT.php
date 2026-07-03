@@ -67,7 +67,7 @@ class JWT
      * @param bool        $validateConsent Whether to validate that consent to impersonate has been given.
      * @param array       $customClaims    A map of custom claims to add to the JWT.
      * @param string|null $selectedTenant  Optional tenant to select for the impersonated session. When null, it is omitted.
-     * @param string|null $refreshDuration Optional duration for the refreshed token. When null, it is omitted.
+     * @param int|null    $refreshDuration Optional duration, in seconds, for the refreshed token. When null, it is omitted.
      * @return string The impersonated, signed JWT.
      * @throws AuthException If the impersonation request fails.
      */
@@ -77,7 +77,7 @@ class JWT
         bool $validateConsent = true,
         array $customClaims = [],
         ?string $selectedTenant = null,
-        ?string $refreshDuration = null
+        ?int $refreshDuration = null
     ): string {
         $body = [
             'impersonatorId' => $impersonatorId,
