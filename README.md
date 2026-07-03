@@ -242,6 +242,34 @@ $response = $descopeSDK->auth->sso->exchangeToken("code");
 print_r($response);
 ```
 
+### OTP (One-Time Password)
+
+The delivery method is one of `"email"`, `"sms"`, `"whatsapp"` or `"voice"`.
+
+```php
+// Send a code to a new or existing user
+$descopeSDK->otp->signUp("email", "loginId", ["email" => "user@example.com"]);
+$descopeSDK->otp->signIn("email", "loginId");
+$descopeSDK->otp->signUpOrIn("email", "loginId");
+
+// Verify the received code and get a session
+$response = $descopeSDK->otp->verifyCode("email", "loginId", "123456");
+print_r($response);
+```
+
+### Magic Link
+
+```php
+// Send a magic link containing the given redirect URI
+$descopeSDK->magicLink->signUp("email", "loginId", "https://example.com/verify", ["email" => "user@example.com"]);
+$descopeSDK->magicLink->signIn("email", "loginId", "https://example.com/verify");
+$descopeSDK->magicLink->signUpOrIn("email", "loginId", "https://example.com/verify");
+
+// Verify the token extracted from the magic link and get a session
+$response = $descopeSDK->magicLink->verify("token");
+print_r($response);
+```
+
 ### Session Management
 
 1. `DescopeSDK->verify($sessionToken)` - will validate the session token and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired.
@@ -254,6 +282,9 @@ print_r($response);
 
 6. `DescopeSDK->getClaims($sessionToken)` - will validate the JWT signature and return all of the verified claims in an array format.
 7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
+8. `DescopeSDK->selectTenant($tenantId, $refreshToken)` - will return a new set of tokens scoped to the selected tenant.
+9. `DescopeSDK->exchangeAccessKey($accessKey, $loginOptions)` - will exchange an access key for a session JWT.
+10. `DescopeSDK->history($refreshToken)` - will return the current user's authentication history.
 
 ### User Management Functions
 

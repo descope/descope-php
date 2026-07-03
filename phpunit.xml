@@ -10,6 +10,7 @@
             <file>src/tests/StaticStateIsolationTest.php</file>
             <file>src/tests/EndpointsTest.php</file>
             <file>src/tests/Management/ManagementParityTest.php</file>
+            <file>src/tests/Auth/AuthParityTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit> 
