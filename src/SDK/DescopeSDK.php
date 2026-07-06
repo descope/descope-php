@@ -9,6 +9,8 @@ use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\Auth\OAuth;
+use Descope\SDK\Auth\OTP;
+use Descope\SDK\Auth\MagicLink;
 use Descope\SDK\Management\Management;
 use Descope\SDK\Auth\Management\User;
 use Descope\SDK\Auth\Management\Audit;
@@ -26,6 +28,8 @@ class DescopeSDK
     public Password $password;
     public SSO $sso;
     public OAuth $oauth;
+    public OTP $otp;
+    public MagicLink $magicLink;
     public Management $management;
     public API $api;
     private Verifier $verifier;
@@ -70,6 +74,8 @@ class DescopeSDK
         $this->password = new Password($this->api);
         $this->sso = new SSO($this->api);
         $this->oauth = new OAuth($this->api);
+        $this->otp = new OTP($this->api);
+        $this->magicLink = new MagicLink($this->api);
     }
 
      /**
@@ -227,6 +233,86 @@ class DescopeSDK
     }
 
     /**
+     * Select a tenant for the current session, returning a new set of tokens
+     * scoped to that tenant.
+     *
+     * @param  string      $tenantId     The tenant to select.
+     * @param  string|null $refreshToken The refresh token of the current session.
+     * @return array The new session information.
+     * @throws AuthException|RateLimitException
+     */
+    public function selectTenant(string $tenantId, ?string $refreshToken = null): array
+    {
+        if (empty($tenantId)) {
+            throw new ValidationException('Tenant ID cannot be null or empty.');
+        }
+
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+
+        if (empty($refreshToken)) {
+            throw ValidationException::forMissingRefreshToken();
+        }
+
+        $response = $this->api->doPost(
+            EndpointsV1::$SELECT_TENANT_PATH,
+            ['tenant' => $tenantId],
+            false,
+            $refreshToken
+        );
+
+        return $this->api->generateJwtResponse($response, $response['refreshJwt'] ?? null, null);
+    }
+
+    /**
+     * Exchange an access key for a session JWT.
+     *
+     * @param  string     $accessKey    The access key to exchange.
+     * @param  array|null $loginOptions Optional login options (e.g. customClaims).
+     * @return array The API response containing the session JWT.
+     * @throws AuthException|RateLimitException
+     */
+    public function exchangeAccessKey(string $accessKey, ?array $loginOptions = null): array
+    {
+        if (empty($accessKey)) {
+            throw new ValidationException('Access key cannot be null or empty.');
+        }
+
+        $body = [];
+        if ($loginOptions !== null) {
+            $body['loginOptions'] = $loginOptions;
+        }
+
+        return $this->api->doPost(
+            EndpointsV1::$EXCHANGE_AUTH_ACCESS_KEY_PATH,
+            $body,
+            false,
+            $accessKey
+        );
+    }
+
+    /**
+     * Retrieve the current user's authentication history.
+     *
+     * @param  string|null $refreshToken The refresh token of the user.
+     * @return array The list of authentication history entries.
+     * @throws AuthException|RateLimitException
+     */
+    public function history(?string $refreshToken = null): array
+    {
+        $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
+
+        if (!$refreshToken) {
+            throw ValidationException::forMissingRefreshToken();
+        }
+
+        return $this->api->doGet(
+            EndpointsV1::$HISTORY_PATH,
+            false,
+            $refreshToken
+        );
+    }
+
+    /**
      * Get the Password component.
      *
      * @return Password The Password instance.
@@ -254,6 +340,26 @@ class DescopeSDK
     public function oauth(): OAuth
     {
         return $this->oauth;
+    }
+
+    /**
+     * Get the OTP component.
+     *
+     * @return OTP The OTP instance.
+     */
+    public function otp(): OTP
+    {
+        return $this->otp;
+    }
+
+    /**
+     * Get the MagicLink component.
+     *
+     * @return MagicLink The MagicLink instance.
+     */
+    public function magicLink(): MagicLink
+    {
+        return $this->magicLink;
     }
 
     /**
