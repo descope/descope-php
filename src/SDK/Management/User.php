@@ -1201,6 +1201,644 @@ class User
     }
 
     /**
+     * Logout a user from all devices by login ID.
+     *
+     * @param string $loginId The login ID of the user to log out.
+     * @param array $sessionTypes Optional list of session types to log out from. Empty logs out all.
+     * @return void
+     * @throws AuthException
+     */
+    public function logoutUser(string $loginId, array $sessionTypes = []): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_LOGOUT_PATH,
+            ['userId' => '', 'loginId' => $loginId, 'sessionTypes' => $sessionTypes],
+            true
+        );
+    }
+
+    /**
+     * Logout a user from all devices by user ID.
+     *
+     * @param string $userId The user ID of the user to log out.
+     * @param array $sessionTypes Optional list of session types to log out from. Empty logs out all.
+     * @return void
+     * @throws AuthException
+     */
+    public function logoutUserByUserId(string $userId, array $sessionTypes = []): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_LOGOUT_PATH,
+            ['userId' => $userId, 'loginId' => '', 'sessionTypes' => $sessionTypes],
+            true
+        );
+    }
+
+    /**
+     * Create a batch of users.
+     *
+     * @param array $users The array of UserObj instances representing users to be created.
+     * @return array The response containing details of the created users.
+     * @throws AuthException
+     */
+    public function createBatch(array $users): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_CREATE_BATCH_PATH,
+            $this->composeCreateBatchBody($users, null, null, null, false),
+            true
+        );
+    }
+
+    /**
+     * Patch an existing user. Only the provided (non-null) fields are updated.
+     *
+     * @param string $loginId The login ID or user ID of the user to patch.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param array|null $roleNames Roles assigned to the user.
+     * @param array|null $userTenants Tenants associated with the user.
+     * @param array|null $customAttributes Custom attributes for the user.
+     * @param string|null $picture The user's profile picture URL.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @return array The patched user's information.
+     * @throws AuthException
+     */
+    public function patch(
+        string $loginId,
+        ?string $email = null,
+        ?string $phone = null,
+        ?string $displayName = null,
+        ?string $givenName = null,
+        ?string $middleName = null,
+        ?string $familyName = null,
+        ?array $roleNames = null,
+        ?array $userTenants = null,
+        ?array $customAttributes = null,
+        ?string $picture = null,
+        ?bool $verifiedEmail = null,
+        ?bool $verifiedPhone = null,
+        ?array $ssoAppIds = null
+    ): array {
+        $body = $this->composePatchBody(
+            $loginId,
+            $email,
+            $phone,
+            $displayName,
+            $givenName,
+            $middleName,
+            $familyName,
+            $roleNames,
+            $userTenants,
+            $customAttributes,
+            $picture,
+            $verifiedEmail,
+            $verifiedPhone,
+            $ssoAppIds
+        );
+
+        return $this->api->doPatch(
+            MgmtV1::$USER_PATCH_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Patch a batch of users. Each entry is a UserObj; only non-null fields are patched.
+     *
+     * @param array $users The array of UserObj instances representing users to be patched.
+     * @return array The response containing details of the patched users.
+     * @throws AuthException
+     */
+    public function patchBatch(array $users): array
+    {
+        $userArr = [];
+        foreach ($users as $user) {
+            $userArr[] = $this->composePatchBody(
+                $user->loginId,
+                $user->email,
+                $user->phone,
+                $user->displayName,
+                $user->givenName,
+                $user->middleName,
+                $user->familyName,
+                $user->roleNames,
+                $user->userTenants,
+                $user->customAttributes,
+                $user->picture,
+                $user->verifiedEmail,
+                $user->verifiedPhone,
+                $user->ssoAppIds
+            );
+        }
+
+        return $this->api->doPatch(
+            MgmtV1::$USER_PATCH_BATCH_PATH,
+            ['users' => $userArr],
+            true
+        );
+    }
+
+    /**
+     * Delete a batch of users by user IDs. IMPORTANT: This action is irreversible.
+     *
+     * @param array $userIds The list of user IDs to delete.
+     * @return void
+     * @throws AuthException
+     */
+    public function deleteBatch(array $userIds): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_DELETE_BATCH_PATH,
+            ['userIds' => $userIds],
+            true
+        );
+    }
+
+    /**
+     * Import users from another Descope project or supported provider.
+     *
+     * @param string $source The source of the imported users.
+     * @param string|null $users Base64-encoded user data to import.
+     * @param string|null $hashes Base64-encoded password hashes to import.
+     * @param bool $dryrun Whether to perform a dry-run without persisting.
+     * @return array The import result.
+     * @throws AuthException
+     */
+    public function import(string $source, ?string $users = null, ?string $hashes = null, bool $dryrun = false): array
+    {
+        $body = [
+            'source' => $source,
+            'dryrun' => $dryrun,
+        ];
+        if ($users !== null && $users !== '') {
+            $body['users'] = $users;
+        }
+        if ($hashes !== null && $hashes !== '') {
+            $body['hashes'] = $hashes;
+        }
+
+        return $this->api->doPost(
+            MgmtV1::$USER_IMPORT_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Load a set of users by their user IDs.
+     *
+     * @param array $userIds The list of user IDs to load.
+     * @param bool $includeInvalidUsers Whether to include invalid users in the result.
+     * @return array The users' details.
+     * @throws AuthException
+     */
+    public function loadUsers(array $userIds, bool $includeInvalidUsers = false): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USERS_LOAD_PATH,
+            ['userIds' => $userIds, 'includeInvalidUsers' => $includeInvalidUsers],
+            true
+        );
+    }
+
+    /**
+     * Search all test users.
+     *
+     * @param  array|null  $tenantIds        Optional list of tenant IDs to filter by.
+     * @param  array|null  $roleNames        Optional list of role names to filter by.
+     * @param  int         $limit            Optional limit of the number of users returned.
+     * @param  int         $page             Optional pagination control. Pages start at 0.
+     * @param  array|null  $customAttributes Optional search for an attribute with a given value.
+     * @param  array|null  $statuses         Optional list of statuses to search for.
+     * @param  array|null  $emails           Optional list of emails to search for.
+     * @param  array|null  $phones           Optional list of phones to search for.
+     * @param  array|null  $ssoAppIds        Optional list of SSO application IDs to filter by.
+     * @param  array|null  $sort             Optional list of fields to sort by.
+     * @param  string|null $text             Optional free text search.
+     * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs.
+     * @param  array|null  $tenantRoleNames  Optional map of tenants and list of role names.
+     * @return array Return dict in the format {"users": []}.
+     * @throws AuthException
+     */
+    public function searchAllTestUsers(
+        $loginId = null,
+        $tenantIds = null,
+        $roleNames = null,
+        $limit = 0,
+        $text = null,
+        $page = 0,
+        $customAttributes = null,
+        $statuses = null,
+        $emails = null,
+        $phones = null,
+        $ssoAppIds = null,
+        $sort = null,
+        $tenantRoleIds = null,
+        $tenantRoleNames = null
+    ): array {
+        $body = [
+            'loginId' => $loginId ?? '',
+            'tenantIds' => is_array($tenantIds) ? $tenantIds : [],
+            'roleNames' => is_array($roleNames) ? $roleNames : [],
+            'limit' => $limit > 0 ? $limit : 0,
+            'text' => $text ?? '',
+            'page' => $page > 0 ? $page : 0,
+            'testUsersOnly' => true,
+            'withTestUser' => true,
+            'customAttributes' => $customAttributes !== null ? (array)$customAttributes : new \stdClass(),
+            'statuses' => is_array($statuses) ? $statuses : [],
+            'emails' => is_array($emails) ? $emails : [],
+            'phones' => is_array($phones) ? $phones : [],
+            'ssoAppIds' => is_array($ssoAppIds) ? $ssoAppIds : [],
+            'sort' => is_array($sort) ? array_map(function ($item) {
+                return [
+                    'field' => isset($item['field']) ? $item['field'] : '',
+                    'desc' => isset($item['desc']) ? (bool)$item['desc'] : false
+                ];
+            }, $sort) : [],
+            'loginIds' => [],
+            'tenantRoleIds' => $this->mapToValuesObject($tenantRoleIds),
+            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames)
+        ];
+
+        $body = array_filter($body, function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        return $this->api->doPost(
+            MgmtV1::$TEST_USER_SEARCH_ALL_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Update the recovery email address of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $email The new recovery email address.
+     * @param bool|null $verified Whether the recovery email is verified.
+     * @return array The updated user details.
+     * @throws AuthException
+     */
+    public function updateRecoveryEmail(string $loginId, string $email, ?bool $verified = null): array
+    {
+        $body = ['loginId' => $loginId, 'recoveryEmail' => $email, 'verified' => $verified ?? false];
+
+        return $this->api->doPost(
+            MgmtV1::$USER_UPDATE_RECOVERY_EMAIL_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Update the recovery phone number of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $phone The new recovery phone number.
+     * @param bool|null $verified Whether the recovery phone is verified.
+     * @return array The updated user details.
+     * @throws AuthException
+     */
+    public function updateRecoveryPhone(string $loginId, string $phone, ?bool $verified = null): array
+    {
+        $body = ['loginId' => $loginId, 'recoveryPhone' => $phone, 'verified' => $verified ?? false];
+
+        return $this->api->doPost(
+            MgmtV1::$USER_UPDATE_RECOVERY_PHONE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Get all custom attribute schema definitions.
+     *
+     * @return array The list of custom attribute definitions.
+     * @throws AuthException
+     */
+    public function getCustomAttributes(): array
+    {
+        return $this->api->doGet(
+            MgmtV1::$USER_CUSTOM_ATTRIBUTES_PATH,
+            true
+        );
+    }
+
+    /**
+     * Create custom attribute schema definitions.
+     *
+     * @param array $attributes The list of custom attribute definitions to create.
+     * @return array The list of custom attribute definitions.
+     * @throws AuthException
+     */
+    public function createCustomAttributes(array $attributes): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_CUSTOM_ATTRIBUTE_CREATE_PATH,
+            ['attributes' => $attributes],
+            true
+        );
+    }
+
+    /**
+     * Delete custom attribute schema definitions by name.
+     *
+     * @param array $names The list of custom attribute names to delete.
+     * @return array The list of remaining custom attribute definitions.
+     * @throws AuthException
+     */
+    public function deleteCustomAttributes(array $names): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_CUSTOM_ATTRIBUTE_DELETE_PATH,
+            ['names' => $names],
+            true
+        );
+    }
+
+    /**
+     * Update the given/middle/family names of a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @return array The updated user details.
+     * @throws AuthException
+     */
+    public function updateUserNames(
+        string $loginId,
+        ?string $givenName = null,
+        ?string $middleName = null,
+        ?string $familyName = null
+    ): array {
+        return $this->api->doPost(
+            MgmtV1::$USER_UPDATE_NAME_PATH,
+            [
+                'loginId' => $loginId,
+                'givenName' => $givenName,
+                'middleName' => $middleName,
+                'familyName' => $familyName,
+            ],
+            true
+        );
+    }
+
+    /**
+     * Add roles to a user within a specific tenant.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $tenantId The tenant ID.
+     * @param array $roles The list of role names to add.
+     * @return array The updated user details.
+     * @throws AuthException
+     */
+    public function addTenantRoles(string $loginId, string $tenantId, array $roles): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_ADD_ROLE_PATH,
+            ['loginId' => $loginId, 'tenantId' => $tenantId, 'roleNames' => $roles],
+            true
+        );
+    }
+
+    /**
+     * Remove a single passkey from a user by credential ID.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $credentialId The credential ID of the passkey to remove.
+     * @return void
+     * @throws AuthException
+     */
+    public function removePasskey(string $loginId, string $credentialId): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_REMOVE_PASSKEY_PATH,
+            ['loginId' => $loginId, 'credentialId' => $credentialId],
+            true
+        );
+    }
+
+    /**
+     * List all passkeys for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return array The list of passkeys.
+     * @throws AuthException
+     */
+    public function listPasskeys(string $loginId): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_LIST_PASSKEYS_PATH,
+            ['loginId' => $loginId],
+            true
+        );
+    }
+
+    /**
+     * Remove the TOTP seed for a user.
+     *
+     * @param string $loginId The login ID of the user.
+     * @return void
+     * @throws AuthException
+     */
+    public function removeTotpSeed(string $loginId): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_REMOVE_TOTP_SEED_PATH,
+            ['loginId' => $loginId],
+            true
+        );
+    }
+
+    /**
+     * Retrieve the provider token for a user with additional options.
+     *
+     * @param string $loginId The login ID of the user.
+     * @param string $provider The name of the provider.
+     * @param bool $withRefreshToken Whether to include the refresh token.
+     * @param bool $forceRefresh Whether to force a refresh of the token.
+     * @return array The provider token details.
+     * @throws AuthException
+     */
+    public function getProviderTokenWithOptions(
+        string $loginId,
+        string $provider,
+        bool $withRefreshToken = false,
+        bool $forceRefresh = false
+    ): array {
+        $query = http_build_query([
+            'loginId' => $loginId,
+            'provider' => $provider,
+            'withRefreshToken' => $withRefreshToken ? 'true' : 'false',
+            'forceRefresh' => $forceRefresh ? 'true' : 'false',
+        ]);
+
+        return $this->api->doGet(
+            MgmtV1::$USER_GET_PROVIDER_TOKEN . '?' . $query,
+            true
+        );
+    }
+
+    /**
+     * Generate an Embedded Link for a sign-up flow for the given login ID.
+     * The return value is a token that can be verified via magic link, or using flows.
+     *
+     * @param string $loginId The login ID of the user to sign up.
+     * @param array|null $user Optional user details to associate with the sign-up.
+     * @param array|null $signUpOptions Optional sign-up/login options (custom claims, timeout, etc.).
+     * @return string The token to be used in the verification process.
+     * @throws AuthException
+     */
+    public function generateEmbeddedLinkSignUp(string $loginId, ?array $user = null, ?array $signUpOptions = null): string
+    {
+        $signUpOptions = $signUpOptions ?? [];
+        $user = $user ?? [];
+
+        $body = [
+            'loginId' => $loginId,
+            'user' => $user['user'] ?? $user,
+            'emailVerified' => $user['emailVerified'] ?? false,
+            'phoneVerified' => $user['phoneVerified'] ?? false,
+            'loginOptions' => $signUpOptions['loginOptions'] ?? new \stdClass(),
+            'timeout' => $signUpOptions['timeout'] ?? 0,
+        ];
+
+        $response = $this->api->doPost(
+            MgmtV1::$USER_GENERATE_EMBEDDED_LINK_SIGNUP_PATH,
+            $body,
+            true
+        );
+
+        return $response['token'];
+    }
+
+    /**
+     * List trusted devices for the given login IDs or user IDs.
+     *
+     * @param array $loginIdsOrUserIds The list of login IDs or user IDs to look up.
+     * @return array The list of trusted devices.
+     * @throws AuthException
+     */
+    public function listTrustedDevices(array $loginIdsOrUserIds): array
+    {
+        return $this->api->doPost(
+            MgmtV1::$USER_LIST_TRUSTED_DEVICES_PATH,
+            ['identifiers' => $loginIdsOrUserIds],
+            true
+        );
+    }
+
+    /**
+     * Remove trusted devices for a user.
+     *
+     * @param string $loginId The login ID or user ID of the user.
+     * @param array $deviceIds The list of device IDs to remove.
+     * @return void
+     * @throws AuthException
+     */
+    public function removeTrustedDevices(string $loginId, array $deviceIds): void
+    {
+        $this->api->doPost(
+            MgmtV1::$USER_REMOVE_TRUSTED_DEVICES_PATH,
+            ['identifier' => $loginId, 'deviceIds' => $deviceIds],
+            true
+        );
+    }
+
+    /**
+     * Composes the request body for patching a user.
+     *
+     * Only non-null fields are included, matching the go-sdk makePatchUserRequest.
+     * Note: the patch endpoint uses "name" for the display name (not "displayName")
+     * and "ssoAppIds" for SSO app IDs.
+     *
+     * @param string $loginId The login ID or user ID of the user.
+     * @param string|null $email The user's email address.
+     * @param string|null $phone The user's phone number.
+     * @param string|null $displayName The user's display name.
+     * @param string|null $givenName The user's given name.
+     * @param string|null $middleName The user's middle name.
+     * @param string|null $familyName The user's family name.
+     * @param array|null $roleNames Roles assigned to the user.
+     * @param array|null $userTenants Tenants associated with the user.
+     * @param array|null $customAttributes Custom attributes for the user.
+     * @param string|null $picture The user's profile picture URL.
+     * @param bool|null $verifiedEmail Indicates if the user's email is verified.
+     * @param bool|null $verifiedPhone Indicates if the user's phone is verified.
+     * @param array|null $ssoAppIds SSO app IDs associated with the user.
+     * @return array The composed patch request body.
+     */
+    private function composePatchBody(
+        string $loginId,
+        ?string $email,
+        ?string $phone,
+        ?string $displayName,
+        ?string $givenName,
+        ?string $middleName,
+        ?string $familyName,
+        ?array $roleNames,
+        ?array $userTenants,
+        ?array $customAttributes,
+        ?string $picture,
+        ?bool $verifiedEmail,
+        ?bool $verifiedPhone,
+        ?array $ssoAppIds
+    ): array {
+        $body = ['loginId' => $loginId];
+        if ($displayName !== null) {
+            $body['name'] = $displayName;
+        }
+        if ($givenName !== null) {
+            $body['givenName'] = $givenName;
+        }
+        if ($middleName !== null) {
+            $body['middleName'] = $middleName;
+        }
+        if ($familyName !== null) {
+            $body['familyName'] = $familyName;
+        }
+        if ($phone !== null) {
+            $body['phone'] = $phone;
+        }
+        if ($email !== null) {
+            $body['email'] = $email;
+        }
+        if ($roleNames !== null) {
+            $body['roleNames'] = $roleNames;
+        }
+        if ($userTenants !== null) {
+            $body['userTenants'] = $userTenants;
+        }
+        if ($customAttributes !== null) {
+            $body['customAttributes'] = $customAttributes;
+        }
+        if ($picture !== null) {
+            $body['picture'] = $picture;
+        }
+        if ($verifiedEmail !== null) {
+            $body['verifiedEmail'] = $verifiedEmail;
+        }
+        if ($verifiedPhone !== null) {
+            $body['verifiedPhone'] = $verifiedPhone;
+        }
+        if ($ssoAppIds !== null) {
+            $body['ssoAppIds'] = $ssoAppIds;
+        }
+        return $body;
+    }
+
+    /**
      * Composes the request body for creating a user.
      *
      * This method structures the user information, including login ID, email, phone,
@@ -1311,7 +1949,8 @@ class User
         array $users,
         ?string $inviteUrl,
         ?bool $sendMail,
-        ?bool $sendSms
+        ?bool $sendSms,
+        bool $invited = true
     ): array {
         $userArr = [];
         foreach ($users as $user) {
@@ -1325,7 +1964,7 @@ class User
                 $user->familyName,
                 $user->roleNames,
                 $user->userTenants,
-                true,
+                $invited,
                 false,
                 $user->picture,
                 $user->customAttributes,

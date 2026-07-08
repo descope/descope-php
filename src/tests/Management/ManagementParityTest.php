@@ -63,21 +63,65 @@ class ManagementParityTest extends TestCase
     public function expectedMethodsProvider(): array
     {
         return [
-            'tenant' => ['tenant', ['create', 'update', 'delete', 'load', 'loadAll', 'searchAll']],
-            'role' => ['role', ['create', 'update', 'delete', 'loadAll', 'search']],
-            'permission' => ['permission', ['create', 'update', 'delete', 'loadAll']],
-            'accessKey' => ['accessKey', ['create', 'load', 'searchAll', 'update', 'activate', 'deactivate', 'delete']],
+            'tenant' => ['tenant', [
+                'create', 'update', 'delete', 'load', 'loadAll', 'searchAll',
+                'createWithId', 'getSettings', 'configureSettings',
+                'generateSSOConfigurationLink', 'revokeSSOConfigurationLink', 'updateDefaultRoles',
+            ]],
+            'role' => ['role', [
+                'create', 'update', 'delete', 'loadAll', 'search',
+                'createBatch', 'updateWithId', 'updateBatch', 'deleteWithId', 'deleteBatch',
+            ]],
+            'permission' => ['permission', [
+                'create', 'update', 'delete', 'loadAll',
+                'createBatch', 'updateWithId', 'updateBatch', 'deleteWithId', 'deleteBatch',
+            ]],
+            'accessKey' => ['accessKey', [
+                'create', 'load', 'searchAll', 'update', 'activate', 'deactivate', 'delete',
+                'activateBatch', 'deactivateBatch', 'deleteBatch', 'rotate',
+            ]],
             'ssoApplication' => ['ssoApplication', [
                 'createOidcApplication', 'createSamlApplication',
                 'updateOidcApplication', 'updateSamlApplication',
+                'createWSFedApplication', 'updateWSFedApplication',
+                'getApplicationSecret', 'rotateApplicationSecret',
                 'delete', 'load', 'loadAll',
             ]],
             'sso' => ['sso', [
                 'loadSettings', 'configureOIDCSettings', 'configureSAMLSettings',
                 'configureSAMLSettingsByMetadata', 'deleteSettings',
+                'loadAllSettings', 'configureSSORedirectURL', 'newSettings',
+                'getSettings', 'configureSettings', 'configureMetadata',
+                'configureMapping', 'recalculateSSOMappings',
             ]],
-            'jwt' => ['jwt', ['updateJWT', 'impersonate']],
-            'flow' => ['flow', ['listFlows', 'delete', 'exportFlow', 'importFlow', 'exportTheme', 'importTheme']],
+            'jwt' => ['jwt', [
+                'updateJWT', 'impersonate', 'impersonateStepup', 'stopImpersonation',
+                'signIn', 'signUp', 'signUpOrIn', 'anonymous',
+            ]],
+            'flow' => ['flow', [
+                'listFlows', 'delete', 'exportFlow', 'importFlow', 'exportTheme', 'importTheme',
+                'runManagementFlow', 'runManagementFlowAsync', 'getManagementFlowAsyncResult', 'deleteFlows',
+            ]],
+            'audit' => ['audit', ['search', 'searchAll', 'createEvent', 'createAuditWebhook']],
+            'user' => ['user', [
+                'create', 'update', 'delete', 'load', 'searchAll',
+                'logoutUser', 'logoutUserByUserId', 'createBatch', 'patch', 'patchBatch',
+                'deleteBatch', 'import', 'loadUsers', 'searchAllTestUsers',
+                'updateRecoveryEmail', 'updateRecoveryPhone', 'getCustomAttributes',
+                'createCustomAttributes', 'deleteCustomAttributes', 'updateUserNames',
+                'addTenantRoles', 'removePasskey', 'listPasskeys', 'removeTotpSeed',
+                'getProviderTokenWithOptions', 'generateEmbeddedLinkSignUp',
+                'listTrustedDevices', 'removeTrustedDevices',
+            ]],
+            'outboundApps' => ['outboundApps', [
+                'fetchUserToken', 'deleteUserTokens', 'deleteTokenById',
+                'createApplication', 'updateApplication', 'deleteApplication',
+                'loadApplication', 'loadAllApplications',
+                'fetchLatestUserToken', 'fetchTenantToken', 'fetchLatestTenantToken',
+                'listAppsWithUserToken', 'uploadUserApiKey', 'uploadTenantApiKey',
+                'uploadUserToken', 'uploadTenantToken',
+                'batchUploadUserTokens', 'batchUploadTenantTokens',
+            ]],
         ];
     }
 }

@@ -53,4 +53,23 @@ class AccessKeyTest extends TestCase
         $this->descopeSDK->management->accessKey->delete('k1');
         $this->assertTrue(true);
     }
+
+    public function testActivateDeactivateBatch()
+    {
+        $this->descopeSDK->management->accessKey->activateBatch(['k1', 'k2']);
+        $this->descopeSDK->management->accessKey->deactivateBatch(['k1', 'k2']);
+        $this->assertTrue(true);
+    }
+
+    public function testDeleteBatch()
+    {
+        $this->descopeSDK->management->accessKey->deleteBatch(['k1', 'k2']);
+        $this->assertTrue(true);
+    }
+
+    public function testRotate()
+    {
+        $result = $this->descopeSDK->management->accessKey->rotate('k1');
+        $this->assertIsArray($result);
+    }
 }

@@ -53,4 +53,43 @@ class TenantTest extends TestCase
         $this->descopeSDK->management->tenant->delete('t1');
         $this->assertTrue(true);
     }
+
+    public function testCreateWithId()
+    {
+        $result = $this->descopeSDK->management->tenant->createWithId('t-custom-id', 'My Tenant');
+        $this->assertIsArray($result);
+    }
+
+    public function testGetSettings()
+    {
+        $result = $this->descopeSDK->management->tenant->getSettings('t1');
+        $this->assertIsArray($result);
+    }
+
+    public function testConfigureSettings()
+    {
+        $this->descopeSDK->management->tenant->configureSettings('t1', [
+            'sessionTokenExpiration' => 10,
+            'sessionTokenExpirationUnit' => 'minutes',
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testGenerateSSOConfigurationLink()
+    {
+        $result = $this->descopeSDK->management->tenant->generateSSOConfigurationLink('t1', 3600);
+        $this->assertIsArray($result);
+    }
+
+    public function testRevokeSSOConfigurationLink()
+    {
+        $this->descopeSDK->management->tenant->revokeSSOConfigurationLink('t1');
+        $this->assertTrue(true);
+    }
+
+    public function testUpdateDefaultRoles()
+    {
+        $this->descopeSDK->management->tenant->updateDefaultRoles('t1', ['role1']);
+        $this->assertTrue(true);
+    }
 }

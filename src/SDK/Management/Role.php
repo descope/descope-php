@@ -54,6 +54,24 @@ class Role
     }
 
     /**
+     * Creates multiple roles in a single batch request.
+     *
+     * @param  array $roles List of role objects to create. Each entry mirrors the go-sdk
+     *                     `descope.Role` shape (e.g. `['name' => ..., 'description' => ...,
+     *                     'permissionNames' => [...], 'tenantId' => ...]`).
+     * @return array The response containing the created roles.
+     * @throws AuthException If the request fails.
+     */
+    public function createBatch(array $roles): array
+    {
+        $body = [
+            'roles' => $roles,
+        ];
+
+        return $this->api->doPost(MgmtV1::$ROLE_CREATE_BATCH_PATH, $body, true);
+    }
+
+    /**
      * Updates an existing role. All parameters are required except where noted;
      * omitted optional values will be cleared on the role.
      *
@@ -91,6 +109,58 @@ class Role
     }
 
     /**
+     * Updates an existing role identified by its ID.
+     *
+     * @param  string $id              The ID of the role to update.
+     * @param  string $tenantId        Tenant ID for a tenant-scoped role (empty for project-level).
+     * @param  string $newName         The new role name.
+     * @param  string $description     Optional role description.
+     * @param  array  $permissionNames Permission names to grant to the role.
+     * @param  bool   $defaultRole     Whether this role is a default role for new users.
+     * @param  bool   $private         Whether this role is private.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function updateWithId(
+        string $id,
+        string $tenantId,
+        string $newName,
+        string $description = "",
+        array $permissionNames = [],
+        bool $defaultRole = false,
+        bool $private = false
+    ): void {
+        $body = [
+            'id' => $id,
+            'newName' => $newName,
+            'description' => $description,
+            'permissionNames' => $permissionNames,
+            'tenantId' => $tenantId,
+            'default' => $defaultRole,
+            'private' => $private,
+        ];
+
+        $this->api->doPost(MgmtV1::$ROLE_UPDATE_PATH, $body, true);
+    }
+
+    /**
+     * Updates multiple roles in a single batch request.
+     *
+     * @param  array $roles List of role update objects. Each entry mirrors the go-sdk
+     *                     `descope.RoleUpdateRequest` shape.
+     * @return array The response containing the updated roles.
+     * @throws AuthException If the request fails.
+     */
+    public function updateBatch(array $roles): array
+    {
+        $body = [
+            'roles' => $roles,
+        ];
+
+        return $this->api->doPost(MgmtV1::$ROLE_UPDATE_BATCH_PATH, $body, true);
+    }
+
+    /**
      * Deletes a role.
      *
      * @param  string      $name     The role name.
@@ -106,6 +176,44 @@ class Role
         }
 
         $this->api->doPost(MgmtV1::$ROLE_DELETE_PATH, $body, true);
+    }
+
+    /**
+     * Deletes a role identified by its ID.
+     *
+     * @param  string $id       The ID of the role to delete.
+     * @param  string $tenantId Optional tenant ID for a tenant-scoped role.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function deleteWithId(string $id, string $tenantId = ""): void
+    {
+        $body = [
+            'id' => $id,
+            'tenantId' => $tenantId,
+        ];
+
+        $this->api->doPost(MgmtV1::$ROLE_DELETE_PATH, $body, true);
+    }
+
+    /**
+     * Deletes multiple roles in a single batch request.
+     *
+     * @param  array  $roleNames List of role names to delete.
+     * @param  string $tenantId  Optional tenant ID for tenant-scoped roles.
+     * @param  array  $roleIds   List of role IDs to delete.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function deleteBatch(array $roleNames = [], string $tenantId = "", array $roleIds = []): void
+    {
+        $body = [
+            'roleNames' => $roleNames,
+            'tenantId' => $tenantId,
+            'roleIds' => $roleIds,
+        ];
+
+        $this->api->doPost(MgmtV1::$ROLE_DELETE_BATCH_PATH, $body, true);
     }
 
     /**

@@ -307,4 +307,166 @@ class UserTest extends TestCase
         $this->descopeSDK->management->user->deleteAllTestUsers();
         $this->assertTrue(true);
     }
+
+    public function testLogoutUser()
+    {
+        $this->descopeSDK->management->user->logoutUser("testuser1");
+        $this->assertTrue(true);
+    }
+
+    public function testLogoutUserByUserId()
+    {
+        $this->descopeSDK->management->user->logoutUserByUserId("U2abc123");
+        $this->assertTrue(true);
+    }
+
+    public function testCreateBatch()
+    {
+        $response = $this->descopeSDK->management->user->createBatch([
+            new UserObj("batchuser1", "batchuser1@example.com"),
+        ]);
+        $this->assertIsArray($response);
+    }
+
+    public function testPatch()
+    {
+        $response = $this->descopeSDK->management->user->patch(
+            "testuser1",
+            null,
+            null,
+            "Patched Name"
+        );
+        $this->assertIsArray($response);
+    }
+
+    public function testPatchBatch()
+    {
+        $response = $this->descopeSDK->management->user->patchBatch([
+            new UserObj("testuser1", null, null, "Patched Batch Name"),
+        ]);
+        $this->assertIsArray($response);
+    }
+
+    public function testDeleteBatch()
+    {
+        $this->descopeSDK->management->user->deleteBatch(["U2abc123"]);
+        $this->assertTrue(true);
+    }
+
+    public function testImport()
+    {
+        $response = $this->descopeSDK->management->user->import("my-source", null, null, true);
+        $this->assertIsArray($response);
+    }
+
+    public function testLoadUsers()
+    {
+        $response = $this->descopeSDK->management->user->loadUsers(["U2abc123"], false);
+        $this->assertIsArray($response);
+    }
+
+    public function testSearchAllTestUsers()
+    {
+        $response = $this->descopeSDK->management->user->searchAllTestUsers(null, null, null, 10);
+        $this->assertIsArray($response);
+    }
+
+    public function testUpdateRecoveryEmail()
+    {
+        $response = $this->descopeSDK->management->user->updateRecoveryEmail("testuser1", "recovery@example.com", true);
+        $this->assertIsArray($response);
+    }
+
+    public function testUpdateRecoveryPhone()
+    {
+        $response = $this->descopeSDK->management->user->updateRecoveryPhone("testuser1", "+14152464801", true);
+        $this->assertIsArray($response);
+    }
+
+    public function testGetCustomAttributes()
+    {
+        $response = $this->descopeSDK->management->user->getCustomAttributes();
+        $this->assertIsArray($response);
+    }
+
+    public function testCreateCustomAttributes()
+    {
+        $response = $this->descopeSDK->management->user->createCustomAttributes([
+            ['name' => 'myAttr', 'type' => 'string'],
+        ]);
+        $this->assertIsArray($response);
+    }
+
+    public function testDeleteCustomAttributes()
+    {
+        $response = $this->descopeSDK->management->user->deleteCustomAttributes(["myAttr"]);
+        $this->assertIsArray($response);
+    }
+
+    public function testUpdateUserNames()
+    {
+        $response = $this->descopeSDK->management->user->updateUserNames("testuser1", "Given", "Middle", "Family");
+        $this->assertIsArray($response);
+    }
+
+    public function testAddTenantRoles()
+    {
+        $response = $this->descopeSDK->management->user->addTenantRoles(
+            "testuser1",
+            "T2o2zKibuWuCVH4lqJrSfFuXss06",
+            ["Tenant Admin"]
+        );
+        $this->assertIsArray($response);
+    }
+
+    public function testRemovePasskey()
+    {
+        $this->descopeSDK->management->user->removePasskey("testuser1", "cred-123");
+        $this->assertTrue(true);
+    }
+
+    public function testListPasskeys()
+    {
+        $response = $this->descopeSDK->management->user->listPasskeys("testuser1");
+        $this->assertIsArray($response);
+    }
+
+    public function testRemoveTotpSeed()
+    {
+        $this->descopeSDK->management->user->removeTotpSeed("testuser1");
+        $this->assertTrue(true);
+    }
+
+    public function testGetProviderTokenWithOptions()
+    {
+        $response = $this->descopeSDK->management->user->getProviderTokenWithOptions(
+            "testuser1",
+            "google",
+            true,
+            false
+        );
+        $this->assertIsArray($response);
+    }
+
+    public function testGenerateEmbeddedLinkSignUp()
+    {
+        $token = $this->descopeSDK->management->user->generateEmbeddedLinkSignUp(
+            "testuser1",
+            ['user' => ['email' => 'testuser1@example.com'], 'emailVerified' => true],
+            ['timeout' => 3600]
+        );
+        $this->assertNotEmpty($token);
+    }
+
+    public function testListTrustedDevices()
+    {
+        $response = $this->descopeSDK->management->user->listTrustedDevices(["testuser1"]);
+        $this->assertIsArray($response);
+    }
+
+    public function testRemoveTrustedDevices()
+    {
+        $this->descopeSDK->management->user->removeTrustedDevices("testuser1", ["device-123"]);
+        $this->assertTrue(true);
+    }
 }

@@ -207,4 +207,187 @@ class Tenant
             true
         );
     }
+
+    /**
+     * Create a new tenant with a caller-provided ID.
+     *
+     * This method creates a new tenant using the supplied ID rather than a
+     * generated one. The ID must be unique within the project.
+     *
+     * @param string      $id                       The custom ID for the tenant.
+     * @param string      $name                     The name of the tenant.
+     * @param array       $selfProvisioningDomains  Optional list of domains that can self-provision into the tenant.
+     * @param array|null  $customAttributes         Optional map of custom attributes for the tenant.
+     *
+     * @return array The create response containing the tenant 'id'.
+     *
+     * @throws AuthException If the create operation fails.
+     */
+    public function createWithId(
+        string $id,
+        string $name,
+        array $selfProvisioningDomains = [],
+        ?array $customAttributes = null
+    ): array {
+        $body = [
+            'id' => $id,
+            'name' => $name,
+            'selfProvisioningDomains' => $selfProvisioningDomains,
+        ];
+
+        if ($customAttributes !== null) {
+            $body['customAttributes'] = $customAttributes;
+        }
+
+        return $this->api->doPost(
+            MgmtV1::$TENANT_CREATE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Get the settings of a tenant.
+     *
+     * This method retrieves the settings configured for a specific tenant,
+     * such as session and refresh token expiration, inactivity, and JIT settings.
+     *
+     * @param string $tenantId The ID of the tenant whose settings to load.
+     *
+     * @return array The tenant settings.
+     *
+     * @throws AuthException If the load operation fails.
+     */
+    public function getSettings(string $tenantId): array
+    {
+        return $this->api->doGet(
+            MgmtV1::$TENANT_SETTINGS_PATH . '?' . http_build_query(['id' => $tenantId]),
+            true
+        );
+    }
+
+    /**
+     * Configure the settings of a tenant.
+     *
+     * This method overwrites the tenant's settings with the provided values.
+     * The $settings array is merged into the request body, so all fields should
+     * be provided in full to avoid unintentionally clearing them.
+     *
+     * @param string $tenantId The ID of the tenant to configure.
+     * @param array  $settings The settings to apply (e.g. 'selfProvisioningDomains',
+     *                         'authType', 'enabled', 'refreshTokenExpiration',
+     *                         'refreshTokenExpirationUnit', 'sessionTokenExpiration',
+     *                         'sessionTokenExpirationUnit', 'stepupTokenExpiration',
+     *                         'stepupTokenExpirationUnit', 'enableInactivity',
+     *                         'inactivityTime', 'inactivityTimeUnit', 'domains',
+     *                         'JITDisabled').
+     *
+     * @return void
+     *
+     * @throws AuthException If the configure operation fails.
+     */
+    public function configureSettings(string $tenantId, array $settings): void
+    {
+        $body = array_merge(['tenantId' => $tenantId], $settings);
+
+        $this->api->doPost(
+            MgmtV1::$TENANT_SETTINGS_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Generate an admin SSO configuration link for a tenant.
+     *
+     * This method generates a link that a tenant admin can use to self-configure
+     * their SSO settings, optionally scoped to a specific SSO configuration.
+     *
+     * @param string $tenantId       The ID of the tenant.
+     * @param int    $expireDuration The link expiration time.
+     * @param string $ssoId          Optional SSO configuration ID.
+     * @param string $email          Optional email to send the link to.
+     * @param string $templateId     Optional template ID for the email.
+     * @param string $actorId        Optional actor ID initiating the request.
+     *
+     * @return array The response containing the admin SSO configuration link.
+     *
+     * @throws AuthException If the generate operation fails.
+     */
+    public function generateSSOConfigurationLink(
+        string $tenantId,
+        int $expireDuration,
+        string $ssoId = "",
+        string $email = "",
+        string $templateId = "",
+        string $actorId = ""
+    ): array {
+        $body = [
+            'tenantId' => $tenantId,
+            'expireTime' => $expireDuration,
+            'ssoId' => $ssoId,
+            'email' => $email,
+            'templateId' => $templateId,
+            'actorId' => $actorId,
+        ];
+
+        return $this->api->doPost(
+            MgmtV1::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Revoke an admin SSO configuration link for a tenant.
+     *
+     * This method revokes previously generated admin SSO configuration links,
+     * optionally scoped to a specific SSO configuration.
+     *
+     * @param string $tenantId The ID of the tenant.
+     * @param string $ssoId    Optional SSO configuration ID.
+     *
+     * @return void
+     *
+     * @throws AuthException If the revoke operation fails.
+     */
+    public function revokeSSOConfigurationLink(string $tenantId, string $ssoId = ""): void
+    {
+        $body = [
+            'tenantId' => $tenantId,
+            'ssoId' => $ssoId,
+        ];
+
+        $this->api->doPost(
+            MgmtV1::$TENANT_REVOKE_SSO_CONFIGURATION_LINK_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Update the default roles of a tenant.
+     *
+     * This method sets the default roles assigned to users within the tenant.
+     *
+     * @param string $tenantId     The ID of the tenant.
+     * @param array  $defaultRoles The list of default role names to assign.
+     *
+     * @return void
+     *
+     * @throws AuthException If the update operation fails.
+     */
+    public function updateDefaultRoles(string $tenantId, array $defaultRoles): void
+    {
+        $body = [
+            'id' => $tenantId,
+            'defaultRoles' => $defaultRoles,
+        ];
+
+        $this->api->doPost(
+            MgmtV1::$TENANT_UPDATE_DEFAULT_ROLES_PATH,
+            $body,
+            true
+        );
+    }
 }

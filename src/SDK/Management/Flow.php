@@ -48,6 +48,115 @@ class Flow
     }
 
     /**
+     * Run a management flow synchronously and wait for its output.
+     *
+     * This method executes the specified flow and returns its output once the
+     * flow completes.
+     *
+     * @param string     $flowId  The ID of the flow to run.
+     * @param array|null $options Optional flow options. Supported keys:
+     *                            'input' (array) input values passed to the flow,
+     *                            'preview' (bool) whether to run in preview mode,
+     *                            'tenant' (string) the tenant to run the flow for.
+     *
+     * @return array The response containing the flow output.
+     *
+     * @throws AuthException If the run operation fails.
+     */
+    public function runManagementFlow(string $flowId, ?array $options = null): array
+    {
+        $body = [
+            'flowId' => $flowId,
+            'options' => $options,
+        ];
+
+        return $this->api->doPost(
+            MgmtV1::$FLOW_RUN_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Run a management flow asynchronously.
+     *
+     * This method starts the specified flow and returns immediately with the
+     * execution ID that can be used to poll for the result.
+     *
+     * @param string     $flowId  The ID of the flow to run.
+     * @param array|null $options Optional flow options. Supported keys:
+     *                            'input' (array) input values passed to the flow,
+     *                            'preview' (bool) whether to run in preview mode,
+     *                            'tenant' (string) the tenant to run the flow for.
+     *
+     * @return array The response containing the 'executionId' of the started flow.
+     *
+     * @throws AuthException If the run operation fails.
+     */
+    public function runManagementFlowAsync(string $flowId, ?array $options = null): array
+    {
+        $body = [
+            'flowId' => $flowId,
+            'options' => $options,
+        ];
+
+        return $this->api->doPost(
+            MgmtV1::$FLOW_RUN_ASYNC_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Get the result of an asynchronously executed management flow.
+     *
+     * This method retrieves the output of a flow that was started with
+     * runManagementFlowAsync, using its execution ID.
+     *
+     * @param string $executionId The execution ID returned by runManagementFlowAsync.
+     *
+     * @return array The response containing the flow output.
+     *
+     * @throws AuthException If the result retrieval fails.
+     */
+    public function getManagementFlowAsyncResult(string $executionId): array
+    {
+        $body = [
+            'executionId' => $executionId,
+        ];
+
+        return $this->api->doPost(
+            MgmtV1::$FLOW_ASYNC_RESULT_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Delete flows by their IDs.
+     *
+     * This method removes all flows identified by the provided list of flow IDs.
+     *
+     * @param array $flowIds The list of flow IDs to delete.
+     *
+     * @return void
+     *
+     * @throws AuthException If the delete operation fails.
+     */
+    public function deleteFlows(array $flowIds): void
+    {
+        $body = [
+            'ids' => $flowIds,
+        ];
+
+        $this->api->doPost(
+            MgmtV1::$FLOW_DELETE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
      * Delete flows by their IDs.
      *
      * This method removes all flows identified by the provided list of flow IDs.
