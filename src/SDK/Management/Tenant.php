@@ -288,7 +288,8 @@ class Tenant
      */
     public function configureSettings(string $tenantId, array $settings): void
     {
-        $body = array_merge(['tenantId' => $tenantId], $settings);
+        // Explicit tenantId last so a stray 'tenantId' key in $settings cannot redirect the call.
+        $body = array_merge($settings, ['tenantId' => $tenantId]);
 
         $this->api->doPost(
             MgmtV1::$TENANT_SETTINGS_PATH,

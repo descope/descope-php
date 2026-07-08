@@ -334,7 +334,7 @@ class MgmtV1
         // ===== go-sdk parity additions =====
         // Tenant
         self::$TENANT_SETTINGS_PATH = self::$baseUrl . "/v1/mgmt/tenant/settings";
-        self::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v1/mgmt/tenant/adminlinks/sso/generate";
+        self::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v2/mgmt/tenant/adminlinks/sso/generate";  // v2 (matches go-sdk)
         self::$TENANT_REVOKE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v1/mgmt/tenant/adminlinks/sso/revoke";
         self::$TENANT_UPDATE_DEFAULT_ROLES_PATH = self::$baseUrl . "/v1/mgmt/tenant/updateDefaultRoles";
 
@@ -350,7 +350,7 @@ class MgmtV1
         self::$USER_DELETE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/user/delete/batch";
         self::$USER_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/user/import";
         self::$USERS_LOAD_PATH = self::$baseUrl . "/v1/mgmt/users/load";
-        self::$TEST_USER_SEARCH_ALL_PATH = self::$baseUrl . "/v1/mgmt/user/search/test";
+        self::$TEST_USER_SEARCH_ALL_PATH = self::$baseUrl . "/v2/mgmt/user/search/test";  // v2 only
         self::$USER_UPDATE_RECOVERY_EMAIL_PATH = self::$baseUrl . "/v1/mgmt/user/update/recovery/email";
         self::$USER_UPDATE_RECOVERY_PHONE_PATH = self::$baseUrl . "/v1/mgmt/user/update/recovery/phone";
         self::$USER_CUSTOM_ATTRIBUTES_PATH = self::$baseUrl . "/v1/mgmt/user/customattributes";
