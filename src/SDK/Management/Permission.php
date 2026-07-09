@@ -45,6 +45,23 @@ class Permission
     }
 
     /**
+     * Create multiple permissions in a single batch request.
+     *
+     * @param  array $permissions List of permission objects to create. Each entry is an associative array
+     *                            (e.g. `['name' => ..., 'description' => ...]`).
+     * @return void
+     * @throws AuthException If the creation request fails.
+     */
+    public function createBatch(array $permissions): void
+    {
+        $body = [
+            'permissions' => $permissions,
+        ];
+
+        $this->api->doPost(MgmtV1::$PERMISSION_CREATE_BATCH_PATH, $body, true);
+    }
+
+    /**
      * Update an existing permission.
      *
      * @param  string      $name        The name of the permission to update.
@@ -68,6 +85,42 @@ class Permission
     }
 
     /**
+     * Update an existing permission identified by its ID.
+     *
+     * @param  string $id          The ID of the permission to update.
+     * @param  string $newName      The updated name of the permission.
+     * @param  string $description  Optional description to explain the purpose of the permission.
+     * @return void
+     * @throws AuthException If the update request fails.
+     */
+    public function updateWithId(string $id, string $newName, string $description = ""): void
+    {
+        $body = [
+            'id' => $id,
+            'newName' => $newName,
+            'description' => $description,
+        ];
+
+        $this->api->doPost(MgmtV1::$PERMISSION_UPDATE_PATH, $body, true);
+    }
+
+    /**
+     * Update multiple permissions in a single batch request.
+     *
+     * @param  array $permissions List of permission update objects. Each entry is an associative array with the permission's id/name and updated fields.
+     * @return void
+     * @throws AuthException If the update request fails.
+     */
+    public function updateBatch(array $permissions): void
+    {
+        $body = [
+            'permissions' => $permissions,
+        ];
+
+        $this->api->doPost(MgmtV1::$PERMISSION_UPDATE_BATCH_PATH, $body, true);
+    }
+
+    /**
      * Delete an existing permission.
      *
      * @param  string $name The name of the permission to delete.
@@ -81,6 +134,40 @@ class Permission
         ];
 
         $this->api->doPost(MgmtV1::$PERMISSION_DELETE_PATH, $body, true);
+    }
+
+    /**
+     * Delete an existing permission identified by its ID.
+     *
+     * @param  string $id The ID of the permission to delete.
+     * @return void
+     * @throws AuthException If the deletion request fails.
+     */
+    public function deleteWithId(string $id): void
+    {
+        $body = [
+            'id' => $id,
+        ];
+
+        $this->api->doPost(MgmtV1::$PERMISSION_DELETE_PATH, $body, true);
+    }
+
+    /**
+     * Delete multiple permissions in a single batch request.
+     *
+     * @param  array $names List of permission names to delete.
+     * @param  array $ids   List of permission IDs to delete.
+     * @return void
+     * @throws AuthException If the deletion request fails.
+     */
+    public function deleteBatch(array $names = [], array $ids = []): void
+    {
+        $body = [
+            'names' => $names,
+            'ids' => $ids,
+        ];
+
+        $this->api->doPost(MgmtV1::$PERMISSION_DELETE_BATCH_PATH, $body, true);
     }
 
     /**

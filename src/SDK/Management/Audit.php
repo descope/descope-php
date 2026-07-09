@@ -107,6 +107,86 @@ class Audit
     }
 
     /**
+     * Search the audit logs with various filters, returning the total count.
+     *
+     * Uses the same audit/search
+     * endpoint as search() but additionally supports paging (size/page) and
+     * returns the total number of matching records alongside the audits.
+     *
+     * @param array|null $options Optional associative array of filters. Supported keys:
+     *                            'userIds' (array), 'actions' (array),
+     *                            'excludedActions' (array), 'devices' (array),
+     *                            'methods' (array), 'geos' (array),
+     *                            'remoteAddresses' (array), 'loginIds' (array),
+     *                            'tenants' (array), 'noTenants' (bool),
+     *                            'text' (string), 'from' (DateTime), 'to' (DateTime),
+     *                            'limit' (int), 'page' (int).
+     *
+     * @return array The response containing 'audits' (list of records) and 'total' (int).
+     *
+     * @throws AuthException If the search operation fails.
+     */
+    public function searchAll(?array $options = null): array
+    {
+        $options = $options ?? [];
+
+        $body = ['noTenants' => $options['noTenants'] ?? false];
+        if (isset($options['userIds'])) {
+            $body['userIds'] = $options['userIds'];
+        }
+        if (isset($options['actions'])) {
+            $body['actions'] = $options['actions'];
+        }
+        if (isset($options['excludedActions'])) {
+            $body['excludedActions'] = $options['excludedActions'];
+        }
+        if (isset($options['devices'])) {
+            $body['devices'] = $options['devices'];
+        }
+        if (isset($options['methods'])) {
+            $body['methods'] = $options['methods'];
+        }
+        if (isset($options['geos'])) {
+            $body['geos'] = $options['geos'];
+        }
+        if (isset($options['remoteAddresses'])) {
+            $body['remoteAddresses'] = $options['remoteAddresses'];
+        }
+        if (isset($options['loginIds'])) {
+            $body['externalIds'] = $options['loginIds'];
+        }
+        if (isset($options['tenants'])) {
+            $body['tenants'] = $options['tenants'];
+        }
+        if (isset($options['text'])) {
+            $body['text'] = $options['text'];
+        }
+        if (isset($options['from']) && $options['from'] instanceof DateTime) {
+            $body['from'] = $options['from']->getTimestamp() * 1000;
+        }
+        if (isset($options['to']) && $options['to'] instanceof DateTime) {
+            $body['to'] = $options['to']->getTimestamp() * 1000;
+        }
+        if (isset($options['limit'])) {
+            $body['size'] = $options['limit'];
+        }
+        if (isset($options['page'])) {
+            $body['page'] = $options['page'];
+        }
+
+        $response = $this->api->doPost(
+            MgmtV1::$AUDIT_SEARCH,
+            $body,
+            true
+        );
+
+        return [
+            'audits' => array_map([$this, 'convertAuditRecord'], $response['audits'] ?? []),
+            'total' => $response['total'] ?? 0,
+        ];
+    }
+
+    /**
      * Create an audit event.
      *
      * @param string      $action   The action performed.
@@ -142,6 +222,31 @@ class Audit
         $this->api->doPost(
             MgmtV1::$AUDIT_CREATE_EVENT,
             $body,
+            true
+        );
+    }
+
+    /**
+     * Create an audit webhook connector.
+     *
+     * This configures an HTTP webhook that receives audit events matching the
+     * provided filters.
+     *
+     * @param array $options Associative array describing the webhook. Supported keys:
+     *                       'name' (string, required), 'description' (string),
+     *                       'url' (string), 'authentication' (array),
+     *                       'hmacSecret' (string), 'headers' (array),
+     *                       'insecure' (bool), 'filters' (array).
+     *
+     * @return void
+     *
+     * @throws AuthException If the webhook creation operation fails.
+     */
+    public function createAuditWebhook(array $options): void
+    {
+        $this->api->doPost(
+            MgmtV1::$AUDIT_WEBHOOK_CREATE_PATH,
+            $options,
             true
         );
     }

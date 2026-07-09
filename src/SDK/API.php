@@ -147,6 +147,57 @@ class API
     }
 
     /**
+     * Sends a PATCH request to the specified URI with a JSON body and an optional auth token.
+     *
+     * @param  string $uri              URI endpoint.
+     * @param  array  $body             Request body.
+     * @param  bool   $useManagementKey Whether to use the management key for authentication.
+     * @return array JWT response array.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
+     */
+    public function doPatch(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
+    {
+        $authToken = "";
+
+        if ($refreshToken) {
+            $authToken = $this->getAuthToken(false, $refreshToken);
+        } else {
+            $authToken = $this->getAuthToken($useManagementKey, '');
+        }
+
+        $this->assertCredentialHost($uri, $authToken);
+
+        $body = $this->transformEmptyArraysToObjects($body);
+        $jsonBody = empty($body) ? '{}' : json_encode($body);
+        try {
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
+                return $this->httpClient->patch($uri, ['headers' => $headers, 'body' => $jsonBody]);
+            });
+
+            // Ensure the response is an object with getBody method
+            if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
+                throw new AuthException(500, 'internal error', 'Invalid response from API');
+            }
+
+            // Read Body
+            $body = $response->getBody();
+            $body->rewind();
+            $contents = $body->getContents() ?? [];
+
+            return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+        } catch (RequestException $e) {
+            if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+                error_log("Descope SDK [PATCH] RequestException: " . $e->getMessage());
+                error_log("Descope SDK [PATCH] Error: HTTP Status Code: $statusCode, Response: $responseBody");
+            }
+            throw $this->createExceptionFromRequestException($e);
+        }
+    }
+
+    /**
      * Sends a GET request to the specified URI with an optional auth token.
      *
      * @param  string $uri              URI endpoint.

@@ -45,4 +45,46 @@ class PermissionTest extends TestCase
         $this->descopeSDK->management->permission->delete('ReadOnly');
         $this->assertTrue(true);
     }
+
+    public function testCreateBatch()
+    {
+        $this->descopeSDK->management->permission->createBatch([
+            ['name' => 'BatchPerm1', 'description' => 'desc1'],
+            ['name' => 'BatchPerm2', 'description' => 'desc2'],
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testUpdateWithId()
+    {
+        $this->descopeSDK->management->permission->create('WithIdPerm', 'desc');
+        $all = $this->descopeSDK->management->permission->loadAll();
+        $id = null;
+        foreach ($all['permissions'] ?? [] as $perm) {
+            if (($perm['name'] ?? '') === 'WithIdPerm') {
+                $id = $perm['id'] ?? null;
+                break;
+            }
+        }
+        if ($id === null) {
+            $this->markTestSkipped('Could not resolve permission id for updateWithId.');
+        }
+        $this->descopeSDK->management->permission->updateWithId($id, 'WithIdPermRenamed', 'desc');
+        $this->descopeSDK->management->permission->deleteWithId($id);
+        $this->assertTrue(true);
+    }
+
+    public function testUpdateBatch()
+    {
+        $this->descopeSDK->management->permission->updateBatch([
+            ['name' => 'BatchPerm1', 'newName' => 'BatchPerm1Renamed', 'description' => 'desc'],
+        ]);
+        $this->assertTrue(true);
+    }
+
+    public function testDeleteBatch()
+    {
+        $this->descopeSDK->management->permission->deleteBatch(['BatchPerm1Renamed', 'BatchPerm2']);
+        $this->assertTrue(true);
+    }
 }

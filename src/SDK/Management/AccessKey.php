@@ -162,6 +162,25 @@ class AccessKey
     }
 
     /**
+     * Deactivate multiple access keys in a single batch request.
+     *
+     * Deactivated access keys cannot be used to authenticate but can be
+     * reactivated later using the activate or activateBatch methods.
+     *
+     * @param  array $ids A list of access key IDs to deactivate.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function deactivateBatch(array $ids): void
+    {
+        $body = [
+            'ids' => $ids,
+        ];
+
+        $this->api->doPost(MgmtV1::$ACCESS_KEY_DEACTIVATE_BATCH_PATH, $body, true);
+    }
+
+    /**
      * Activate an access key.
      *
      * @param  string $id The ID of the access key to activate.
@@ -175,6 +194,22 @@ class AccessKey
         ];
 
         $this->api->doPost(MgmtV1::$ACCESS_KEY_ACTIVATE_PATH, $body, true);
+    }
+
+    /**
+     * Activate multiple access keys in a single batch request.
+     *
+     * @param  array $ids A list of access key IDs to activate.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function activateBatch(array $ids): void
+    {
+        $body = [
+            'ids' => $ids,
+        ];
+
+        $this->api->doPost(MgmtV1::$ACCESS_KEY_ACTIVATE_BATCH_PATH, $body, true);
     }
 
     /**
@@ -194,5 +229,43 @@ class AccessKey
         ];
 
         $this->api->doPost(MgmtV1::$ACCESS_KEY_DELETE_PATH, $body, true);
+    }
+
+    /**
+     * Delete multiple access keys in a single batch request.
+     *
+     * IMPORTANT: This action is irreversible. Once an access key is deleted
+     * it cannot be recovered.
+     *
+     * @param  array $ids A list of access key IDs to delete.
+     * @return void
+     * @throws AuthException If the request fails.
+     */
+    public function deleteBatch(array $ids): void
+    {
+        $body = [
+            'ids' => $ids,
+        ];
+
+        $this->api->doPost(MgmtV1::$ACCESS_KEY_DELETE_BATCH_PATH, $body, true);
+    }
+
+    /**
+     * Rotate an access key, generating a new cleartext value for it.
+     *
+     * The old cleartext value is invalidated and the returned response
+     * contains the new cleartext value along with the updated key info.
+     *
+     * @param  string $id The ID of the access key to rotate.
+     * @return array The rotate response, containing 'key' and 'cleartext'.
+     * @throws AuthException If the request fails.
+     */
+    public function rotate(string $id): array
+    {
+        $body = [
+            'id' => $id,
+        ];
+
+        return $this->api->doPost(MgmtV1::$ACCESS_KEY_ROTATE_PATH, $body, true);
     }
 }

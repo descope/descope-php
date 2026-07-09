@@ -37,4 +37,40 @@ class JWTTest extends TestCase
         $result = $this->descopeSDK->management->jwt->impersonate('imp1', 'login1');
         $this->assertIsString($result);
     }
+
+    public function testImpersonateStepup()
+    {
+        $result = $this->descopeSDK->management->jwt->impersonateStepup('imp1', 'login1');
+        $this->assertIsString($result);
+    }
+
+    public function testStopImpersonation()
+    {
+        $result = $this->descopeSDK->management->jwt->stopImpersonation('someJwt');
+        $this->assertIsString($result);
+    }
+
+    public function testSignIn()
+    {
+        $result = $this->descopeSDK->management->jwt->signIn('login1');
+        $this->assertIsArray($result);
+    }
+
+    public function testSignUp()
+    {
+        $result = $this->descopeSDK->management->jwt->signUp('login1', ['email' => 'user@example.com']);
+        $this->assertIsArray($result);
+    }
+
+    public function testSignUpOrIn()
+    {
+        $result = $this->descopeSDK->management->jwt->signUpOrIn('login1', ['email' => 'user@example.com']);
+        $this->assertIsArray($result);
+    }
+
+    public function testAnonymous()
+    {
+        $result = $this->descopeSDK->management->jwt->anonymous();
+        $this->assertIsArray($result);
+    }
 }

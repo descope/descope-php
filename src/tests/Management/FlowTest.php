@@ -56,4 +56,34 @@ class FlowTest extends TestCase
         $imported = $this->descopeSDK->management->flow->importTheme([]);
         $this->assertIsArray($imported);
     }
+
+    public function testRunManagementFlow()
+    {
+        $result = $this->descopeSDK->management->flow->runManagementFlow(
+            'sign-up-or-in',
+            ['input' => [], 'preview' => false]
+        );
+        $this->assertIsArray($result);
+    }
+
+    public function testRunManagementFlowAsync()
+    {
+        $result = $this->descopeSDK->management->flow->runManagementFlowAsync(
+            'sign-up-or-in',
+            ['input' => []]
+        );
+        $this->assertIsArray($result);
+    }
+
+    public function testGetManagementFlowAsyncResult()
+    {
+        $result = $this->descopeSDK->management->flow->getManagementFlowAsyncResult('execution-id');
+        $this->assertIsArray($result);
+    }
+
+    public function testDeleteFlows()
+    {
+        $this->descopeSDK->management->flow->deleteFlows(['f1', 'f2']);
+        $this->assertTrue(true);
+    }
 }

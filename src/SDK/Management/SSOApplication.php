@@ -329,6 +329,214 @@ class SSOApplication
     }
 
     /**
+     * Create a new WS-Fed SSO application.
+     *
+     * @param string      $name                 The name of the SSO application.
+     * @param string      $loginPageUrl         The URL of the login page for this application.
+     * @param string|null $id                   Optional custom ID for the SSO application.
+     * @param bool        $enabled              Whether the application is enabled. Defaults to true.
+     * @param string|null $description          Optional description of the application.
+     * @param string|null $logo                 Optional logo (base64 encoded image) for the application.
+     * @param string|null $realm                Optional WS-Fed realm identifier.
+     * @param string|null $replyUrl             Optional WS-Fed reply (assertion consumer) URL.
+     * @param array       $replyAllowedCallbacks List of allowed reply callback URLs.
+     * @param array       $attributeMapping     Attribute mapping between Descope and the application.
+     * @param array       $groupsMapping        Groups mapping between Descope and the application.
+     * @param bool|null   $forceAuthentication  Optional flag to force authentication.
+     * @param string|null $logoutRedirectUrl    Optional logout redirect URL.
+     * @param string|null $errorRedirectUrl     Optional error redirect URL.
+     *
+     * @return array The response containing the created application's 'id'.
+     *
+     * @throws AuthException If the create operation fails.
+     */
+    public function createWSFedApplication(
+        string $name,
+        string $loginPageUrl,
+        ?string $id = null,
+        bool $enabled = true,
+        ?string $description = null,
+        ?string $logo = null,
+        ?string $realm = null,
+        ?string $replyUrl = null,
+        array $replyAllowedCallbacks = [],
+        array $attributeMapping = [],
+        array $groupsMapping = [],
+        ?bool $forceAuthentication = null,
+        ?string $logoutRedirectUrl = null,
+        ?string $errorRedirectUrl = null
+    ): array {
+        $body = [
+            'name' => $name,
+            'loginPageUrl' => $loginPageUrl,
+            'enabled' => $enabled,
+            'replyAllowedCallbacks' => $replyAllowedCallbacks,
+            'attributeMapping' => $attributeMapping,
+            'groupsMapping' => $groupsMapping,
+        ];
+
+        if ($id !== null) {
+            $body['id'] = $id;
+        }
+
+        if ($description !== null) {
+            $body['description'] = $description;
+        }
+
+        if ($logo !== null) {
+            $body['logo'] = $logo;
+        }
+
+        if ($realm !== null) {
+            $body['realm'] = $realm;
+        }
+
+        if ($replyUrl !== null) {
+            $body['replyUrl'] = $replyUrl;
+        }
+
+        if ($forceAuthentication !== null) {
+            $body['forceAuthentication'] = $forceAuthentication;
+        }
+
+        if ($logoutRedirectUrl !== null) {
+            $body['logoutRedirectUrl'] = $logoutRedirectUrl;
+        }
+
+        if ($errorRedirectUrl !== null) {
+            $body['errorRedirectUrl'] = $errorRedirectUrl;
+        }
+
+        return $this->api->doPost(
+            MgmtV1::$SSO_APPLICATION_WSFED_CREATE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Update an existing WS-Fed SSO application.
+     *
+     * @param string      $id                   The ID of the SSO application to update.
+     * @param string      $name                 The name of the SSO application.
+     * @param string      $loginPageUrl         The URL of the login page for this application.
+     * @param bool        $enabled              Whether the application is enabled. Defaults to true.
+     * @param string|null $description          Optional description of the application.
+     * @param string|null $logo                 Optional logo (base64 encoded image) for the application.
+     * @param string|null $realm                Optional WS-Fed realm identifier.
+     * @param string|null $replyUrl             Optional WS-Fed reply (assertion consumer) URL.
+     * @param array       $replyAllowedCallbacks List of allowed reply callback URLs.
+     * @param array       $attributeMapping     Attribute mapping between Descope and the application.
+     * @param array       $groupsMapping        Groups mapping between Descope and the application.
+     * @param bool|null   $forceAuthentication  Optional flag to force authentication.
+     * @param string|null $logoutRedirectUrl    Optional logout redirect URL.
+     * @param string|null $errorRedirectUrl     Optional error redirect URL.
+     *
+     * @return void
+     *
+     * @throws AuthException If the update operation fails.
+     */
+    public function updateWSFedApplication(
+        string $id,
+        string $name,
+        string $loginPageUrl,
+        bool $enabled = true,
+        ?string $description = null,
+        ?string $logo = null,
+        ?string $realm = null,
+        ?string $replyUrl = null,
+        array $replyAllowedCallbacks = [],
+        array $attributeMapping = [],
+        array $groupsMapping = [],
+        ?bool $forceAuthentication = null,
+        ?string $logoutRedirectUrl = null,
+        ?string $errorRedirectUrl = null
+    ): void {
+        $body = [
+            'id' => $id,
+            'name' => $name,
+            'loginPageUrl' => $loginPageUrl,
+            'enabled' => $enabled,
+            'replyAllowedCallbacks' => $replyAllowedCallbacks,
+            'attributeMapping' => $attributeMapping,
+            'groupsMapping' => $groupsMapping,
+        ];
+
+        if ($description !== null) {
+            $body['description'] = $description;
+        }
+
+        if ($logo !== null) {
+            $body['logo'] = $logo;
+        }
+
+        if ($realm !== null) {
+            $body['realm'] = $realm;
+        }
+
+        if ($replyUrl !== null) {
+            $body['replyUrl'] = $replyUrl;
+        }
+
+        if ($forceAuthentication !== null) {
+            $body['forceAuthentication'] = $forceAuthentication;
+        }
+
+        if ($logoutRedirectUrl !== null) {
+            $body['logoutRedirectUrl'] = $logoutRedirectUrl;
+        }
+
+        if ($errorRedirectUrl !== null) {
+            $body['errorRedirectUrl'] = $errorRedirectUrl;
+        }
+
+        $this->api->doPost(
+            MgmtV1::$SSO_APPLICATION_WSFED_UPDATE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
+     * Get the cleartext secret of an SSO application.
+     *
+     * @param string $id The ID of the SSO application.
+     *
+     * @return array The response containing the application secret under the 'cleartext' key.
+     *
+     * @throws AuthException If the operation fails.
+     */
+    public function getApplicationSecret(string $id): array
+    {
+        return $this->api->doGet(
+            MgmtV1::$SSO_APPLICATION_SECRET_PATH . '?' . http_build_query(['id' => $id]),
+            true
+        );
+    }
+
+    /**
+     * Rotate the secret of an SSO application.
+     *
+     * @param string $id The ID of the SSO application whose secret to rotate.
+     *
+     * @return array The response containing the new application secret under the 'cleartext' key.
+     *
+     * @throws AuthException If the operation fails.
+     */
+    public function rotateApplicationSecret(string $id): array
+    {
+        $body = [
+            'id' => $id,
+        ];
+
+        return $this->api->doPost(
+            MgmtV1::$SSO_APPLICATION_ROTATE_PATH,
+            $body,
+            true
+        );
+    }
+
+    /**
      * Delete an SSO application.
      *
      * @param string $id The ID of the SSO application to delete.

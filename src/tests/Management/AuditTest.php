@@ -78,4 +78,31 @@ class AuditTest extends TestCase
         // If no exceptions were thrown, the test passes.
         $this->assertTrue(true);
     }
+
+    public function testSearchAllAudit()
+    {
+        $result = $this->descopeSDK->management->audit->searchAll([
+            'userIds' => ['user1'],
+            'actions' => ['login'],
+            'noTenants' => false,
+            'limit' => 10,
+            'page' => 0,
+        ]);
+
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('audits', $result);
+        $this->assertArrayHasKey('total', $result);
+        $this->assertIsArray($result['audits']);
+    }
+
+    public function testCreateAuditWebhook()
+    {
+        $this->descopeSDK->management->audit->createAuditWebhook([
+            'name' => 'my-webhook',
+            'url' => 'https://example.com/audit',
+        ]);
+
+        // If no exceptions were thrown, the test passes.
+        $this->assertTrue(true);
+    }
 }

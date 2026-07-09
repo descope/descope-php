@@ -60,4 +60,37 @@ class SSOApplicationTest extends TestCase
         $this->descopeSDK->management->ssoApplication->delete('app1');
         $this->assertTrue(true);
     }
+
+    public function testCreateWSFedApplication()
+    {
+        $result = $this->descopeSDK->management->ssoApplication->createWSFedApplication(
+            'My WSFed',
+            'https://login.example.com'
+        );
+
+        $this->assertIsArray($result);
+    }
+
+    public function testUpdateWSFedApplication()
+    {
+        $this->descopeSDK->management->ssoApplication->updateWSFedApplication(
+            'app1',
+            'My WSFed',
+            'https://login.example.com'
+        );
+
+        $this->assertTrue(true);
+    }
+
+    public function testGetApplicationSecret()
+    {
+        $result = $this->descopeSDK->management->ssoApplication->getApplicationSecret('app1');
+        $this->assertIsArray($result);
+    }
+
+    public function testRotateApplicationSecret()
+    {
+        $result = $this->descopeSDK->management->ssoApplication->rotateApplicationSecret('app1');
+        $this->assertIsArray($result);
+    }
 }

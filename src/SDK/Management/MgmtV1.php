@@ -106,6 +106,83 @@ class MgmtV1
     public static string $OUTBOUND_APP_DELETE_USER_TOKENS_PATH;
     public static string $OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH;
 
+    // ===== Additional management endpoints =====
+    // Tenant
+    public static string $TENANT_SETTINGS_PATH;
+    public static string $TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH;
+    public static string $TENANT_REVOKE_SSO_CONFIGURATION_LINK_PATH;
+    public static string $TENANT_UPDATE_DEFAULT_ROLES_PATH;
+    // SSO Application
+    public static string $SSO_APPLICATION_WSFED_CREATE_PATH;
+    public static string $SSO_APPLICATION_WSFED_UPDATE_PATH;
+    public static string $SSO_APPLICATION_SECRET_PATH;
+    public static string $SSO_APPLICATION_ROTATE_PATH;
+    // User
+    public static string $USER_PATCH_PATH;
+    public static string $USER_PATCH_BATCH_PATH;
+    public static string $USER_DELETE_BATCH_PATH;
+    public static string $USER_IMPORT_PATH;
+    public static string $USERS_LOAD_PATH;
+    public static string $TEST_USER_SEARCH_ALL_PATH;
+    public static string $USER_UPDATE_RECOVERY_EMAIL_PATH;
+    public static string $USER_UPDATE_RECOVERY_PHONE_PATH;
+    public static string $USER_CUSTOM_ATTRIBUTES_PATH;
+    public static string $USER_CUSTOM_ATTRIBUTE_CREATE_PATH;
+    public static string $USER_CUSTOM_ATTRIBUTE_DELETE_PATH;
+    public static string $USER_REMOVE_PASSKEY_PATH;
+    public static string $USER_LIST_PASSKEYS_PATH;
+    public static string $USER_REMOVE_TOTP_SEED_PATH;
+    public static string $USER_GENERATE_EMBEDDED_LINK_SIGNUP_PATH;
+    public static string $USER_LIST_TRUSTED_DEVICES_PATH;
+    public static string $USER_REMOVE_TRUSTED_DEVICES_PATH;
+    // Access Keys
+    public static string $ACCESS_KEY_DEACTIVATE_BATCH_PATH;
+    public static string $ACCESS_KEY_ACTIVATE_BATCH_PATH;
+    public static string $ACCESS_KEY_DELETE_BATCH_PATH;
+    public static string $ACCESS_KEY_ROTATE_PATH;
+    // SSO settings
+    public static string $SSO_LOAD_ALL_SETTINGS_PATH;
+    public static string $SSO_REDIRECT_URL_PATH;
+    public static string $SSO_SETTINGS_NEW_PATH;
+    public static string $SSO_RECALCULATE_MAPPINGS_PATH;
+    // JWT / mgmt auth
+    public static string $IMPERSONATE_STEPUP_PATH;
+    public static string $STOP_IMPERSONATION_PATH;
+    public static string $MGMT_SIGN_IN_PATH;
+    public static string $MGMT_SIGN_UP_PATH;
+    public static string $MGMT_SIGN_UP_OR_IN_PATH;
+    public static string $MGMT_ANONYMOUS_PATH;
+    // Permission batch
+    public static string $PERMISSION_CREATE_BATCH_PATH;
+    public static string $PERMISSION_UPDATE_BATCH_PATH;
+    public static string $PERMISSION_DELETE_BATCH_PATH;
+    // Role batch
+    public static string $ROLE_CREATE_BATCH_PATH;
+    public static string $ROLE_UPDATE_BATCH_PATH;
+    public static string $ROLE_DELETE_BATCH_PATH;
+    // Flow run
+    public static string $FLOW_RUN_PATH;
+    public static string $FLOW_RUN_ASYNC_PATH;
+    public static string $FLOW_ASYNC_RESULT_PATH;
+    // Audit webhook
+    public static string $AUDIT_WEBHOOK_CREATE_PATH;
+    // Outbound Apps
+    public static string $OUTBOUND_APP_CREATE_PATH;
+    public static string $OUTBOUND_APP_UPDATE_PATH;
+    public static string $OUTBOUND_APP_DELETE_PATH;
+    public static string $OUTBOUND_APP_LOAD_PATH;
+    public static string $OUTBOUND_APP_LOAD_ALL_PATH;
+    public static string $OUTBOUND_APP_FETCH_LATEST_USER_TOKEN_PATH;
+    public static string $OUTBOUND_APP_FETCH_TENANT_TOKEN_PATH;
+    public static string $OUTBOUND_APP_FETCH_LATEST_TENANT_TOKEN_PATH;
+    public static string $OUTBOUND_APP_LIST_APPS_WITH_USER_TOKEN_PATH;
+    public static string $OUTBOUND_APP_UPLOAD_USER_API_KEY_PATH;
+    public static string $OUTBOUND_APP_UPLOAD_TENANT_API_KEY_PATH;
+    public static string $OUTBOUND_APP_UPLOAD_USER_TOKEN_PATH;
+    public static string $OUTBOUND_APP_UPLOAD_TENANT_TOKEN_PATH;
+    public static string $OUTBOUND_APP_BATCH_UPLOAD_USER_TOKENS_PATH;
+    public static string $OUTBOUND_APP_BATCH_UPLOAD_TENANT_TOKENS_PATH;
+
     /**
      * Sets the base URL based on the project ID, taking into account the region.
      *
@@ -248,10 +325,97 @@ class MgmtV1
         self::$AUDIT_SEARCH = self::$baseUrl . "/v1/mgmt/audit/search";
         self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
 
+        // Outbound Apps (paths corrected to the /v1/mgmt/outbound/... routes)
+        self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token";
+        self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/user/tokens";
+        self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outbound/token";
+
+        // ===== Additional management endpoints =====
+        // Tenant
+        self::$TENANT_SETTINGS_PATH = self::$baseUrl . "/v1/mgmt/tenant/settings";
+        self::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v2/mgmt/tenant/adminlinks/sso/generate";  // v2
+        self::$TENANT_REVOKE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v1/mgmt/tenant/adminlinks/sso/revoke";
+        self::$TENANT_UPDATE_DEFAULT_ROLES_PATH = self::$baseUrl . "/v1/mgmt/tenant/updateDefaultRoles";
+
+        // SSO Application
+        self::$SSO_APPLICATION_WSFED_CREATE_PATH = self::$baseUrl . "/v1/mgmt/sso/idp/app/wsfed/create";
+        self::$SSO_APPLICATION_WSFED_UPDATE_PATH = self::$baseUrl . "/v1/mgmt/sso/idp/app/wsfed/update";
+        self::$SSO_APPLICATION_SECRET_PATH = self::$baseUrl . "/v1/mgmt/sso/idp/app/secret";
+        self::$SSO_APPLICATION_ROTATE_PATH = self::$baseUrl . "/v1/mgmt/sso/idp/app/rotate";
+
+        // User
+        self::$USER_PATCH_PATH = self::$baseUrl . "/v1/mgmt/user/patch";
+        self::$USER_PATCH_BATCH_PATH = self::$baseUrl . "/v1/mgmt/user/patch/batch";
+        self::$USER_DELETE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/user/delete/batch";
+        self::$USER_IMPORT_PATH = self::$baseUrl . "/v1/mgmt/user/import";
+        self::$USERS_LOAD_PATH = self::$baseUrl . "/v1/mgmt/users/load";
+        self::$TEST_USER_SEARCH_ALL_PATH = self::$baseUrl . "/v2/mgmt/user/search/test";  // v2 only
+        self::$USER_UPDATE_RECOVERY_EMAIL_PATH = self::$baseUrl . "/v1/mgmt/user/update/recovery/email";
+        self::$USER_UPDATE_RECOVERY_PHONE_PATH = self::$baseUrl . "/v1/mgmt/user/update/recovery/phone";
+        self::$USER_CUSTOM_ATTRIBUTES_PATH = self::$baseUrl . "/v1/mgmt/user/customattributes";
+        self::$USER_CUSTOM_ATTRIBUTE_CREATE_PATH = self::$baseUrl . "/v1/mgmt/user/customattribute/create";
+        self::$USER_CUSTOM_ATTRIBUTE_DELETE_PATH = self::$baseUrl . "/v1/mgmt/user/customattribute/delete";
+        self::$USER_REMOVE_PASSKEY_PATH = self::$baseUrl . "/v1/mgmt/user/passkey/delete";
+        self::$USER_LIST_PASSKEYS_PATH = self::$baseUrl . "/v1/mgmt/user/passkeys/list";
+        self::$USER_REMOVE_TOTP_SEED_PATH = self::$baseUrl . "/v1/mgmt/user/totp/delete";
+        self::$USER_GENERATE_EMBEDDED_LINK_SIGNUP_PATH = self::$baseUrl . "/v1/mgmt/user/signup/embeddedlink";
+        self::$USER_LIST_TRUSTED_DEVICES_PATH = self::$baseUrl . "/v1/mgmt/user/trusteddevices/list";
+        self::$USER_REMOVE_TRUSTED_DEVICES_PATH = self::$baseUrl . "/v1/mgmt/user/trusteddevices/remove";
+
+        // Access Keys
+        self::$ACCESS_KEY_DEACTIVATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/accesskey/deactivate/batch";
+        self::$ACCESS_KEY_ACTIVATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/accesskey/activate/batch";
+        self::$ACCESS_KEY_DELETE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/accesskey/delete/batch";
+        self::$ACCESS_KEY_ROTATE_PATH = self::$baseUrl . "/v1/mgmt/accesskey/rotate";
+
+        // SSO settings
+        self::$SSO_LOAD_ALL_SETTINGS_PATH = self::$baseUrl . "/v2/mgmt/sso/settings/all";  // v2 only
+        self::$SSO_REDIRECT_URL_PATH = self::$baseUrl . "/v1/mgmt/sso/redirect";
+        self::$SSO_SETTINGS_NEW_PATH = self::$baseUrl . "/v1/mgmt/sso/settings/new";
+        self::$SSO_RECALCULATE_MAPPINGS_PATH = self::$baseUrl . "/v1/mgmt/sso/recalculate-mappings";
+
+        // JWT / mgmt auth
+        self::$IMPERSONATE_STEPUP_PATH = self::$baseUrl . "/v1/mgmt/impersonate/stepup";
+        self::$STOP_IMPERSONATION_PATH = self::$baseUrl . "/v1/mgmt/stop/impersonation";
+        self::$MGMT_SIGN_IN_PATH = self::$baseUrl . "/v1/mgmt/auth/signin";
+        self::$MGMT_SIGN_UP_PATH = self::$baseUrl . "/v1/mgmt/auth/signup";
+        self::$MGMT_SIGN_UP_OR_IN_PATH = self::$baseUrl . "/v1/mgmt/auth/signup-in";
+        self::$MGMT_ANONYMOUS_PATH = self::$baseUrl . "/v1/mgmt/auth/anonymous";
+
+        // Permission batch
+        self::$PERMISSION_CREATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/permission/create/batch";
+        self::$PERMISSION_UPDATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/permission/update/batch";
+        self::$PERMISSION_DELETE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/permission/delete/batch";
+
+        // Role batch
+        self::$ROLE_CREATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/role/create/batch";
+        self::$ROLE_UPDATE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/role/update/batch";
+        self::$ROLE_DELETE_BATCH_PATH = self::$baseUrl . "/v1/mgmt/role/delete/batch";
+
+        // Flow run
+        self::$FLOW_RUN_PATH = self::$baseUrl . "/v1/mgmt/flow/run";
+        self::$FLOW_RUN_ASYNC_PATH = self::$baseUrl . "/v1/mgmt/flow/async/run";
+        self::$FLOW_ASYNC_RESULT_PATH = self::$baseUrl . "/v1/mgmt/flow/async/result";
+
+        // Audit webhook
+        self::$AUDIT_WEBHOOK_CREATE_PATH = self::$baseUrl . "/v2/mgmt/connector/audit/web/set";  // v2 only
+
         // Outbound Apps
-        self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/usertoken";
-        self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/usertokens";
-        self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outboundapp/token";
+        self::$OUTBOUND_APP_CREATE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/create";
+        self::$OUTBOUND_APP_UPDATE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/update";
+        self::$OUTBOUND_APP_DELETE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/delete";
+        self::$OUTBOUND_APP_LOAD_PATH = self::$baseUrl . "/v1/mgmt/outbound/app";
+        self::$OUTBOUND_APP_LOAD_ALL_PATH = self::$baseUrl . "/v1/mgmt/outbound/apps";
+        self::$OUTBOUND_APP_FETCH_LATEST_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token/latest";
+        self::$OUTBOUND_APP_FETCH_TENANT_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/token";
+        self::$OUTBOUND_APP_FETCH_LATEST_TENANT_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/token/latest";
+        self::$OUTBOUND_APP_LIST_APPS_WITH_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/apps-with-user-token";
+        self::$OUTBOUND_APP_UPLOAD_USER_API_KEY_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/apikey/upload";
+        self::$OUTBOUND_APP_UPLOAD_TENANT_API_KEY_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/apikey/upload";
+        self::$OUTBOUND_APP_UPLOAD_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/oauthtoken/upload";
+        self::$OUTBOUND_APP_UPLOAD_TENANT_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/oauthtoken/upload";
+        self::$OUTBOUND_APP_BATCH_UPLOAD_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/oauthtoken/batch/upload";
+        self::$OUTBOUND_APP_BATCH_UPLOAD_TENANT_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/oauthtoken/batch/upload";
     }
 }
 
