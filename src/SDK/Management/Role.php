@@ -56,8 +56,8 @@ class Role
     /**
      * Creates multiple roles in a single batch request.
      *
-     * @param  array $roles List of role objects to create. Each entry mirrors the Go SDK
-     *                     `descope.Role` shape (e.g. `['name' => ..., 'description' => ...,
+     * @param  array $roles List of role objects to create. Each entry is an associative array
+     *                     (e.g. `['name' => ..., 'description' => ...,
      *                     'permissionNames' => [...], 'tenantId' => ...]`).
      * @return array The response containing the created roles.
      * @throws AuthException If the request fails.
@@ -146,8 +146,7 @@ class Role
     /**
      * Updates multiple roles in a single batch request.
      *
-     * @param  array $roles List of role update objects. Each entry mirrors the Go SDK
-     *                     `descope.RoleUpdateRequest` shape.
+     * @param  array $roles List of role update objects. Each entry is an associative array with the role's id and updated fields.
      * @return array The response containing the updated roles.
      * @throws AuthException If the request fails.
      */

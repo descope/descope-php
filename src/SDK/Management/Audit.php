@@ -109,7 +109,7 @@ class Audit
     /**
      * Search the audit logs with various filters, returning the total count.
      *
-     * This mirrors the Go SDK SearchAll method: it uses the same audit/search
+     * Uses the same audit/search
      * endpoint as search() but additionally supports paging (size/page) and
      * returns the total number of matching records alongside the audits.
      *
