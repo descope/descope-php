@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.5](https://github.com/descope/descope-php/compare/descope-php-v0.6.4...descope-php-v0.6.5) (2026-07-09)
+
+
+### Features
+
+* **sdk:** complete management SDK go-parity + fix mgmt user logout ([#123](https://github.com/descope/descope-php/issues/123)) ([6e96618](https://github.com/descope/descope-php/commit/6e966186cbf288e50db9046acef8f35edfb795da))
+
 ## [0.6.4](https://github.com/descope/descope-php/compare/descope-php-v0.6.3...descope-php-v0.6.4) (2026-07-06)
 
 
