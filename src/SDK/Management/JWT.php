@@ -237,7 +237,7 @@ class JWT
         $user = $user ?? [];
         $signUpOptions = $signUpOptions ?? [];
 
-        // emailVerified/phoneVerified/ssoAppId are top-level siblings of the user object in go-sdk,
+        // emailVerified/phoneVerified/ssoAppId are top-level siblings of the user object in Go SDK,
         // not nested inside it. Lift them out and drop them from the nested user to avoid sending
         // duplicate/unknown fields inside the user object.
         $emailVerified = $user['emailVerified'] ?? false;

@@ -29,7 +29,7 @@ class OutboundApps
     /**
      * Create a new outbound application.
      *
-     * Mirrors the go-sdk CreateApplication request: the app fields are sent at the top level
+     * Mirrors the Go SDK CreateApplication request: the app fields are sent at the top level
      * of the body alongside a clientSecret key.
      *
      * @param array $appRequest The outbound application definition. Recognized keys:
@@ -58,7 +58,7 @@ class OutboundApps
     /**
      * Update an existing outbound application.
      *
-     * Mirrors the go-sdk UpdateApplication request: the app fields are nested under an 'app'
+     * Mirrors the Go SDK UpdateApplication request: the app fields are nested under an 'app'
      * key, and an optional clientSecret is added to the app body when provided.
      *
      * @param array       $appRequest   The outbound application definition (must include id and name).
@@ -104,7 +104,7 @@ class OutboundApps
     /**
      * Load a single outbound application by its ID.
      *
-     * Matches the go-sdk LoadApplication, which appends the app ID as a path segment to the
+     * Matches the Go SDK LoadApplication, which appends the app ID as a path segment to the
      * load path.
      *
      * @param string $id The ID of the outbound application to load.
@@ -137,7 +137,7 @@ class OutboundApps
      *
      * The "latest" endpoint ignores scopes, so any 'scopes' key in the request is stripped
      * to avoid posting a field the target message does not define (the gateway rejects
-     * unknown fields), matching the go-sdk FetchLatestUserToken behavior.
+     * unknown fields), matching the Go SDK FetchLatestUserToken behavior.
      *
      * @param array $request The request body. Recognized keys: appId, userId, tenantId, options.
      *
@@ -196,7 +196,7 @@ class OutboundApps
      * Fetch the latest outbound application tenant token.
      *
      * The "latest" endpoint ignores scopes, so any 'scopes' key in the request is stripped,
-     * matching the go-sdk FetchLatestTenantToken behavior.
+     * matching the Go SDK FetchLatestTenantToken behavior.
      *
      * @param array $request The request body. Recognized keys: appId, tenantId, options.
      *
@@ -389,7 +389,7 @@ class OutboundApps
     /**
      * Build the create/update outbound application request body.
      *
-     * Mirrors the go-sdk makeCreateUpdateOutboundApplicationRequest: it emits every app field
+     * Mirrors the Go SDK makeCreateUpdateOutboundApplicationRequest: it emits every app field
      * key explicitly, falling back to sensible zero values when a key is absent.
      *
      * @param array $app The outbound application definition.

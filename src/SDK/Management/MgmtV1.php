@@ -106,7 +106,7 @@ class MgmtV1
     public static string $OUTBOUND_APP_DELETE_USER_TOKENS_PATH;
     public static string $OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH;
 
-    // ===== go-sdk parity additions =====
+    // ===== Go SDK parity additions =====
     // Tenant
     public static string $TENANT_SETTINGS_PATH;
     public static string $TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH;
@@ -166,7 +166,7 @@ class MgmtV1
     public static string $FLOW_ASYNC_RESULT_PATH;
     // Audit webhook
     public static string $AUDIT_WEBHOOK_CREATE_PATH;
-    // Outbound Apps (go-sdk aligned)
+    // Outbound Apps (Go SDK aligned)
     public static string $OUTBOUND_APP_CREATE_PATH;
     public static string $OUTBOUND_APP_UPDATE_PATH;
     public static string $OUTBOUND_APP_DELETE_PATH;
@@ -325,15 +325,15 @@ class MgmtV1
         self::$AUDIT_SEARCH = self::$baseUrl . "/v1/mgmt/audit/search";
         self::$AUDIT_CREATE_EVENT = self::$baseUrl . "/v1/mgmt/audit/event";
 
-        // Outbound Apps (paths corrected to match backend/go-sdk: /v1/mgmt/outbound/...)
+        // Outbound Apps (paths corrected to match backend/Go SDK: /v1/mgmt/outbound/...)
         self::$OUTBOUND_APP_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token";
         self::$OUTBOUND_APP_DELETE_USER_TOKENS_PATH = self::$baseUrl . "/v1/mgmt/outbound/user/tokens";
         self::$OUTBOUND_APP_DELETE_TOKEN_BY_ID_PATH = self::$baseUrl . "/v1/mgmt/outbound/token";
 
-        // ===== go-sdk parity additions =====
+        // ===== Go SDK parity additions =====
         // Tenant
         self::$TENANT_SETTINGS_PATH = self::$baseUrl . "/v1/mgmt/tenant/settings";
-        self::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v2/mgmt/tenant/adminlinks/sso/generate";  // v2 (matches go-sdk)
+        self::$TENANT_GENERATE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v2/mgmt/tenant/adminlinks/sso/generate";  // v2 (matches Go SDK)
         self::$TENANT_REVOKE_SSO_CONFIGURATION_LINK_PATH = self::$baseUrl . "/v1/mgmt/tenant/adminlinks/sso/revoke";
         self::$TENANT_UPDATE_DEFAULT_ROLES_PATH = self::$baseUrl . "/v1/mgmt/tenant/updateDefaultRoles";
 
@@ -400,7 +400,7 @@ class MgmtV1
         // Audit webhook
         self::$AUDIT_WEBHOOK_CREATE_PATH = self::$baseUrl . "/v2/mgmt/connector/audit/web/set";  // v2 only
 
-        // Outbound Apps (go-sdk aligned)
+        // Outbound Apps (Go SDK aligned)
         self::$OUTBOUND_APP_CREATE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/create";
         self::$OUTBOUND_APP_UPDATE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/update";
         self::$OUTBOUND_APP_DELETE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/delete";

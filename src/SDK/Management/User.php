@@ -1759,7 +1759,7 @@ class User
     /**
      * Composes the request body for patching a user.
      *
-     * Only non-null fields are included, matching the go-sdk makePatchUserRequest.
+     * Only non-null fields are included, matching the Go SDK makePatchUserRequest.
      * Note: the patch endpoint uses "name" for the display name (not "displayName")
      * and "ssoAppIds" for SSO app IDs.
      *

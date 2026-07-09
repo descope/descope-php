@@ -719,7 +719,7 @@ $roles = $descopeSDK->management->role->loadAll();
 $matches = $descopeSDK->management->role->search([], ["My Renamed Role"]);
 $descopeSDK->management->role->delete("My Renamed Role");
 
-// Create multiple roles at once (each entry mirrors the go-sdk RoleUpdateRequest shape)
+// Create multiple roles at once (each entry mirrors the Go SDK RoleUpdateRequest shape)
 $descopeSDK->management->role->createBatch([
     ['name' => 'Role A', 'description' => 'first', 'permissionNames' => ['Read']],
     ['name' => 'Role B', 'permissionNames' => ['Write']],
@@ -752,7 +752,7 @@ $descopeSDK->management->permission->update("Read", "ReadOnly", "can read only")
 $permissions = $descopeSDK->management->permission->loadAll();
 $descopeSDK->management->permission->delete("ReadOnly");
 
-// Create multiple permissions at once (each entry mirrors the go-sdk Permission shape)
+// Create multiple permissions at once (each entry mirrors the Go SDK Permission shape)
 $descopeSDK->management->permission->createBatch([
     ['name' => 'Read', 'description' => 'can read'],
     ['name' => 'Write', 'description' => 'can write'],

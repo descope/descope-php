@@ -48,7 +48,7 @@ class Permission
      * Create multiple permissions in a single batch request.
      *
      * @param  array $permissions List of permission objects to create. Each entry mirrors the
-     *                            go-sdk `descope.Permission` shape (e.g. `['name' => ..., 'description' => ...]`).
+     *                            Go SDK `descope.Permission` shape (e.g. `['name' => ..., 'description' => ...]`).
      * @return void
      * @throws AuthException If the creation request fails.
      */
@@ -108,7 +108,7 @@ class Permission
      * Update multiple permissions in a single batch request.
      *
      * @param  array $permissions List of permission update objects. Each entry mirrors the
-     *                            go-sdk `descope.PermissionUpdateRequest` shape.
+     *                            Go SDK `descope.PermissionUpdateRequest` shape.
      * @return void
      * @throws AuthException If the update request fails.
      */

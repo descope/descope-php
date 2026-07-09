@@ -145,7 +145,7 @@ class Flow
      */
     public function deleteFlows(array $flowIds): void
     {
-        // Alias for delete() using the go-sdk method name; kept for parity.
+        // Alias for delete() using the Go SDK method name; kept for parity.
         $this->delete($flowIds);
     }
 
