@@ -145,15 +145,8 @@ class Flow
      */
     public function deleteFlows(array $flowIds): void
     {
-        $body = [
-            'ids' => $flowIds,
-        ];
-
-        $this->api->doPost(
-            MgmtV1::$FLOW_DELETE_PATH,
-            $body,
-            true
-        );
+        // Alias for delete() using the go-sdk method name; kept for parity.
+        $this->delete($flowIds);
     }
 
     /**

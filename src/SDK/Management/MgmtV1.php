@@ -172,7 +172,6 @@ class MgmtV1
     public static string $OUTBOUND_APP_DELETE_PATH;
     public static string $OUTBOUND_APP_LOAD_PATH;
     public static string $OUTBOUND_APP_LOAD_ALL_PATH;
-    public static string $OUTBOUND_APP_FETCH_USER_TOKEN_PATH;
     public static string $OUTBOUND_APP_FETCH_LATEST_USER_TOKEN_PATH;
     public static string $OUTBOUND_APP_FETCH_TENANT_TOKEN_PATH;
     public static string $OUTBOUND_APP_FETCH_LATEST_TENANT_TOKEN_PATH;
@@ -407,7 +406,6 @@ class MgmtV1
         self::$OUTBOUND_APP_DELETE_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/delete";
         self::$OUTBOUND_APP_LOAD_PATH = self::$baseUrl . "/v1/mgmt/outbound/app";
         self::$OUTBOUND_APP_LOAD_ALL_PATH = self::$baseUrl . "/v1/mgmt/outbound/apps";
-        self::$OUTBOUND_APP_FETCH_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token";
         self::$OUTBOUND_APP_FETCH_LATEST_USER_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/user/token/latest";
         self::$OUTBOUND_APP_FETCH_TENANT_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/token";
         self::$OUTBOUND_APP_FETCH_LATEST_TENANT_TOKEN_PATH = self::$baseUrl . "/v1/mgmt/outbound/app/tenant/token/latest";
