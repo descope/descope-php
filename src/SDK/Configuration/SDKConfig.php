@@ -19,7 +19,7 @@ final class SDKConfig
     public $baseUrl;
     private $cache;
     private $jwksCacheTTL;
-    private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:';
+    private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:v2:';
     private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
 
     public function __construct(array $config, ?CacheInterface $cache = null)
@@ -27,7 +27,7 @@ final class SDKConfig
         $this->client = new Client();
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
-        $this->baseUrl = $config['baseUrl'] ?? null;
+        $this->baseUrl = EndpointsV1::resolveBaseUrl($this->projectId, $config['baseUrl'] ?? null);
         // Normalize JWKS cache TTL: ensure positive integer or fall back to default
         $ttl = $config['jwksCacheTTL'] ?? self::DEFAULT_JWKS_TTL;
         if (!is_int($ttl)) {
@@ -77,7 +77,7 @@ final class SDKConfig
     private function fetchJWKSets(): array
     {
         try {
-            $url = EndpointsV1::resolveBaseUrl($this->projectId, $this->baseUrl) . '/v2/keys/' . $this->projectId;
+            $url = rtrim($this->baseUrl, '/') . '/v2/keys/' . rawurlencode($this->projectId);
             $response = $this->client->request('GET', $url, [
                 'headers' => $this->getSDKHeaders()
             ]);
@@ -110,10 +110,29 @@ final class SDKConfig
     }
 
     /**
-     * Returns a project-scoped cache key to prevent cross-project JWKS confusion.
+     * Returns a source- and project-scoped cache key to prevent JWKS reuse
+     * between SDK instances configured for different API origins.
      */
     private function getCacheKey(): string
     {
-        return self::JWKS_CACHE_KEY_PREFIX . $this->projectId;
+        return self::JWKS_CACHE_KEY_PREFIX . hash('sha256', $this->canonicalBaseUrl() . "\0" . $this->projectId);
+    }
+
+    private function canonicalBaseUrl(): string
+    {
+        $parts = parse_url($this->baseUrl);
+        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+            return rtrim($this->baseUrl, '/');
+        }
+
+        $scheme = strtolower($parts['scheme']);
+        $host = strtolower($parts['host']);
+        $port = $parts['port'] ?? null;
+        if (($scheme === 'https' && $port === 443) || ($scheme === 'http' && $port === 80)) {
+            $port = null;
+        }
+
+        $path = isset($parts['path']) ? rtrim($parts['path'], '/') : '';
+        return $scheme . '://' . $host . ($port === null ? '' : ':' . $port) . $path;
     }
 }

@@ -114,7 +114,7 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
-        $this->assertCredentialHost($uri, $authToken);
+        $uri = $this->resolveRequestUrl($uri);
 
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
@@ -165,7 +165,7 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
-        $this->assertCredentialHost($uri, $authToken);
+        $uri = $this->resolveRequestUrl($uri);
 
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
@@ -215,7 +215,7 @@ class API
             $authToken = $this->getAuthToken($useManagementKey);
         }
 
-        $this->assertCredentialHost($uri, $authToken);
+        $uri = $this->resolveRequestUrl($uri);
 
         try {
             $headers = $this->getHeaders($authToken);
@@ -255,7 +255,7 @@ class API
     {
         $authToken = $this->getAuthToken(true);
 
-        $this->assertCredentialHost($uri, $authToken);
+        $uri = $this->resolveRequestUrl($uri);
 
         try {
             $headers = $this->getHeaders($authToken);
@@ -367,35 +367,39 @@ class API
     }
 
     /**
-     * Refuses to send bearer credentials (management key or refresh token) to any host
-     * other than the instance's configured base URL. The bare project ID is public, so
-     * requests carrying only the project ID as the auth token are not host-restricted.
+     * Converts static endpoint values into an instance-bound request URL.
      *
-     * @param  string $uri       Target request URI.
-     * @param  string $authToken Auth token that will be sent as a bearer credential.
-     * @return void
-     * @throws AuthException If a credential would be sent to an unexpected host.
+     * Legacy endpoint classes expose full URLs and are mutable process-wide state.
+     * Requests may use only their API route and query; the origin always comes from
+     * this API instance.
+     *
+     * @throws AuthException If the value does not contain an SDK API route.
      */
-    private function assertCredentialHost(string $uri, string $authToken): void
+    private function resolveRequestUrl(string $uri): string
     {
-        if ($authToken === $this->projectId) {
-            return;
+        $parts = parse_url($uri);
+        $path = is_array($parts) ? ($parts['path'] ?? '') : '';
+
+        if ($path === '') {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
         }
 
-        $target = parse_url($uri);
-        $base = parse_url($this->baseUrl);
-
-        $sameHost = isset($target['host'], $base['host'])
-            && strcasecmp($target['host'], $base['host']) === 0
-            && ($target['scheme'] ?? '') === ($base['scheme'] ?? '');
-
-        if (!$sameHost) {
-            throw new AuthException(
-                400,
-                'ERROR_TYPE_INVALID_ARGUMENT',
-                'Refusing to send credentials to unexpected host: ' . ($target['host'] ?? 'unknown')
-            );
+        $routeStart = strpos($path, '/v1/');
+        if ($routeStart === false) {
+            $routeStart = strpos($path, '/v2/');
         }
+
+        if ($routeStart === false) {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
+        }
+
+        $route = substr($path, $routeStart);
+        if (strpos($route, '/../') !== false || substr($route, -3) === '/..') {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
+        }
+
+        $query = is_array($parts) && isset($parts['query']) ? '?' . $parts['query'] : '';
+        return rtrim($this->baseUrl, '/') . $route . $query;
     }
 
     /**

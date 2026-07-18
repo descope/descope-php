@@ -44,7 +44,7 @@ final class APIExceptionMappingTest extends TestCase
         $api = $this->apiWithMockedClient(new MockHandler([$requestException]));
 
         try {
-            $api->doGet('https://example.com/test', false);
+            $api->doGet('/v1/test', false);
             $this->fail('Expected RateLimitException to be thrown');
         } catch (RateLimitException $e) {
             $this->assertSame('too many requests', $e->getMessage());
@@ -67,7 +67,7 @@ final class APIExceptionMappingTest extends TestCase
         $api = $this->apiWithMockedClient(new MockHandler([$requestException]));
 
         try {
-            $api->doPost('https://example.com/test', [], false);
+            $api->doPost('/v1/test', [], false);
             $this->fail('Expected AuthException to be thrown');
         } catch (AuthException $e) {
             $this->assertSame('invalid input', $e->getMessage());

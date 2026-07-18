@@ -9,6 +9,7 @@ use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\Management\Management;
 use Descope\SDK\Cache\CacheInterface;
+use Descope\SDK\Cache\InMemoryCache;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Exception\TokenException;
 use Descope\SDK\Exception\ValidationException;
@@ -16,6 +17,11 @@ use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Management\MgmtV1;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Response;
 
 final class DescopeSDKTest extends TestCase
 {
@@ -29,6 +35,11 @@ final class DescopeSDKTest extends TestCase
             'managementKey' => 'test_management_key'
         ];
         $this->sdk = new DescopeSDK($this->config);
+    }
+
+    protected function tearDown(): void
+    {
+        InMemoryCache::clear();
     }
 
     public function testConstructorInitializesComponents()
@@ -69,6 +80,52 @@ final class DescopeSDKTest extends TestCase
 
         $this->expectException(TokenException::class);
         $extractor->getClaims($token);
+    }
+
+    public function testJWKSFromAnotherOriginCannotVerifyAttackerToken(): void
+    {
+        $projectId = 'shared-project';
+        $cache = new InMemoryCache();
+        $attackerPrivateKey = $this->privateKey();
+        $trustedPrivateKey = $this->privateKey();
+
+        $attackerConfig = new SDKConfig([
+            'projectId' => $projectId,
+            'baseUrl' => 'https://attacker.example.com',
+        ], $cache);
+        $attackerConfig->client = new Client([
+            'handler' => HandlerStack::create(new MockHandler([
+                new Response(200, [], json_encode(['keys' => [$this->jwkFromPrivateKey($attackerPrivateKey, 'shared-key')]])),
+            ])),
+        ]);
+        $attackerConfig->getJWKSets();
+
+        $trustedRequests = [];
+        $trustedConfig = new SDKConfig([
+            'projectId' => $projectId,
+            'baseUrl' => 'https://api.descope.com',
+        ], $cache);
+        $trustedStack = HandlerStack::create(new MockHandler([
+            new Response(200, [], json_encode(['keys' => [$this->jwkFromPrivateKey($trustedPrivateKey, 'shared-key')]])),
+        ]));
+        $trustedStack->push(Middleware::history($trustedRequests));
+        $trustedConfig->client = new Client(['handler' => $trustedStack]);
+
+        $token = $this->signedJwt(
+            ['alg' => 'RS256', 'typ' => 'JWT', 'kid' => 'shared-key'],
+            ['iss' => $projectId, 'sub' => 'attacker', 'exp' => time() + 3600],
+            $attackerPrivateKey
+        );
+
+        try {
+            (new Extractor($trustedConfig))->getClaims($token);
+            $this->fail('Expected the attacker-signed token to be rejected');
+        } catch (TokenException $e) {
+            $this->assertStringContainsString('Invalid signature', $e->getMessage());
+        }
+
+        $this->assertCount(1, $trustedRequests);
+        $this->assertSame('https://api.descope.com/v2/keys/shared-project', (string) $trustedRequests[0]['request']->getUri());
     }
 
     public function testRefreshSessionThrowsExceptionWithoutToken()
@@ -217,11 +274,11 @@ final class DescopeSDKTest extends TestCase
         ]);
     }
 
-    private function jwkFromPrivateKey($privateKey): array
+    private function jwkFromPrivateKey($privateKey, string $kid = 'legit-key'): array
     {
         $details = openssl_pkey_get_details($privateKey);
         return [
-            'kid' => 'legit-key',
+            'kid' => $kid,
             'kty' => 'RSA',
             'n' => $this->base64UrlEncode($details['rsa']['n']),
             'e' => $this->base64UrlEncode($details['rsa']['e'])
