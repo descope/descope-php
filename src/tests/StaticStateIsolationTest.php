@@ -4,7 +4,8 @@ namespace Descope\Tests;
 
 use Descope\SDK\API;
 use Descope\SDK\Configuration\SDKConfig;
-use Descope\SDK\Exception\AuthException;
+use Descope\SDK\EndpointsV1;
+use Descope\SDK\Management\MgmtV1;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -52,30 +53,44 @@ final class StaticStateIsolationTest extends TestCase
         $this->assertStringNotContainsString('attacker.example.com', $requestedUri);
     }
 
-    public function testCredentialedRequestToForeignHostIsRefused(): void
+    public function testStaticAuthEndpointCannotRedirectProjectIdRequest(): void
     {
-        $api = new API('project', 'mgmt-key', false, 'https://api.descope.com');
-
-        $this->expectException(AuthException::class);
-        $this->expectExceptionMessage('Refusing to send credentials to unexpected host');
-
-        // A hijacked management path would resolve to a different host.
-        $api->doDelete('https://attacker.example.com/v1/mgmt/user/delete');
-    }
-
-    public function testProjectIdOnlyRequestToForeignHostIsAllowed(): void
-    {
-        // The bare project ID is public, so requests carrying only it are not host-restricted.
-        $api = new API('project', null, false, 'https://api.descope.com');
+        $requests = [];
+        $api = new API('project', null, false, 'https://trusted.example');
+        $client = $this->clientCapturingRequests($requests, json_encode(['ok' => true]));
 
         $reflection = new ReflectionClass(API::class);
-        $mock = new MockHandler([new Response(200, [], json_encode(['ok' => true]))]);
-        $client = new Client(['handler' => HandlerStack::create($mock)]);
-        $prop = $reflection->getProperty('httpClient');
-        $prop->setAccessible(true);
-        $prop->setValue($api, $client);
+        $property = $reflection->getProperty('httpClient');
+        $property->setAccessible(true);
+        $property->setValue($api, $client);
 
-        $result = $api->doGet('https://example.com/test', false);
-        $this->assertSame(['ok' => true], $result);
+        EndpointsV1::setBaseUrlFromString('https://attacker.example.com');
+        $api->doPost(EndpointsV1::$SIGN_IN_PASSWORD_PATH, ['loginId' => 'user@example.com', 'password' => 'secret'], false);
+
+        $this->assertCount(1, $requests);
+        $this->assertSame('https://trusted.example/v1/auth/password/signin', (string) $requests[0]['request']->getUri());
+        $this->assertSame(
+            ['loginId' => 'user@example.com', 'password' => 'secret'],
+            json_decode((string) $requests[0]['request']->getBody(), true)
+        );
+    }
+
+    public function testStaticManagementEndpointCannotRedirectCredentialedRequest(): void
+    {
+        $requests = [];
+        $api = new API('project', 'mgmt-key', false, 'https://trusted.example');
+        $client = $this->clientCapturingRequests($requests, json_encode(['ok' => true]));
+
+        $reflection = new ReflectionClass(API::class);
+        $property = $reflection->getProperty('httpClient');
+        $property->setAccessible(true);
+        $property->setValue($api, $client);
+
+        MgmtV1::setBaseUrlFromString('https://attacker.example.com');
+        $api->doDelete(MgmtV1::$USER_DELETE_PATH);
+
+        $this->assertCount(1, $requests);
+        $this->assertSame('https://trusted.example/v1/mgmt/user/delete', (string) $requests[0]['request']->getUri());
+        $this->assertSame('Bearer project:mgmt-key', $requests[0]['request']->getHeaderLine('Authorization'));
     }
 }

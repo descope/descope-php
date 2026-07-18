@@ -6,6 +6,11 @@ use PHPUnit\Framework\TestCase;
 use Descope\SDK\Configuration\SDKConfig;
 use Descope\SDK\Cache\CacheInterface;
 use Descope\SDK\Cache\InMemoryCache;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Response;
 
 final class SDKConfigCacheTest extends TestCase
 {
@@ -22,6 +27,11 @@ final class SDKConfigCacheTest extends TestCase
     protected function tearDown(): void
     {
         InMemoryCache::clear();
+    }
+
+    private function cacheKey(string $baseUrl, string $projectId): string
+    {
+        return 'descope_jwks:v2:' . hash('sha256', $baseUrl . "\0" . $projectId);
     }
 
     public function testDefaultCacheFallsBackToInMemory()
@@ -112,10 +122,10 @@ final class SDKConfigCacheTest extends TestCase
 
         $mockCache = $this->createMock(CacheInterface::class);
 
-        // Expect get() to be called with project-scoped key
+        // Expect get() to be called with source- and project-scoped key.
         $mockCache->expects($this->once())
             ->method('get')
-            ->with('descope_jwks:test_project_id')
+            ->with($this->cacheKey('https://api.descope.com', 'test_project_id'))
             ->willReturn($jwksData);
 
         $sdkConfig = new SDKConfig($this->config, $mockCache);
@@ -155,16 +165,16 @@ final class SDKConfigCacheTest extends TestCase
         $jwksA = ['keys' => [['kid' => 'key-a']]];
         $jwksB = ['keys' => [['kid' => 'key-b']]];
 
-        // Project A uses key scoped to projectA
+        // Project A uses a source- and project-scoped key.
         $cacheA->expects($this->once())
             ->method('get')
-            ->with('descope_jwks:projectA')
+            ->with($this->cacheKey('https://api.descope.com', 'projectA'))
             ->willReturn($jwksA);
 
-        // Project B uses key scoped to projectB
+        // Project B uses a source- and project-scoped key.
         $cacheB->expects($this->once())
             ->method('get')
-            ->with('descope_jwks:projectB')
+            ->with($this->cacheKey('https://api.descope.com', 'projectB'))
             ->willReturn($jwksB);
 
         $configA = new SDKConfig(['projectId' => 'projectA', 'managementKey' => ''], $cacheA);
@@ -172,5 +182,37 @@ final class SDKConfigCacheTest extends TestCase
 
         $this->assertSame($jwksA, $configA->getJWKSets());
         $this->assertSame($jwksB, $configB->getJWKSets());
+    }
+
+    public function testSameProjectDifferentOriginsDoNotShareJWKS(): void
+    {
+        $cache = new InMemoryCache();
+        $projectId = 'shared-project';
+
+        $attackerConfig = new SDKConfig([
+            'projectId' => $projectId,
+            'baseUrl' => 'https://attacker.example.com',
+        ], $cache);
+        $attackerConfig->client = new Client([
+            'handler' => HandlerStack::create(new MockHandler([
+                new Response(200, [], json_encode(['keys' => [['kid' => 'attacker-key']]])),
+            ])),
+        ]);
+        $attackerConfig->getJWKSets();
+
+        $requests = [];
+        $trustedConfig = new SDKConfig([
+            'projectId' => $projectId,
+            'baseUrl' => 'https://api.descope.com',
+        ], $cache);
+        $stack = HandlerStack::create(new MockHandler([
+            new Response(200, [], json_encode(['keys' => [['kid' => 'trusted-key']]])),
+        ]));
+        $stack->push(Middleware::history($requests));
+        $trustedConfig->client = new Client(['handler' => $stack]);
+
+        $this->assertSame(['keys' => [['kid' => 'trusted-key']]], $trustedConfig->getJWKSets());
+        $this->assertCount(1, $requests);
+        $this->assertSame('https://api.descope.com/v2/keys/shared-project', (string) $requests[0]['request']->getUri());
     }
 }
