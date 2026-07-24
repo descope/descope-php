@@ -23,7 +23,7 @@ const PHONE_REGEX = '/^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)
 
 class EndpointsV1
 {
-    public const SDK_VERSION = '0.6.3'; // x-release-please-version
+    public const SDK_VERSION = '0.6.5'; // x-release-please-version
     
     public static $baseUrl = DEFAULT_URL_PREFIX . '.' . DEFAULT_DOMAIN;
 
@@ -130,6 +130,28 @@ class EndpointsV1
             return !empty($region) ? $region : null;
         }
         return null;
+    }
+
+    /**
+     * Resolves the base URL for a given project without mutating shared static state.
+     * Uses the explicit override when provided, otherwise derives it from the project's region.
+     *
+     * @param string      $projectId The project ID for the Descope project.
+     * @param string|null $baseUrl   Optional explicit base URL override.
+     * @return string The resolved base URL.
+     */
+    public static function resolveBaseUrl(string $projectId, ?string $baseUrl = null): string
+    {
+        if ($baseUrl !== null && $baseUrl !== '') {
+            return $baseUrl;
+        }
+
+        $region = self::extractRegionFromProjectId($projectId);
+        $urlPrefix = DEFAULT_URL_PREFIX;
+        if ($region) {
+            $urlPrefix .= ".$region";
+        }
+        return "$urlPrefix." . DEFAULT_DOMAIN;
     }
 
     /**

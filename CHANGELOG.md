@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.5](https://github.com/descope/descope-php/compare/descope-php-v0.6.4...descope-php-v0.6.5) (2026-07-09)
+
+
+### Features
+
+* **sdk:** complete management SDK go-parity + fix mgmt user logout ([#123](https://github.com/descope/descope-php/issues/123)) ([6e96618](https://github.com/descope/descope-php/commit/6e966186cbf288e50db9046acef8f35edfb795da))
+
+## [0.6.4](https://github.com/descope/descope-php/compare/descope-php-v0.6.3...descope-php-v0.6.4) (2026-07-06)
+
+
+### Features
+
+* **sdk:** implement management sdk parity between php-sdk and go-sdk ([#122](https://github.com/descope/descope-php/issues/122)) ([a74818a](https://github.com/descope/descope-php/commit/a74818a5106cf76aa9fab738d5670a1970d15774))
+
+
+### Bug Fixes
+
+* **sdk:** scope endpoint base-url state per instance to harden jwks host ([#118](https://github.com/descope/descope-php/issues/118)) ([3d8be95](https://github.com/descope/descope-php/commit/3d8be95d127183c8544d31fff2fcc09d72e246a5))
+* **sdk:** verify JWT claims before returning them ([#121](https://github.com/descope/descope-php/issues/121)) ([a7864e2](https://github.com/descope/descope-php/commit/a7864e2748225b132911130c127f763a3d966bb7))
+* **security:** scope JWKS and credential hosts to per-instance config ([3d8be95](https://github.com/descope/descope-php/commit/3d8be95d127183c8544d31fff2fcc09d72e246a5))
+
 ## [0.6.3](https://github.com/descope/descope-php/compare/descope-php-v0.6.2...descope-php-v0.6.3) (2026-06-22)
 
 

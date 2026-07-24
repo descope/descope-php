@@ -56,7 +56,7 @@ final class APIRetryTest extends TestCase
             $this->successResponse(),
         ]));
 
-        $result = $api->doGet('https://example.com/test', false);
+        $result = $api->doGet('/v1/test', false);
         $this->assertSame(['ok' => true], $result);
     }
 
@@ -75,7 +75,7 @@ final class APIRetryTest extends TestCase
         ]));
 
         $this->expectException(AuthException::class);
-        $api->doGet('https://example.com/test', false);
+        $api->doGet('/v1/test', false);
     }
 
     public function testDoesNotRetryOnNonRetryableStatusCodes(): void
@@ -88,7 +88,7 @@ final class APIRetryTest extends TestCase
             $api = $this->apiWithMockedClient(new MockHandler([$exception]));
 
             try {
-                $api->doGet('https://example.com/test', false);
+                $api->doGet('/v1/test', false);
                 $this->fail("Expected exception for status $statusCode");
             } catch (AuthException $e) {
                 $this->assertStringContainsString((string) $statusCode, (string) $e);
@@ -103,7 +103,7 @@ final class APIRetryTest extends TestCase
             $this->successResponse(),
         ]));
 
-        $result = $api->doPost('https://example.com/test', []);
+        $result = $api->doPost('/v1/test', []);
         $this->assertSame(['ok' => true], $result);
     }
 
@@ -114,7 +114,7 @@ final class APIRetryTest extends TestCase
             $this->successResponse(),
         ]));
 
-        $result = $api->doDelete('https://example.com/test');
+        $result = $api->doDelete('/v1/test');
         $this->assertSame(['ok' => true], $result);
     }
 
@@ -124,7 +124,7 @@ final class APIRetryTest extends TestCase
             $this->successResponse(),
         ]));
 
-        $result = $api->doGet('https://example.com/test', false);
+        $result = $api->doGet('/v1/test', false);
         $this->assertSame(['ok' => true], $result);
     }
 
@@ -137,7 +137,7 @@ final class APIRetryTest extends TestCase
             $this->successResponse(),
         ]));
 
-        $result = $api->doGet('https://example.com/test', false);
+        $result = $api->doGet('/v1/test', false);
         $this->assertSame(['ok' => true], $result);
     }
 }

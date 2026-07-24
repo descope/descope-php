@@ -20,6 +20,7 @@ class API
     private $httpClient;
     private $projectId;
     private $managementKey;
+    private $baseUrl;
     private $debug;
 
     /** @var int[] Delays between retries in microseconds: 100ms, 5s, 5s */
@@ -31,8 +32,9 @@ class API
      * @param string      $projectId
      * @param string|null $managementKey Management key for authentication.
      * @param bool|null   $debug         Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
+     * @param string|null $baseUrl       Optional explicit base URL override (cluster/region).
      */
-    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null)
+    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null, ?string $baseUrl = null)
     {
         $this->httpClient = new Client();
 
@@ -53,7 +55,8 @@ class API
 
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
-        
+        $this->baseUrl = EndpointsV1::resolveBaseUrl($projectId, $baseUrl);
+
         // Set debug flag from parameter, environment variable, or default to false
         if ($debug !== null) {
             $this->debug = $debug;
@@ -111,6 +114,8 @@ class API
             $authToken = $this->getAuthToken($useManagementKey, '');
         }
 
+        $uri = $this->resolveRequestUrl($uri);
+
         $body = $this->transformEmptyArraysToObjects($body);
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
@@ -142,6 +147,57 @@ class API
     }
 
     /**
+     * Sends a PATCH request to the specified URI with a JSON body and an optional auth token.
+     *
+     * @param  string $uri              URI endpoint.
+     * @param  array  $body             Request body.
+     * @param  bool   $useManagementKey Whether to use the management key for authentication.
+     * @return array JWT response array.
+     * @throws AuthException|RateLimitException|GuzzleException|\JsonException If the request fails.
+     */
+    public function doPatch(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
+    {
+        $authToken = "";
+
+        if ($refreshToken) {
+            $authToken = $this->getAuthToken(false, $refreshToken);
+        } else {
+            $authToken = $this->getAuthToken($useManagementKey, '');
+        }
+
+        $uri = $this->resolveRequestUrl($uri);
+
+        $body = $this->transformEmptyArraysToObjects($body);
+        $jsonBody = empty($body) ? '{}' : json_encode($body);
+        try {
+            $headers = $this->getHeaders($authToken);
+            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
+                return $this->httpClient->patch($uri, ['headers' => $headers, 'body' => $jsonBody]);
+            });
+
+            // Ensure the response is an object with getBody method
+            if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
+                throw new AuthException(500, 'internal error', 'Invalid response from API');
+            }
+
+            // Read Body
+            $body = $response->getBody();
+            $body->rewind();
+            $contents = $body->getContents() ?? [];
+
+            return json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+        } catch (RequestException $e) {
+            if ($this->debug) {
+                $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : 'N/A';
+                $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+                error_log("Descope SDK [PATCH] RequestException: " . $e->getMessage());
+                error_log("Descope SDK [PATCH] Error: HTTP Status Code: $statusCode, Response: $responseBody");
+            }
+            throw $this->createExceptionFromRequestException($e);
+        }
+    }
+
+    /**
      * Sends a GET request to the specified URI with an optional auth token.
      *
      * @param  string $uri              URI endpoint.
@@ -158,6 +214,8 @@ class API
         } else {
             $authToken = $this->getAuthToken($useManagementKey);
         }
+
+        $uri = $this->resolveRequestUrl($uri);
 
         try {
             $headers = $this->getHeaders($authToken);
@@ -196,6 +254,8 @@ class API
     public function doDelete(string $uri): array
     {
         $authToken = $this->getAuthToken(true);
+
+        $uri = $this->resolveRequestUrl($uri);
 
         try {
             $headers = $this->getHeaders($authToken);
@@ -304,6 +364,42 @@ class API
         }
 
         return new AuthException($statusCode, $errorType, $errorMessage, [], $e);
+    }
+
+    /**
+     * Converts static endpoint values into an instance-bound request URL.
+     *
+     * Legacy endpoint classes expose full URLs and are mutable process-wide state.
+     * Requests may use only their API route and query; the origin always comes from
+     * this API instance.
+     *
+     * @throws AuthException If the value does not contain an SDK API route.
+     */
+    private function resolveRequestUrl(string $uri): string
+    {
+        $parts = parse_url($uri);
+        $path = is_array($parts) ? ($parts['path'] ?? '') : '';
+
+        if ($path === '') {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
+        }
+
+        $routeStart = strpos($path, '/v1/');
+        if ($routeStart === false) {
+            $routeStart = strpos($path, '/v2/');
+        }
+
+        if ($routeStart === false) {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
+        }
+
+        $route = substr($path, $routeStart);
+        if (strpos($route, '/../') !== false || substr($route, -3) === '/..') {
+            throw new AuthException(400, 'ERROR_TYPE_INVALID_ARGUMENT', 'Invalid SDK API route');
+        }
+
+        $query = is_array($parts) && isset($parts['query']) ? '?' . $parts['query'] : '';
+        return rtrim($this->baseUrl, '/') . $route . $query;
     }
 
     /**
