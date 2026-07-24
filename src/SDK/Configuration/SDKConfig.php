@@ -3,6 +3,7 @@
 namespace Descope\SDK\Configuration;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Descope\SDK\EndpointsV1;
@@ -19,12 +20,18 @@ final class SDKConfig
     public $baseUrl;
     private $cache;
     private $jwksCacheTTL;
+    private $httpClientConfig;
     private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:v2:';
     private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
 
-    public function __construct(array $config, ?CacheInterface $cache = null)
-    {
-        $this->client = new Client();
+    public function __construct(
+        array $config,
+        ?CacheInterface $cache = null,
+        ?HttpClientConfig $httpClientConfig = null,
+        ?ClientInterface $httpClient = null
+    ) {
+        $this->client = $httpClient ?? new Client();
+        $this->httpClientConfig = $httpClientConfig ?? HttpClientConfig::fromArray($config);
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
         $this->baseUrl = EndpointsV1::resolveBaseUrl($this->projectId, $config['baseUrl'] ?? null);
@@ -79,7 +86,12 @@ final class SDKConfig
         try {
             $url = rtrim($this->baseUrl, '/') . '/v2/keys/' . rawurlencode($this->projectId);
             $response = $this->client->request('GET', $url, [
-                'headers' => $this->getSDKHeaders()
+                'headers' => $this->getSDKHeaders(),
+                'timeout' => $this->httpClientConfig->requestTimeout(),
+                'connect_timeout' => min(
+                    $this->httpClientConfig->connectTimeout(),
+                    $this->httpClientConfig->requestTimeout()
+                ),
             ]);
             $jwkSets = json_decode($response->getBody(), true);
 

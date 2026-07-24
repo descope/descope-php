@@ -6,6 +6,7 @@ use Descope\SDK\API;
 use Descope\SDK\Token\Extractor;
 use Descope\SDK\Token\Verifier;
 use Descope\SDK\Configuration\SDKConfig;
+use Descope\SDK\Configuration\HttpClientConfig;
 use Descope\SDK\Auth\Password;
 use Descope\SDK\Auth\SSO;
 use Descope\SDK\Auth\OAuth;
@@ -19,8 +20,8 @@ use Descope\SDK\EndpointsV2;
 use Descope\SDK\Exception\AuthException;
 use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\Exception\ValidationException;
-
 use Descope\SDK\Management\MgmtV1;
+use GuzzleHttp\ClientInterface;
 
 class DescopeSDK
 {
@@ -45,6 +46,12 @@ class DescopeSDK
             throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
         }
 
+        $httpClientConfig = HttpClientConfig::fromArray($config);
+        $httpClient = $config['httpClient'] ?? null;
+        if ($httpClient !== null && !$httpClient instanceof ClientInterface) {
+            throw new \InvalidArgumentException('httpClient must implement GuzzleHttp\ClientInterface.');
+        }
+
         // Set baseUrl for all endpoint classes - use manual baseUrl if provided, otherwise derive from projectId
         if (isset($config['baseUrl']) && !empty($config['baseUrl'])) {
             EndpointsV1::setBaseUrlFromString($config['baseUrl']);
@@ -54,11 +61,18 @@ class DescopeSDK
             EndpointsV2::setBaseUrl($config['projectId']);
         }
 
-        $this->config = new SDKConfig($config);
+        $this->config = new SDKConfig($config, null, $httpClientConfig, $httpClient);
 
         // Determine debug flag from config or environment variable
         $debug = $config['debug'] ?? null;
-        $this->api = new API($config['projectId'], $config['managementKey'] ?? '', $debug, $config['baseUrl'] ?? null);
+        $this->api = new API(
+            $config['projectId'],
+            $config['managementKey'] ?? '',
+            $debug,
+            $config['baseUrl'] ?? null,
+            $httpClientConfig,
+            $httpClient
+        );
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
             $this->management = new Management($this->api);

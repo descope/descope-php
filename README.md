@@ -38,7 +38,49 @@ use Descope\SDK\DescopeSDK;
 $descopeSDK = new DescopeSDK([
     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
     'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'], // Optional, only used for Management functions
-    'debug' => false // Optional, enables verbose error logging (default: false)
+    'debug' => false, // Optional, enables verbose error logging (default: false)
+    'requestTimeout' => 60, // Optional, overall authentication request deadline in seconds
+    'managementRequestTimeout' => 60, // Optional, management request deadline; defaults to requestTimeout
+    'connectTimeout' => 10, // Optional, connection timeout per attempt in seconds
+]);
+```
+
+### HTTP timeouts
+
+All HTTP calls made by the SDK have bounded connection and request times. The
+defaults are 10 seconds to connect and 60 seconds for the complete SDK request.
+`requestTimeout` is an end-to-end deadline: the initial request, retry backoff,
+and all retry attempts share the same budget.
+
+Management operations can legitimately take longer than authentication
+operations, so `managementRequestTimeout` can be configured independently. It
+defaults to `requestTimeout` when omitted.
+
+For example, an application can fail authentication requests quickly without
+applying the same deadline to management operations:
+
+```php
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'],
+    'requestTimeout' => 8,
+    'managementRequestTimeout' => 60,
+    'connectTimeout' => 2,
+]);
+```
+
+All timeout values are positive numbers of seconds and may be fractional. An
+optional Guzzle-compatible client can also be supplied as `httpClient`; the SDK
+still applies the configured timeout options to each request:
+
+```php
+use GuzzleHttp\Client;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'httpClient' => new Client([
+        // Custom handler, proxy, TLS, or other transport configuration.
+    ]),
 ]);
 ```
 

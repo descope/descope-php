@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Descope\SDK;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use Descope\SDK\Configuration\HttpClientConfig;
 use Descope\SDK\Exception\AuthException;
 use Descope\SDK\Exception\DescopeException;
 use Descope\SDK\Exception\RateLimitException;
@@ -22,6 +24,7 @@ class API
     private $managementKey;
     private $baseUrl;
     private $debug;
+    private $httpClientConfig;
 
     /** @var int[] Delays between retries in microseconds: 100ms, 5s, 5s */
     protected $retryDelaysUs = [100000, 5000000, 5000000];
@@ -29,16 +32,24 @@ class API
     /**
      * Constructor for API class.
      *
-     * @param string      $projectId
-     * @param string|null $managementKey Management key for authentication.
-     * @param bool|null   $debug         Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
-     * @param string|null $baseUrl       Optional explicit base URL override (cluster/region).
+     * @param string                $projectId
+     * @param string|null           $managementKey  Management key for authentication.
+     * @param bool|null             $debug          Enable verbose logging. If null, checks DESCOPE_DEBUG.
+     * @param string|null           $baseUrl         Optional explicit base URL override (cluster/region).
+     * @param HttpClientConfig|null $httpClientConfig HTTP timeout configuration.
+     * @param ClientInterface|null  $httpClient       Optional custom Guzzle-compatible HTTP client.
      */
-    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null, ?string $baseUrl = null)
-    {
-        $this->httpClient = new Client();
-
-        if (!empty($_ENV['DESCOPE_LOG_PATH'])) {
+    public function __construct(
+        string $projectId,
+        ?string $managementKey,
+        ?bool $debug = null,
+        ?string $baseUrl = null,
+        ?HttpClientConfig $httpClientConfig = null,
+        ?ClientInterface $httpClient = null
+    ) {
+        if ($httpClient !== null) {
+            $this->httpClient = $httpClient;
+        } elseif (!empty($_ENV['DESCOPE_LOG_PATH'])) {
             $log = new Logger('descope_guzzle_log');
             $log->pushHandler(new StreamHandler($_ENV['DESCOPE_LOG_PATH'], Logger::DEBUG));
             $stack = HandlerStack::create();
@@ -56,6 +67,7 @@ class API
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
         $this->baseUrl = EndpointsV1::resolveBaseUrl($projectId, $baseUrl);
+        $this->httpClientConfig = $httpClientConfig ?? new HttpClientConfig();
 
         // Set debug flag from parameter, environment variable, or default to false
         if ($debug !== null) {
@@ -120,9 +132,15 @@ class API
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
             $headers = $this->getHeaders($authToken);
-            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
-                return $this->httpClient->post($uri, ['headers' => $headers, 'body' => $jsonBody]);
-            });
+            $response = $this->executeWithRetry(
+                function (array $requestOptions) use ($uri, $jsonBody, $headers) {
+                    return $this->httpClient->post(
+                        $uri,
+                        array_merge($requestOptions, ['headers' => $headers, 'body' => $jsonBody])
+                    );
+                },
+                (bool) $useManagementKey
+            );
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -171,9 +189,15 @@ class API
         $jsonBody = empty($body) ? '{}' : json_encode($body);
         try {
             $headers = $this->getHeaders($authToken);
-            $response = $this->executeWithRetry(function () use ($uri, $jsonBody, $headers) {
-                return $this->httpClient->patch($uri, ['headers' => $headers, 'body' => $jsonBody]);
-            });
+            $response = $this->executeWithRetry(
+                function (array $requestOptions) use ($uri, $jsonBody, $headers) {
+                    return $this->httpClient->patch(
+                        $uri,
+                        array_merge($requestOptions, ['headers' => $headers, 'body' => $jsonBody])
+                    );
+                },
+                (bool) $useManagementKey
+            );
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -219,9 +243,12 @@ class API
 
         try {
             $headers = $this->getHeaders($authToken);
-            $response = $this->executeWithRetry(function () use ($uri, $headers) {
-                return $this->httpClient->get($uri, ['headers' => $headers]);
-            });
+            $response = $this->executeWithRetry(
+                function (array $requestOptions) use ($uri, $headers) {
+                    return $this->httpClient->get($uri, array_merge($requestOptions, ['headers' => $headers]));
+                },
+                $useManagementKey
+            );
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -259,9 +286,12 @@ class API
 
         try {
             $headers = $this->getHeaders($authToken);
-            $response = $this->executeWithRetry(function () use ($uri, $headers) {
-                return $this->httpClient->delete($uri, ['headers' => $headers]);
-            });
+            $response = $this->executeWithRetry(
+                function (array $requestOptions) use ($uri, $headers) {
+                    return $this->httpClient->delete($uri, array_merge($requestOptions, ['headers' => $headers]));
+                },
+                true
+            );
 
             // Ensure the response is an object with getBody method
             if (!is_object($response) || !method_exists($response, 'getBody') || !method_exists($response, 'getHeader')) {
@@ -307,25 +337,54 @@ class API
      * (503, 520, 521, 522, 524, 530) with delays of 100ms, 5s, 5s.
      * Non-retryable RequestExceptions are re-thrown immediately.
      *
-     * @param  callable $requestFn Zero-argument callable that performs the Guzzle request.
+     * The configured request timeout is an end-to-end deadline which includes
+     * the time spent waiting between attempts. Each attempt receives the
+     * remaining budget as its Guzzle timeout.
+     *
+     * @param  callable $requestFn        Callable that receives Guzzle request options.
+     * @param  bool     $managementRequest Whether to use the management request timeout.
      * @return mixed Guzzle response on success.
      * @throws RequestException On non-retryable errors or after all retries are exhausted.
      */
-    private function executeWithRetry(callable $requestFn)
+    private function executeWithRetry(callable $requestFn, bool $managementRequest = false)
     {
+        $deadline = $this->currentTime() + $this->httpClientConfig->requestTimeout($managementRequest);
+        $lastException = null;
+
         foreach ($this->retryDelaysUs as $delay) {
+            $remainingTime = $deadline - $this->currentTime();
+            if ($remainingTime <= 0 && $lastException !== null) {
+                throw $lastException;
+            }
+
             try {
-                return $requestFn();
+                return $requestFn($this->httpClientConfig->requestOptions($remainingTime));
             } catch (RequestException $e) {
                 $response = $e->getResponse();
                 $statusCode = $response ? $response->getStatusCode() : 0;
                 if (!in_array($statusCode, self::RETRYABLE_STATUS_CODES, true)) {
                     throw $e;
                 }
+                $lastException = $e;
+
+                if (($delay / 1000000) >= ($deadline - $this->currentTime())) {
+                    throw $e;
+                }
                 usleep($delay);
             }
         }
-        return $requestFn();
+
+        $remainingTime = $deadline - $this->currentTime();
+        if ($remainingTime <= 0 && $lastException !== null) {
+            throw $lastException;
+        }
+
+        return $requestFn($this->httpClientConfig->requestOptions($remainingTime));
+    }
+
+    private function currentTime(): float
+    {
+        return hrtime(true) / 1000000000;
     }
 
     /**
