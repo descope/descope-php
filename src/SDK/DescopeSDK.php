@@ -21,6 +21,7 @@ use Descope\SDK\Exception\RateLimitException;
 use Descope\SDK\Exception\ValidationException;
 
 use Descope\SDK\Management\MgmtV1;
+use GuzzleHttp\ClientInterface;
 
 class DescopeSDK
 {
@@ -45,6 +46,13 @@ class DescopeSDK
             throw new \InvalidArgumentException('Please add a Descope Project ID to your .ENV file.');
         }
 
+        $requestTimeout = $this->resolveRequestTimeout($config);
+
+        $httpClient = $config['httpClient'] ?? null;
+        if ($httpClient !== null && !$httpClient instanceof ClientInterface) {
+            throw new \InvalidArgumentException('httpClient must implement GuzzleHttp\ClientInterface.');
+        }
+
         // Set baseUrl for all endpoint classes - use manual baseUrl if provided, otherwise derive from projectId
         if (isset($config['baseUrl']) && !empty($config['baseUrl'])) {
             EndpointsV1::setBaseUrlFromString($config['baseUrl']);
@@ -54,11 +62,18 @@ class DescopeSDK
             EndpointsV2::setBaseUrl($config['projectId']);
         }
 
-        $this->config = new SDKConfig($config);
+        $this->config = new SDKConfig($config, null, $requestTimeout, $httpClient);
 
         // Determine debug flag from config or environment variable
         $debug = $config['debug'] ?? null;
-        $this->api = new API($config['projectId'], $config['managementKey'] ?? '', $debug, $config['baseUrl'] ?? null);
+        $this->api = new API(
+            $config['projectId'],
+            $config['managementKey'] ?? '',
+            $debug,
+            $config['baseUrl'] ?? null,
+            $requestTimeout,
+            $httpClient
+        );
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {
             $this->management = new Management($this->api);
@@ -76,6 +91,32 @@ class DescopeSDK
         $this->oauth = new OAuth($this->api);
         $this->otp = new OTP($this->api);
         $this->magicLink = new MagicLink($this->api);
+    }
+
+    /**
+     * Resolves the optional 'requestTimeout' config value into a positive number
+     * of seconds, falling back to the SDK default when it is not supplied.
+     *
+     * @param  array $config The SDK configuration array.
+     * @return float The request timeout in seconds.
+     * @throws \InvalidArgumentException If provided but not a positive number.
+     */
+    private function resolveRequestTimeout(array $config): float
+    {
+        if (!isset($config['requestTimeout'])) {
+            return API::DEFAULT_REQUEST_TIMEOUT_SECONDS;
+        }
+
+        $value = $config['requestTimeout'];
+        if (is_string($value) && is_numeric($value)) {
+            $value = (float) $value;
+        }
+
+        if ((!is_int($value) && !is_float($value)) || !is_finite((float) $value) || $value <= 0) {
+            throw new \InvalidArgumentException('requestTimeout must be a positive number of seconds.');
+        }
+
+        return (float) $value;
     }
 
      /**

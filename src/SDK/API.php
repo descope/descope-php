@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Descope\SDK;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Descope\SDK\Exception\AuthException;
@@ -16,6 +17,12 @@ use Descope\SDK\Token\Verifier;
 class API
 {
     private const RETRYABLE_STATUS_CODES = [503, 520, 521, 522, 524, 530];
+
+    /** Overall request timeout in seconds. Matches the Go and Python SDK defaults. */
+    public const DEFAULT_REQUEST_TIMEOUT_SECONDS = 60.0;
+
+    /** Connection-establishment timeout in seconds, applied to every request. */
+    public const DEFAULT_CONNECT_TIMEOUT_SECONDS = 10.0;
 
     private $httpClient;
     private $projectId;
@@ -29,16 +36,31 @@ class API
     /**
      * Constructor for API class.
      *
-     * @param string      $projectId
-     * @param string|null $managementKey Management key for authentication.
-     * @param bool|null   $debug         Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
-     * @param string|null $baseUrl       Optional explicit base URL override (cluster/region).
+     * @param string               $projectId
+     * @param string|null          $managementKey  Management key for authentication.
+     * @param bool|null            $debug          Enable debug/verbose logging. If null, checks DESCOPE_DEBUG env var.
+     * @param string|null          $baseUrl        Optional explicit base URL override (cluster/region).
+     * @param float|null           $requestTimeout Overall request timeout in seconds. Defaults to 60.
+     * @param ClientInterface|null $httpClient     Optional pre-configured Guzzle client. When supplied its own
+     *                                             transport options (including timeouts) are respected as-is.
      */
-    public function __construct(string $projectId, ?string $managementKey, ?bool $debug = null, ?string $baseUrl = null)
-    {
-        $this->httpClient = new Client();
+    public function __construct(
+        string $projectId,
+        ?string $managementKey,
+        ?bool $debug = null,
+        ?string $baseUrl = null,
+        ?float $requestTimeout = null,
+        ?ClientInterface $httpClient = null
+    ) {
+        $clientOptions = [
+            'timeout' => $requestTimeout ?? self::DEFAULT_REQUEST_TIMEOUT_SECONDS,
+            'connect_timeout' => self::DEFAULT_CONNECT_TIMEOUT_SECONDS,
+        ];
 
-        if (!empty($_ENV['DESCOPE_LOG_PATH'])) {
+        if ($httpClient !== null) {
+            // Respect a caller-supplied client and its own transport configuration.
+            $this->httpClient = $httpClient;
+        } elseif (!empty($_ENV['DESCOPE_LOG_PATH'])) {
             $log = new Logger('descope_guzzle_log');
             $log->pushHandler(new StreamHandler($_ENV['DESCOPE_LOG_PATH'], Logger::DEBUG));
             $stack = HandlerStack::create();
@@ -48,9 +70,9 @@ class API
                     new MessageFormatter(MessageFormatter::DEBUG)
                 )
             );
-            $this->httpClient = new Client(['handler' => $stack]);
+            $this->httpClient = new Client($clientOptions + ['handler' => $stack]);
         } else {
-            $this->httpClient = new Client();
+            $this->httpClient = new Client($clientOptions);
         }
 
         $this->projectId = $projectId;
