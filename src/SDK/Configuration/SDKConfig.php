@@ -3,6 +3,7 @@
 namespace Descope\SDK\Configuration;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Descope\SDK\EndpointsV1;
@@ -22,9 +23,21 @@ final class SDKConfig
     private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:v2:';
     private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
 
-    public function __construct(array $config, ?CacheInterface $cache = null)
-    {
-        $this->client = new Client();
+    public function __construct(
+        array $config,
+        ?CacheInterface $cache = null,
+        ?float $requestTimeout = null,
+        ?ClientInterface $httpClient = null
+    ) {
+        if ($httpClient !== null) {
+            // Respect a caller-supplied client and its own transport configuration.
+            $this->client = $httpClient;
+        } else {
+            $this->client = new Client([
+                'timeout' => $requestTimeout ?? API::DEFAULT_REQUEST_TIMEOUT_SECONDS,
+                'connect_timeout' => API::DEFAULT_CONNECT_TIMEOUT_SECONDS,
+            ]);
+        }
         $this->projectId = $config['projectId'];
         $this->managementKey = $config['managementKey'] ?? '';
         $this->baseUrl = EndpointsV1::resolveBaseUrl($this->projectId, $config['baseUrl'] ?? null);

@@ -7,6 +7,7 @@
             <file>src/tests/SDKConfigCacheTest.php</file>
             <file>src/tests/APIExceptionMappingTest.php</file>
             <file>src/tests/APIRetryTest.php</file>
+            <file>src/tests/APIHttpTimeoutTest.php</file>
             <file>src/tests/StaticStateIsolationTest.php</file>
             <file>src/tests/EndpointsTest.php</file>
             <file>src/tests/Management/ManagementParityTest.php</file>

@@ -38,7 +38,41 @@ use Descope\SDK\DescopeSDK;
 $descopeSDK = new DescopeSDK([
     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
     'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'], // Optional, only used for Management functions
-    'debug' => false // Optional, enables verbose error logging (default: false)
+    'debug' => false, // Optional, enables verbose error logging (default: false)
+    'requestTimeout' => 60, // Optional, HTTP request timeout in seconds (default: 60)
+]);
+```
+
+### HTTP Timeouts
+
+Every HTTP call the SDK makes is bounded so a slow or unresponsive network peer
+cannot hold a PHP worker indefinitely. By default each request times out after
+**60 seconds**, with a **10 second** connection-establishment timeout. Set
+`requestTimeout` (a positive number of seconds, may be fractional) to change the
+overall per-request deadline:
+
+```php
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'requestTimeout' => 10, // Fail requests that take longer than 10 seconds
+]);
+```
+
+For full control over the transport (proxies, TLS, custom handlers, or your own
+timeout strategy) you can supply a pre-configured Guzzle-compatible client as
+`httpClient`. When you do, the SDK uses it as-is and does **not** apply its own
+timeout settings, so configure timeouts on the client itself:
+
+```php
+use GuzzleHttp\Client;
+
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'httpClient' => new Client([
+        'timeout' => 10,
+        'connect_timeout' => 5,
+        // Custom handler, proxy, or other transport configuration.
+    ]),
 ]);
 ```
 
