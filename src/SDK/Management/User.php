@@ -547,6 +547,10 @@ class User
      * @param  string|null $text             Optional string, allows free text search among all user's attributes.
      * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs to filter by.
      * @param  array|null  $tenantRoleNames    Optional map of tenants and list of role names to filter by.
+     * @param  int|null    $fromCreatedTime  Optional, only include users created on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $toCreatedTime    Optional, only include users created on or before this time (Unix epoch milliseconds).
+     * @param  int|null    $fromModifiedTime Optional, only include users modified on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $toModifiedTime   Optional, only include users modified on or before this time (Unix epoch milliseconds).
      * @return array Return dict in the format {"users": []}. "users" contains a list of all of the found users and their information.
      * @throws AuthException if search operation fails.
      */
@@ -567,7 +571,11 @@ class User
         $ssoAppIds = null,
         $sort = null,
         $tenantRoleIds = null,
-        $tenantRoleNames = null
+        $tenantRoleNames = null,
+        $fromCreatedTime = null,
+        $toCreatedTime = null,
+        $fromModifiedTime = null,
+        $toModifiedTime = null
     ) {
         // Prepare the request body ensuring PHP 7.x compatibility
         $body = [
@@ -593,13 +601,17 @@ class User
             }, $sort) : [],
             'loginIds' => [],
             'tenantRoleIds' => $this->mapToValuesObject($tenantRoleIds),
-            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames)
+            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames),
+            'fromCreatedTime' => $fromCreatedTime,
+            'toCreatedTime' => $toCreatedTime,
+            'fromModifiedTime' => $fromModifiedTime,
+            'toModifiedTime' => $toModifiedTime
         ];
-    
+
         $body = array_filter($body, function ($value) {
             return $value !== null && $value !== '';
         });
-    
+
         return $this->api->doPost(
                 MgmtV1::$USERS_SEARCH_PATH,
                 $body,
@@ -1425,6 +1437,10 @@ class User
      * @param  string|null $text             Optional free text search.
      * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs.
      * @param  array|null  $tenantRoleNames  Optional map of tenants and list of role names.
+     * @param  int|null    $fromCreatedTime  Optional, only include users created on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $toCreatedTime    Optional, only include users created on or before this time (Unix epoch milliseconds).
+     * @param  int|null    $fromModifiedTime Optional, only include users modified on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $toModifiedTime   Optional, only include users modified on or before this time (Unix epoch milliseconds).
      * @return array Return dict in the format {"users": []}.
      * @throws AuthException
      */
@@ -1442,7 +1458,11 @@ class User
         $ssoAppIds = null,
         $sort = null,
         $tenantRoleIds = null,
-        $tenantRoleNames = null
+        $tenantRoleNames = null,
+        $fromCreatedTime = null,
+        $toCreatedTime = null,
+        $fromModifiedTime = null,
+        $toModifiedTime = null
     ): array {
         $body = [
             'loginId' => $loginId ?? '',
@@ -1466,7 +1486,11 @@ class User
             }, $sort) : [],
             'loginIds' => [],
             'tenantRoleIds' => $this->mapToValuesObject($tenantRoleIds),
-            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames)
+            'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames),
+            'fromCreatedTime' => $fromCreatedTime,
+            'toCreatedTime' => $toCreatedTime,
+            'fromModifiedTime' => $fromModifiedTime,
+            'toModifiedTime' => $toModifiedTime
         ];
 
         $body = array_filter($body, function ($value) {
