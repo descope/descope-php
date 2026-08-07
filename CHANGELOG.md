@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.6](https://github.com/descope/descope-php/compare/descope-php-v0.6.5...descope-php-v0.6.6) (2026-08-07)
+
+
+### Features
+
+* **http:** add configurable request timeout ([#131](https://github.com/descope/descope-php/issues/131)) ([fd0509f](https://github.com/descope/descope-php/commit/fd0509fb902d3bb9cdc221a70bf5e347f6ef9018))
+
+
+### Bug Fixes
+
+* **sdk:** hardening ([#126](https://github.com/descope/descope-php/issues/126)) ([e63afaf](https://github.com/descope/descope-php/commit/e63afaff5c114f23bbc19202afdab026a947287f))
+
 ## [0.6.5](https://github.com/descope/descope-php/compare/descope-php-v0.6.4...descope-php-v0.6.5) (2026-07-09)
 
 
