@@ -602,10 +602,10 @@ class User
             'loginIds' => [],
             'tenantRoleIds' => $this->mapToValuesObject($tenantRoleIds),
             'tenantRoleNames' => $this->mapToValuesObject($tenantRoleNames),
-            'fromCreatedTime' => $fromCreatedTime,
-            'toCreatedTime' => $toCreatedTime,
-            'fromModifiedTime' => $fromModifiedTime,
-            'toModifiedTime' => $toModifiedTime
+            'fromCreatedTime' => $fromCreatedTime !== null ? (int)$fromCreatedTime : null,
+            'toCreatedTime' => $toCreatedTime !== null ? (int)$toCreatedTime : null,
+            'fromModifiedTime' => $fromModifiedTime !== null ? (int)$fromModifiedTime : null,
+            'toModifiedTime' => $toModifiedTime !== null ? (int)$toModifiedTime : null
         ];
 
         $body = array_filter($body, function ($value) {
