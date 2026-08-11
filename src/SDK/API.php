@@ -27,6 +27,7 @@ class API
     private $httpClient;
     private $projectId;
     private $managementKey;
+    private $authManagementKey;
     private $baseUrl;
     private $debug;
 
@@ -43,6 +44,9 @@ class API
      * @param float|null           $requestTimeout Overall request timeout in seconds. Defaults to 60.
      * @param ClientInterface|null $httpClient     Optional pre-configured Guzzle client. When supplied its own
      *                                             transport options (including timeouts) are respected as-is.
+     * @param string|null          $authManagementKey Management key sent with every authentication request so that
+     *                                             methods whose public access has been disabled can still be used.
+     *                                             Never sent on management requests.
      */
     public function __construct(
         string $projectId,
@@ -50,7 +54,8 @@ class API
         ?bool $debug = null,
         ?string $baseUrl = null,
         ?float $requestTimeout = null,
-        ?ClientInterface $httpClient = null
+        ?ClientInterface $httpClient = null,
+        ?string $authManagementKey = null
     ) {
         $clientOptions = [
             'timeout' => $requestTimeout ?? self::DEFAULT_REQUEST_TIMEOUT_SECONDS,
@@ -77,6 +82,7 @@ class API
 
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
+        $this->authManagementKey = $authManagementKey ?? '';
         $this->baseUrl = EndpointsV1::resolveBaseUrl($projectId, $baseUrl);
 
         // Set debug flag from parameter, environment variable, or default to false
@@ -457,11 +463,15 @@ class API
             return $this->projectId . ':' . $this->managementKey;
         }
 
-        if ($refreshToken) {
-            return $this->projectId . ':' . $refreshToken;
+        $parts = [$this->projectId];
+        if (!empty($refreshToken)) {
+            $parts[] = $refreshToken;
+        }
+        if (!$useManagementKey && !empty($this->authManagementKey)) {
+            $parts[] = $this->authManagementKey;
         }
 
-        return $this->projectId;
+        return implode(':', $parts);
     }
 
     /**

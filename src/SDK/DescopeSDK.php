@@ -72,7 +72,8 @@ class DescopeSDK
             $debug,
             $config['baseUrl'] ?? null,
             $requestTimeout,
-            $httpClient
+            $httpClient,
+            $config['authManagementKey'] ?? ''
         );
         // If OPTIONAL management key was provided in $config
         if (!empty($config['managementKey'])) {

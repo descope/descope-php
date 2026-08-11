@@ -25,6 +25,8 @@ You'll need to set up a `.env` file in the root directory with your Descope Proj
 ```
 DESCOPE_PROJECT_ID=<Descope Project ID>
 DESCOPE_MANAGEMENT_KEY=<Descope Management Key>
+# Optional, only needed for authentication methods with disabled public access
+DESCOPE_AUTH_MANAGEMENT_KEY=<Descope Auth Management Key>
 ```
 
 ## Using the SDK
@@ -38,10 +40,30 @@ use Descope\SDK\DescopeSDK;
 $descopeSDK = new DescopeSDK([
     'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
     'managementKey' => $_ENV['DESCOPE_MANAGEMENT_KEY'], // Optional, only used for Management functions
+    'authManagementKey' => $_ENV['DESCOPE_AUTH_MANAGEMENT_KEY'], // Optional, only needed for authentication methods with disabled public access
     'debug' => false, // Optional, enables verbose error logging (default: false)
     'requestTimeout' => 60, // Optional, HTTP request timeout in seconds (default: 60)
 ]);
 ```
+
+### Auth Management Key
+
+Authentication methods whose public access has been disabled can still be used by providing an
+auth management key. When set, it is sent along with every authentication request.
+
+Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys) with
+either the `Authentication` or `Full Access` scope on the project or company.
+
+```php
+$descopeSDK = new DescopeSDK([
+    'projectId' => $_ENV['DESCOPE_PROJECT_ID'],
+    'authManagementKey' => $_ENV['DESCOPE_AUTH_MANAGEMENT_KEY'],
+]);
+```
+
+**Note**: the auth management key can, and probably should, be a different management key than the
+one provided as `managementKey` for management API usage. The auth management key is never sent on
+management requests, and the management key is never sent on authentication requests.
 
 ### HTTP Timeouts
 
@@ -321,6 +343,10 @@ print_r($response);
 10. `DescopeSDK->history($refreshToken)` - will return the current user's authentication history.
 
 ### User Management Functions
+
+All management functions require a `managementKey`. That key is used only for management functions -
+to reach authentication methods whose public access has been disabled, use the
+[Auth Management Key](#auth-management-key) instead.
 
 Each of these functions have code examples on how to use them.
 
