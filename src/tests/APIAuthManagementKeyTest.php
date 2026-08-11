@@ -131,6 +131,33 @@ final class APIAuthManagementKeyTest extends TestCase
         $this->assertAuthorization('Bearer ' . self::PROJECT_ID);
     }
 
+    /**
+     * No SDK call site presents a token on a management request, but the API is public, so pin
+     * that such a request keys off the management key and not the auth management key.
+     */
+    public function testManagementRequestWithATokenSendsOnlyTheManagementKey(): void
+    {
+        $api = $this->api(self::MANAGEMENT_KEY, self::AUTH_MANAGEMENT_KEY);
+        $api->doPost(MgmtV1::$USER_LOAD_PATH, [], true, self::REFRESH_TOKEN);
+
+        $this->assertAuthorization(
+            'Bearer ' . self::PROJECT_ID . ':' . self::REFRESH_TOKEN . ':' . self::MANAGEMENT_KEY
+        );
+    }
+
+    /**
+     * A null management flag means "not a management request", so it must not be treated as one.
+     */
+    public function testNullManagementFlagIsTreatedAsAnAuthenticationRequest(): void
+    {
+        $api = $this->api(self::MANAGEMENT_KEY, self::AUTH_MANAGEMENT_KEY);
+        $api->doPost(EndpointsV1::$SIGN_IN_PASSWORD_PATH, [], null, self::REFRESH_TOKEN);
+
+        $this->assertAuthorization(
+            'Bearer ' . self::PROJECT_ID . ':' . self::REFRESH_TOKEN . ':' . self::AUTH_MANAGEMENT_KEY
+        );
+    }
+
     public function testAuthManagementKeyIsWiredFromSdkConfig(): void
     {
         $sdk = new DescopeSDK([
