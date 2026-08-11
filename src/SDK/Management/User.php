@@ -547,9 +547,9 @@ class User
      * @param  string|null $text             Optional string, allows free text search among all user's attributes.
      * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs to filter by.
      * @param  array|null  $tenantRoleNames    Optional map of tenants and list of role names to filter by.
-     * @param  int|null    $fromCreatedTime  Optional, only include users created on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $fromCreatedTime  Optional, only include users created after this time (Unix epoch milliseconds).
      * @param  int|null    $toCreatedTime    Optional, only include users created on or before this time (Unix epoch milliseconds).
-     * @param  int|null    $fromModifiedTime Optional, only include users modified on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $fromModifiedTime Optional, only include users modified after this time (Unix epoch milliseconds).
      * @param  int|null    $toModifiedTime   Optional, only include users modified on or before this time (Unix epoch milliseconds).
      * @return array Return dict in the format {"users": []}. "users" contains a list of all of the found users and their information.
      * @throws AuthException if search operation fails.
@@ -1437,9 +1437,9 @@ class User
      * @param  string|null $text             Optional free text search.
      * @param  array|null  $tenantRoleIds    Optional map of tenants and list of role IDs.
      * @param  array|null  $tenantRoleNames  Optional map of tenants and list of role names.
-     * @param  int|null    $fromCreatedTime  Optional, only include users created on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $fromCreatedTime  Optional, only include users created after this time (Unix epoch milliseconds).
      * @param  int|null    $toCreatedTime    Optional, only include users created on or before this time (Unix epoch milliseconds).
-     * @param  int|null    $fromModifiedTime Optional, only include users modified on or after this time (Unix epoch milliseconds).
+     * @param  int|null    $fromModifiedTime Optional, only include users modified after this time (Unix epoch milliseconds).
      * @param  int|null    $toModifiedTime   Optional, only include users modified on or before this time (Unix epoch milliseconds).
      * @return array Return dict in the format {"users": []}.
      * @throws AuthException
