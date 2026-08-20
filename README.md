@@ -474,7 +474,13 @@ $response = $descopeSDK->management->user->searchAll(
     ['ssoApp123'],            // ssoAppIds
     [                         // sort
         ['field' => 'displayName', 'desc' => true]
-    ]
+    ],
+    null,                     // tenantRoleIds
+    null,                     // tenantRoleNames
+    1700000000000,            // fromCreatedTime (Unix epoch milliseconds)
+    1800000000000,            // toCreatedTime (Unix epoch milliseconds)
+    1700000000000,            // fromModifiedTime (Unix epoch milliseconds)
+    1800000000000             // toModifiedTime (Unix epoch milliseconds)
 );
 print_r($response);
 ```
