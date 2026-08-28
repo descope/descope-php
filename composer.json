@@ -6,7 +6,7 @@
     "drag-and-drop",
     "authentication"
   ],
-  "homepage": "https://github.com/descope/php-sdk",
+  "homepage": "https://github.com/descope/descope-php",
   "license": "MIT",
   "authors": [
     {
