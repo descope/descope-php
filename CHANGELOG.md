@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.6](https://github.com/descope/descope-php/compare/descope-php-v0.6.5...descope-php-v0.6.6) (2026-08-28)
+
+
+### Features
+
+* [PHP] Add created/modified time search params to searchAll() ([#133](https://github.com/descope/descope-php/issues/133)) ([cfe7c8f](https://github.com/descope/descope-php/commit/cfe7c8fdb0353d8861900a9c1f2d525503d7368c))
+* **http:** add configurable request timeout ([#131](https://github.com/descope/descope-php/issues/131)) ([fd0509f](https://github.com/descope/descope-php/commit/fd0509fb902d3bb9cdc221a70bf5e347f6ef9018))
+
+
+### Bug Fixes
+
+* **sdk:** hardening ([#126](https://github.com/descope/descope-php/issues/126)) ([e63afaf](https://github.com/descope/descope-php/commit/e63afaff5c114f23bbc19202afdab026a947287f))
+* **user:** send password as plain string in set-password endpoints ([#139](https://github.com/descope/descope-php/issues/139)) ([bfc6890](https://github.com/descope/descope-php/commit/bfc6890e01ec4ed82d542f4377dcbec91b087ad2))
+
 ## [0.6.5](https://github.com/descope/descope-php/compare/descope-php-v0.6.4...descope-php-v0.6.5) (2026-07-09)
 
 
