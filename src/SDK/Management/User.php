@@ -172,13 +172,8 @@ class User
             'userTenants' => $userTenants
         ];
     
-        // Handle password - if it's cleartext, set as string, if hashed, set as hashedPassword object
         if ($password !== null) {
-            if (isset($password->cleartext)) {
-                $body['password'] = $password->cleartext;
-            } else if (isset($password->hashed)) {
-                $body['hashedPassword'] = $password->hashed->toArray();
-            }
+            $body = array_merge($body, $this->composePasswordFields($password));
         }
     
         $body = array_filter($body, function ($value) {
@@ -1960,11 +1955,7 @@ class User
         });
 
         if ($password !== null) {
-            if (isset($password->cleartext)) {
-                $res['password'] = $password->cleartext;
-            } else if (isset($password->hashed)) {
-                $res['hashedPassword'] = $password->hashed->toArray();
-            }
+            $res = array_merge($res, $this->composePasswordFields($password));
         }
 
         return $res;

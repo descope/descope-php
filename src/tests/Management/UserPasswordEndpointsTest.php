@@ -31,7 +31,7 @@ class UserPasswordEndpointsTest extends TestCase
                 true
             );
 
-        $this->user->setTemporaryPassword('testuser1', new UserPassword(cleartext: 'newPassword123'));
+        $this->user->setTemporaryPassword('testuser1', new UserPassword('newPassword123'));
     }
 
     public function testSetActivePasswordSendsCleartextAsPlainString(): void
@@ -44,7 +44,7 @@ class UserPasswordEndpointsTest extends TestCase
                 true
             );
 
-        $this->user->setActivePassword('testuser1', new UserPassword(cleartext: 'activePassword123'));
+        $this->user->setActivePassword('testuser1', new UserPassword('activePassword123'));
     }
 
     public function testSetActivePasswordSendsHashedPasswordObject(): void
