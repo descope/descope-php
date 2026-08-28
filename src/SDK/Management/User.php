@@ -1003,7 +1003,7 @@ class User
     {
         $this->api->doPost(
                 MgmtV1::$USER_SET_TEMPORARY_PASSWORD_PATH,
-                ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => false],
+                array_merge(['loginId' => $loginId], $this->composePasswordFields($password)),
                 true
             );
     }
@@ -1020,9 +1020,24 @@ class User
     {
         $this->api->doPost(
                 MgmtV1::$USER_SET_ACTIVE_PASSWORD_PATH,
-                ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => true],
+                array_merge(['loginId' => $loginId], $this->composePasswordFields($password)),
                 true
             );
+    }
+
+    /**
+     * Convert a UserPassword into the request fields expected by the password endpoints.
+     *
+     * @param UserPassword $password
+     * @return array
+     */
+    private function composePasswordFields(UserPassword $password): array
+    {
+        if ($password->cleartext !== null) {
+            return ['password' => $password->cleartext];
+        }
+
+        return ['hashedPassword' => $password->hashed->toArray()];
     }
 
     /**
