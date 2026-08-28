@@ -172,13 +172,8 @@ class User
             'userTenants' => $userTenants
         ];
     
-        // Handle password - if it's cleartext, set as string, if hashed, set as hashedPassword object
         if ($password !== null) {
-            if (isset($password->cleartext)) {
-                $body['password'] = $password->cleartext;
-            } else if (isset($password->hashed)) {
-                $body['hashedPassword'] = $password->hashed->toArray();
-            }
+            $body = array_merge($body, $this->composePasswordFields($password));
         }
     
         $body = array_filter($body, function ($value) {
@@ -1003,7 +998,7 @@ class User
     {
         $this->api->doPost(
                 MgmtV1::$USER_SET_TEMPORARY_PASSWORD_PATH,
-                ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => false],
+                array_merge(['loginId' => $loginId], $this->composePasswordFields($password)),
                 true
             );
     }
@@ -1020,9 +1015,24 @@ class User
     {
         $this->api->doPost(
                 MgmtV1::$USER_SET_ACTIVE_PASSWORD_PATH,
-                ['loginId' => $loginId, 'password' => $password->toArray(), 'setActive' => true],
+                array_merge(['loginId' => $loginId], $this->composePasswordFields($password)),
                 true
             );
+    }
+
+    /**
+     * Convert a UserPassword into the request fields expected by the password endpoints.
+     *
+     * @param UserPassword $password
+     * @return array
+     */
+    private function composePasswordFields(UserPassword $password): array
+    {
+        if ($password->cleartext !== null) {
+            return ['password' => $password->cleartext];
+        }
+
+        return ['hashedPassword' => $password->hashed->toArray()];
     }
 
     /**
@@ -1945,11 +1955,7 @@ class User
         });
 
         if ($password !== null) {
-            if (isset($password->cleartext)) {
-                $res['password'] = $password->cleartext;
-            } else if (isset($password->hashed)) {
-                $res['hashedPassword'] = $password->hashed->toArray();
-            }
+            $res = array_merge($res, $this->composePasswordFields($password));
         }
 
         return $res;
