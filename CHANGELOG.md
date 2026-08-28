@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1](https://github.com/descope/descope-php/compare/0.7.0...v0.7.1) (2026-08-28)
+
+
+### Features
+
+* [PHP] Add created/modified time search params to searchAll() ([#133](https://github.com/descope/descope-php/issues/133)) ([cfe7c8f](https://github.com/descope/descope-php/commit/cfe7c8fdb0353d8861900a9c1f2d525503d7368c))
+
+
+### Bug Fixes
+
+* make release-please tags Packagist-compatible ([#140](https://github.com/descope/descope-php/issues/140)) ([0c32381](https://github.com/descope/descope-php/commit/0c3238138ef59f3a5a81140fdd43bfa09bd8cf85))
+* **user:** send password as plain string in set-password endpoints ([#139](https://github.com/descope/descope-php/issues/139)) ([bfc6890](https://github.com/descope/descope-php/commit/bfc6890e01ec4ed82d542f4377dcbec91b087ad2))
+
 ## [0.6.6](https://github.com/descope/descope-php/compare/descope-php-v0.6.5...descope-php-v0.6.6) (2026-08-28)
 
 
