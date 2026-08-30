@@ -27,6 +27,7 @@ class API
     private $httpClient;
     private $projectId;
     private $managementKey;
+    private $authManagementKey;
     private $baseUrl;
     private $debug;
 
@@ -43,6 +44,9 @@ class API
      * @param float|null           $requestTimeout Overall request timeout in seconds. Defaults to 60.
      * @param ClientInterface|null $httpClient     Optional pre-configured Guzzle client. When supplied its own
      *                                             transport options (including timeouts) are respected as-is.
+     * @param string|null          $authManagementKey Management key sent with every authentication request so that
+     *                                             methods whose public access has been disabled can still be used.
+     *                                             Never sent on management requests.
      */
     public function __construct(
         string $projectId,
@@ -50,7 +54,8 @@ class API
         ?bool $debug = null,
         ?string $baseUrl = null,
         ?float $requestTimeout = null,
-        ?ClientInterface $httpClient = null
+        ?ClientInterface $httpClient = null,
+        ?string $authManagementKey = null
     ) {
         $clientOptions = [
             'timeout' => $requestTimeout ?? self::DEFAULT_REQUEST_TIMEOUT_SECONDS,
@@ -77,6 +82,7 @@ class API
 
         $this->projectId = $projectId;
         $this->managementKey = $managementKey ?? '';
+        $this->authManagementKey = $authManagementKey ?? '';
         $this->baseUrl = EndpointsV1::resolveBaseUrl($projectId, $baseUrl);
 
         // Set debug flag from parameter, environment variable, or default to false
@@ -128,13 +134,7 @@ class API
      */
     public function doPost(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
-        $authToken = "";
-
-        if ($refreshToken) {
-            $authToken = $this->getAuthToken(false, $refreshToken);
-        } else {
-            $authToken = $this->getAuthToken($useManagementKey, '');
-        }
+        $authToken = $this->getAuthToken($useManagementKey, $refreshToken);
 
         $uri = $this->resolveRequestUrl($uri);
 
@@ -179,13 +179,7 @@ class API
      */
     public function doPatch(string $uri, array $body, ?bool $useManagementKey = false, ?string $refreshToken = null): array
     {
-        $authToken = "";
-
-        if ($refreshToken) {
-            $authToken = $this->getAuthToken(false, $refreshToken);
-        } else {
-            $authToken = $this->getAuthToken($useManagementKey, '');
-        }
+        $authToken = $this->getAuthToken($useManagementKey, $refreshToken);
 
         $uri = $this->resolveRequestUrl($uri);
 
@@ -229,13 +223,7 @@ class API
      */
     public function doGet(string $uri, bool $useManagementKey, ?string $refreshToken = null): array
     {
-        $authToken = "";
-
-        if ($refreshToken) {
-            $authToken = $this->getAuthToken(false, $refreshToken);
-        } else {
-            $authToken = $this->getAuthToken($useManagementKey);
-        }
+        $authToken = $this->getAuthToken($useManagementKey, $refreshToken);
 
         $uri = $this->resolveRequestUrl($uri);
 
@@ -446,22 +434,29 @@ class API
     }
 
     /**
-     * Constructs the auth token based on whether the management key is used.
+     * Constructs the auth token: the project ID, then the token the caller presented if there is
+     * one, then the key for the kind of request being made - the management key for management
+     * requests, the auth management key for authentication requests. The two keys are never sent
+     * together.
      *
-     * @param  bool $useManagementKey Whether to use the management key for authentication.
+     * @param  bool|null   $useManagementKey Whether this is a management request.
+     * @param  string|null $refreshToken     Refresh token or access key presented by the caller.
      * @return string The constructed auth token.
      */
-    private function getAuthToken(bool $useManagementKey, ?string $refreshToken = null): string
+    private function getAuthToken(?bool $useManagementKey, ?string $refreshToken = null): string
     {
-        if ($useManagementKey && !empty($this->managementKey)) {
-            return $this->projectId . ':' . $this->managementKey;
+        $parts = [$this->projectId];
+
+        if (!empty($refreshToken)) {
+            $parts[] = $refreshToken;
         }
 
-        if ($refreshToken) {
-            return $this->projectId . ':' . $refreshToken;
+        $key = $useManagementKey ? $this->managementKey : $this->authManagementKey;
+        if (!empty($key)) {
+            $parts[] = $key;
         }
 
-        return $this->projectId;
+        return implode(':', $parts);
     }
 
     /**
