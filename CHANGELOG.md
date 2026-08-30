@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2](https://github.com/descope/descope-php/compare/v0.7.1...v0.7.2) (2026-08-30)
+
+
+### Features
+
+* **auth:** support an auth management key for disabled auth methods ([#135](https://github.com/descope/descope-php/issues/135)) ([9dd7ed3](https://github.com/descope/descope-php/commit/9dd7ed36036bb55c26a8603d4ab49ac24d0b8cee))
+
 ## [0.7.1](https://github.com/descope/descope-php/compare/0.7.0...v0.7.1) (2026-08-28)
 
 
