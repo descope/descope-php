@@ -328,19 +328,21 @@ print_r($response);
 
 ### Session Management
 
-1. `DescopeSDK->verify($sessionToken)` - will validate the session token and return either **TRUE** or **FALSE**, depending on if the JWT is valid and expired.
+1. `DescopeSDK->verify($sessionToken, $audience = null)` - will validate the session token's signature, expiry and issuer, and return **TRUE** or throw a `TokenException`. Pass `$audience` (a string) to also require the token's `aud` claim to contain that value.
 2. `DescopeSDK->refreshSession($refreshToken)` - will refresh your session and return a new session token, with the refresh token.
-3. `DescopeSDK->verifyAndRefreshSession($sessionToken, $refreshToken)` - will validate the session token and return either **TRUE** or **FALSE**, and will refresh your session and return a new session token.
+3. `DescopeSDK->verifyAndRefreshSession($sessionToken, $refreshToken, $audience = null)` - will validate the session token (and its audience, if `$audience` is passed), then refresh your session and return the new session information.
 4. `DescopeSDK->logout($refreshToken)` - will invalidate the refresh token and log the user out of the current session.
 5. `DescopeSDK->logoutAll($refreshToken)` - will invalidate all refresh tokens associated with a given project, thereby signing out of all sessions across multiple applications.
 
 ---
 
-6. `DescopeSDK->getClaims($sessionToken)` - will validate the JWT signature and return all of the verified claims in an array format.
+6. `DescopeSDK->getClaims($sessionToken)` - will validate the JWT signature, expiry and issuer, and return all of the verified claims in an array format.
 7. `DescopeSDK->getUserDetails($refreshToken)` - will return all of the user information (email, phone, verification status, etc.) using a provided refresh token.
 8. `DescopeSDK->selectTenant($tenantId, $refreshToken)` - will return a new set of tokens scoped to the selected tenant.
 9. `DescopeSDK->exchangeAccessKey($accessKey, $loginOptions)` - will exchange an access key for a session JWT.
 10. `DescopeSDK->history($refreshToken)` - will return the current user's authentication history.
+
+> Token validation requires the `iss` claim to belong to the configured project. Both the project issuer (`https://api.descope.com/{projectId}`) and the app-scoped issuer used by federated OIDC applications (`https://api.descope.com/{projectId}/{appId}`) are accepted.
 
 ### User Management Functions
 

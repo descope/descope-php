@@ -120,8 +120,11 @@ final class Extractor
 
     /**
      * Ensures the token issuer resolves to the project the SDK is configured for.
-     * Descope issuers are either the bare project ID or a URL whose last path
-     * segment is the project ID (see API::adjustProperties).
+     * Mirrors node-sdk's issuerMatchesProject: Descope issuers are the bare
+     * project ID, a URL whose last path segment is the project ID
+     * (https://api.descope.com/{projectId}), or a URL where the project ID is
+     * followed by one more segment, such as federated OIDC apps using an
+     * app-scoped issuer (https://api.descope.com/{projectId}/{appId}).
      *
      * @throws TokenException if the issuer does not match the configured project ID.
      */
@@ -133,14 +136,40 @@ final class Extractor
         }
 
         $issuer = $payload['iss'] ?? '';
-        if ($issuer === '') {
+        if (!is_string($issuer) || $issuer === '') {
             throw new TokenException('Token is missing issuer claim');
         }
 
-        $issuerParts = explode('/', $issuer);
-        if (end($issuerParts) !== $projectId) {
+        if (!self::issuerMatchesProject($issuer, $projectId)) {
             throw new TokenException('Token issuer does not match the configured project ID');
         }
+    }
+
+    /**
+     * True if the issuer names the project ID as its last or second-to-last
+     * path segment (or is exactly the project ID).
+     */
+    private static function issuerMatchesProject(string $issuer, string $projectId): bool
+    {
+        if ($issuer === $projectId) {
+            return true;
+        }
+
+        // For URL issuers only the path is considered, so the host can never
+        // stand in for the project ID.
+        $path = $issuer;
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $issuer)) {
+            $path = (string) parse_url($issuer, PHP_URL_PATH);
+        }
+
+        $segments = array_values(array_filter(
+            explode('/', $path),
+            static fn (string $segment): bool => $segment !== ''
+        ));
+        $count = count($segments);
+
+        return ($count >= 1 && $segments[$count - 1] === $projectId)
+            || ($count >= 2 && $segments[$count - 2] === $projectId);
     }
 
     /**
