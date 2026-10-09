@@ -119,9 +119,7 @@ final class Extractor
     }
 
     /**
-     * Ensures the token issuer resolves to the project the SDK is configured for.
-     * Descope issuers are either the bare project ID or a URL whose last path
-     * segment is the project ID (see API::adjustProperties).
+     * Ensures the token issuer belongs to the configured project.
      *
      * @throws TokenException if the issuer does not match the configured project ID.
      */
@@ -133,14 +131,38 @@ final class Extractor
         }
 
         $issuer = $payload['iss'] ?? '';
-        if ($issuer === '') {
+        if (!is_string($issuer) || $issuer === '') {
             throw new TokenException('Token is missing issuer claim');
         }
 
-        $issuerParts = explode('/', $issuer);
-        if (end($issuerParts) !== $projectId) {
+        if (!self::issuerMatchesProject($issuer, $projectId)) {
             throw new TokenException('Token issuer does not match the configured project ID');
         }
+    }
+
+    /**
+     * Accepts {projectId} or {projectId}/{appId} as the end of the issuer path.
+     */
+    private static function issuerMatchesProject(string $issuer, string $projectId): bool
+    {
+        if ($issuer === $projectId) {
+            return true;
+        }
+
+        // Ignore the host so it can't stand in for the project ID.
+        $path = $issuer;
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $issuer)) {
+            $path = (string) parse_url($issuer, PHP_URL_PATH);
+        }
+
+        $segments = array_values(array_filter(
+            explode('/', $path),
+            static fn (string $segment): bool => $segment !== ''
+        ));
+        $count = count($segments);
+
+        return ($count >= 1 && $segments[$count - 1] === $projectId)
+            || ($count >= 2 && $segments[$count - 2] === $projectId);
     }
 
     /**
