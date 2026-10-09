@@ -119,12 +119,7 @@ final class Extractor
     }
 
     /**
-     * Ensures the token issuer resolves to the project the SDK is configured for.
-     * Mirrors node-sdk's issuerMatchesProject: Descope issuers are the bare
-     * project ID, a URL whose last path segment is the project ID
-     * (https://api.descope.com/{projectId}), or a URL where the project ID is
-     * followed by one more segment, such as federated OIDC apps using an
-     * app-scoped issuer (https://api.descope.com/{projectId}/{appId}).
+     * Ensures the token issuer belongs to the configured project.
      *
      * @throws TokenException if the issuer does not match the configured project ID.
      */
@@ -146,8 +141,7 @@ final class Extractor
     }
 
     /**
-     * True if the issuer names the project ID as its last or second-to-last
-     * path segment (or is exactly the project ID).
+     * Accepts {projectId} or {projectId}/{appId} as the end of the issuer path.
      */
     private static function issuerMatchesProject(string $issuer, string $projectId): bool
     {
@@ -155,8 +149,7 @@ final class Extractor
             return true;
         }
 
-        // For URL issuers only the path is considered, so the host can never
-        // stand in for the project ID.
+        // Ignore the host so it can't stand in for the project ID.
         $path = $issuer;
         if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $issuer)) {
             $path = (string) parse_url($issuer, PHP_URL_PATH);
