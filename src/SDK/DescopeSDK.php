@@ -18,6 +18,7 @@ use Descope\SDK\EndpointsV1;
 use Descope\SDK\EndpointsV2;
 use Descope\SDK\Exception\AuthException;
 use Descope\SDK\Exception\RateLimitException;
+use Descope\SDK\Exception\TokenException;
 use Descope\SDK\Exception\ValidationException;
 
 use Descope\SDK\Management\MgmtV1;
@@ -124,10 +125,13 @@ class DescopeSDK
       * Verify if the JWT is valid and not expired.
       *
       * @param  string|null $sessionToken The session token to verify.
-      * @return bool Verification result.
-      * @throws AuthException
+      * @param  string|null $audience     Optional expected audience. When set, the token's
+      *                                   `aud` claim must contain this value.
+      * @return bool True if the token is valid.
+      * @throws ValidationException If no session token is available.
+      * @throws TokenException If the token fails validation.
       */
-    public function verify($sessionToken = null): bool
+    public function verify($sessionToken = null, ?string $audience = null): bool
     {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
 
@@ -135,8 +139,7 @@ class DescopeSDK
             throw ValidationException::forMissingSessionToken();
         }
 
-        $verifier = new Verifier($this->config, $this->api);
-        return $this->verifier->verify($sessionToken);
+        return $this->verifier->verify($sessionToken, $audience);
     }
 
     /**
@@ -167,11 +170,15 @@ class DescopeSDK
      *
      * @param  string|null $sessionToken The session token.
      * @param  string|null $refreshToken The refresh token.
+     * @param  string|null $audience     Optional expected audience for the session token.
      * @return array The refreshed session information.
      * @throws AuthException|RateLimitException
      */
-    public function verifyAndRefreshSession(?string $sessionToken = null, ?string $refreshToken = null): array
-    {
+    public function verifyAndRefreshSession(
+        ?string $sessionToken = null,
+        ?string $refreshToken = null,
+        ?string $audience = null
+    ): array {
         $sessionToken = $sessionToken ?? $_COOKIE[EndpointsV1::$SESSION_COOKIE_NAME] ?? null;
         $refreshToken = $refreshToken ?? $_COOKIE[EndpointsV1::$REFRESH_COOKIE_NAME] ?? null;
 
@@ -180,7 +187,7 @@ class DescopeSDK
         }
         
         try {
-            $this->verify($sessionToken);
+            $this->verify($sessionToken, $audience);
             return $this->refreshSession($refreshToken);
         } catch (AuthException $e) {
             return $this->refreshSession($refreshToken);

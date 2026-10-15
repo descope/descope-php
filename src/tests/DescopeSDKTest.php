@@ -128,6 +128,92 @@ final class DescopeSDKTest extends TestCase
         $this->assertSame('https://api.descope.com/v2/keys/shared-project', (string) $trustedRequests[0]['request']->getUri());
     }
 
+    /**
+     * @dataProvider acceptedIssuerProvider
+     */
+    public function testGetClaimsAcceptsDescopeIssuerForms(string $issuer): void
+    {
+        $privateKey = $this->privateKey();
+        $token = $this->signedJwt(
+            ['alg' => 'RS256', 'kid' => 'legit-key', 'typ' => 'JWT'],
+            ['sub' => 'user-1', 'iss' => $issuer, 'exp' => time() + 300],
+            $privateKey
+        );
+
+        $claims = $this->extractorWithTestKey($privateKey)->getClaims($token);
+
+        $this->assertSame($issuer, $claims['iss']);
+    }
+
+    public static function acceptedIssuerProvider(): array
+    {
+        return [
+            'bare project ID' => ['test_project_id'],
+            'project URL' => ['https://api.descope.com/test_project_id'],
+            'versioned apps URL' => ['https://api.descope.com/v1/apps/test_project_id'],
+            'federated app URL' => ['https://api.descope.com/test_project_id/AP2abc123'],
+            'regional host with app' => ['https://api.euc1.descope.com/test_project_id/AP2abc123'],
+            'trailing slash' => ['https://api.descope.com/test_project_id/'],
+        ];
+    }
+
+    /**
+     * @dataProvider rejectedIssuerProvider
+     */
+    public function testGetClaimsRejectsForeignIssuers(string $issuer): void
+    {
+        $privateKey = $this->privateKey();
+        $token = $this->signedJwt(
+            ['alg' => 'RS256', 'kid' => 'legit-key', 'typ' => 'JWT'],
+            ['sub' => 'user-1', 'iss' => $issuer, 'exp' => time() + 300],
+            $privateKey
+        );
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('Token issuer does not match the configured project ID');
+        $this->extractorWithTestKey($privateKey)->getClaims($token);
+    }
+
+    public static function rejectedIssuerProvider(): array
+    {
+        return [
+            'other project' => ['https://api.descope.com/other_project_id'],
+            'other project with app' => ['https://api.descope.com/other_project_id/AP2abc123'],
+            'project ID too deep' => ['https://api.descope.com/test_project_id/a/b'],
+            'project ID only as host' => ['https://test_project_id/'],
+            'project ID as prefix' => ['https://api.descope.com/test_project_id_evil'],
+        ];
+    }
+
+    public function testVerifyEnforcesAudience(): void
+    {
+        $privateKey = $this->privateKey();
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['keys' => [$this->jwkFromPrivateKey($privateKey)]])),
+        ]);
+        $sdk = new DescopeSDK([
+            'projectId' => 'test_project_id',
+            'httpClient' => new Client(['handler' => HandlerStack::create($mock)]),
+        ]);
+        $token = $this->signedJwt(
+            ['alg' => 'RS256', 'kid' => 'legit-key', 'typ' => 'JWT'],
+            [
+                'sub' => 'user-1',
+                'iss' => 'https://api.descope.com/test_project_id/AP2abc123',
+                'aud' => ['client-a'],
+                'exp' => time() + 300,
+            ],
+            $privateKey
+        );
+
+        $this->assertTrue($sdk->verify($token));
+        $this->assertTrue($sdk->verify($token, 'client-a'));
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('Token audience does not match expected value');
+        $sdk->verify($token, 'client-b');
+    }
+
     public function testRefreshSessionThrowsExceptionWithoutToken()
     {
         $this->expectException(ValidationException::class);
