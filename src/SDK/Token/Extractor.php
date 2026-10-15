@@ -157,7 +157,9 @@ final class Extractor
 
         $segments = array_values(array_filter(
             explode('/', $path),
-            static fn (string $segment): bool => $segment !== ''
+            static function (string $segment): bool {
+                return $segment !== '';
+            }
         ));
         $count = count($segments);
 
