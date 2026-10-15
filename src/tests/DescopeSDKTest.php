@@ -245,6 +245,16 @@ final class DescopeSDKTest extends TestCase
         $this->assertSame($refreshed, $sdk->verifyAndRefreshSession($expired, 'refresh-token', 'client-a'));
     }
 
+    public function testVerifyAndRefreshSessionWithValidAudienceDoesNotRequireSessionJwtInRefresh(): void
+    {
+        $privateKey = $this->privateKey();
+        $valid = $this->sessionJwt($privateKey, ['aud' => 'client-a']);
+        $refreshed = ['refreshJwt' => 'rjwt'];
+        $sdk = $this->sdkWithResponses($privateKey, $refreshed);
+
+        $this->assertSame($refreshed, $sdk->verifyAndRefreshSession($valid, 'refresh-token', 'client-a'));
+    }
+
     public function testRefreshSessionThrowsExceptionWithoutToken()
     {
         $this->expectException(ValidationException::class);

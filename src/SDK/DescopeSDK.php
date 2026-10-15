@@ -170,8 +170,8 @@ class DescopeSDK
      *
      * @param  string|null $sessionToken The session token.
      * @param  string|null $refreshToken The refresh token.
-     * @param  string|null $audience     Optional expected audience. Checked on the refreshed
-     *                                   session token as well.
+     * @param  string|null $audience     Optional expected audience. If the session token fails
+     *                                   verification, the refreshed session token is checked instead.
      * @return array The refreshed session information.
      * @throws AuthException|RateLimitException|TokenException
      */
@@ -187,14 +187,16 @@ class DescopeSDK
             throw new ValidationException('Session or refresh token cannot be null or empty.');
         }
         
+        $sessionVerified = true;
         try {
             $this->verify($sessionToken, $audience);
         } catch (TokenException | AuthException $e) {
             // An expired or invalid session token is replaced by the refresh below.
+            $sessionVerified = false;
         }
 
         $response = $this->refreshSession($refreshToken);
-        if ($audience !== null) {
+        if (!$sessionVerified && $audience !== null) {
             $this->verify($response['sessionJwt'] ?? '', $audience);
         }
 
