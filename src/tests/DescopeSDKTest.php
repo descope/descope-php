@@ -214,6 +214,37 @@ final class DescopeSDKTest extends TestCase
         $sdk->verify($token, 'client-b');
     }
 
+    public function testVerifyAndRefreshSessionRefreshesExpiredSession(): void
+    {
+        $privateKey = $this->privateKey();
+        $expired = $this->sessionJwt($privateKey, ['exp' => time() - 60]);
+        $refreshed = ['sessionJwt' => $this->sessionJwt($privateKey)];
+        $sdk = $this->sdkWithResponses($privateKey, $refreshed);
+
+        $this->assertSame($refreshed, $sdk->verifyAndRefreshSession($expired, 'refresh-token'));
+    }
+
+    public function testVerifyAndRefreshSessionChecksAudienceOfRefreshedSession(): void
+    {
+        $privateKey = $this->privateKey();
+        $wrongAudience = $this->sessionJwt($privateKey, ['aud' => 'client-b']);
+        $sdk = $this->sdkWithResponses($privateKey, ['sessionJwt' => $this->sessionJwt($privateKey, ['aud' => 'client-b'])]);
+
+        $this->expectException(TokenException::class);
+        $this->expectExceptionMessage('Token audience does not match expected value');
+        $sdk->verifyAndRefreshSession($wrongAudience, 'refresh-token', 'client-a');
+    }
+
+    public function testVerifyAndRefreshSessionAcceptsRefreshedSessionWithAudience(): void
+    {
+        $privateKey = $this->privateKey();
+        $expired = $this->sessionJwt($privateKey, ['aud' => 'client-a', 'exp' => time() - 60]);
+        $refreshed = ['sessionJwt' => $this->sessionJwt($privateKey, ['aud' => 'client-a'])];
+        $sdk = $this->sdkWithResponses($privateKey, $refreshed);
+
+        $this->assertSame($refreshed, $sdk->verifyAndRefreshSession($expired, 'refresh-token', 'client-a'));
+    }
+
     public function testRefreshSessionThrowsExceptionWithoutToken()
     {
         $this->expectException(ValidationException::class);
@@ -305,6 +336,28 @@ final class DescopeSDKTest extends TestCase
                 $this->assertStringContainsString('cannot be null or empty', $e->getMessage());
             }
         }
+    }
+
+    private function sessionJwt($privateKey, array $claims = []): string
+    {
+        return $this->signedJwt(
+            ['alg' => 'RS256', 'kid' => 'legit-key', 'typ' => 'JWT'],
+            $claims + ['sub' => 'user-1', 'iss' => 'https://api.descope.com/test_project_id', 'exp' => time() + 300],
+            $privateKey
+        );
+    }
+
+    private function sdkWithResponses($privateKey, array $refreshResponse): DescopeSDK
+    {
+        $mock = new MockHandler([
+            new Response(200, [], json_encode(['keys' => [$this->jwkFromPrivateKey($privateKey)]])),
+            new Response(200, [], json_encode($refreshResponse)),
+        ]);
+
+        return new DescopeSDK([
+            'projectId' => 'test_project_id',
+            'httpClient' => new Client(['handler' => HandlerStack::create($mock)]),
+        ]);
     }
 
     private function jwt(array $header, array $payload, string $signature): string
