@@ -514,30 +514,17 @@ class API
      */
     private function adjustProperties(array $jwtResponse, bool $userJwt): array
     {
-        if (isset($jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME])) {
-            $jwtResponse['permissions'] = $jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME]['permissions'] ?? [];
-            $jwtResponse['roles'] = $jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME]['roles'] ?? [];
-            $jwtResponse['tenants'] = $jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME]['tenants'] ?? [];
-        } elseif (isset($jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME])) {
-            $jwtResponse['permissions'] = $jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME]['permissions'] ?? [];
-            $jwtResponse['roles'] = $jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME]['roles'] ?? [];
-            $jwtResponse['tenants'] = $jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME]['tenants'] ?? [];
-        } else {
-            $jwtResponse['permissions'] = $jwtResponse['permissions'] ?? [];
-            $jwtResponse['roles'] = $jwtResponse['roles'] ?? [];
-            $jwtResponse['tenants'] = $jwtResponse['tenants'] ?? [];
-        }
+        $claims = $this->decodeJwtClaims($jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME] ?? '')
+            ?: $this->decodeJwtClaims($jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME] ?? '');
 
-        $issuer = $jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME]['iss'] ??
-                  $jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME]['iss'] ??
-                  $jwtResponse['iss'] ?? '';
+        $jwtResponse['permissions'] = $claims['permissions'] ?? [];
+        $jwtResponse['roles'] = $claims['roles'] ?? [];
+        $jwtResponse['tenants'] = $claims['tenants'] ?? [];
 
-        $issuerParts = explode("/", $issuer);
+        $issuerParts = explode("/", (string) ($claims['iss'] ?? ''));
         $jwtResponse['projectId'] = end($issuerParts);
 
-        $sub = $jwtResponse[EndpointsV1::$SESSION_TOKEN_NAME]['sub'] ??
-               $jwtResponse[EndpointsV1::$REFRESH_TOKEN_NAME]['sub'] ??
-               $jwtResponse['sub'] ?? '';
+        $sub = $claims['sub'] ?? '';
 
         if ($userJwt) {
             $jwtResponse['userId'] = $sub;
@@ -546,5 +533,22 @@ class API
         }
 
         return $jwtResponse;
+    }
+
+    /**
+     * Reads the claims of a JWT returned by the Descope API. The signature is
+     * not checked here; use DescopeSDK::verify() or getClaims() to validate tokens.
+     */
+    private function decodeJwtClaims(string $jwt): array
+    {
+        $parts = explode('.', $jwt);
+        if (count($parts) !== 3) {
+            return [];
+        }
+
+        $payload = base64_decode(strtr($parts[1], '-_', '+/'), true);
+        $claims = $payload === false ? null : json_decode($payload, true);
+
+        return is_array($claims) ? $claims : [];
     }
 }

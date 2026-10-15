@@ -6,6 +6,7 @@
             <file>src/tests/InMemoryCacheTest.php</file>
             <file>src/tests/SDKConfigCacheTest.php</file>
             <file>src/tests/APIExceptionMappingTest.php</file>
+            <file>src/tests/APIJwtResponseTest.php</file>
             <file>src/tests/APIRetryTest.php</file>
             <file>src/tests/APIAuthManagementKeyTest.php</file>
             <file>src/tests/APIHttpTimeoutTest.php</file>
