@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.3](https://github.com/descope/descope-php/compare/v0.7.2...v0.7.3) (2026-10-16)
+
+
+### Bug Fixes
+
+* **sdk:** populate roles, permissions and tenants in auth responses ([#144](https://github.com/descope/descope-php/issues/144)) ([794b95f](https://github.com/descope/descope-php/commit/794b95f530ec189580a0309c117cc9995f8dc6cd))
+* **sdk:** refresh expired sessions in verifyAndRefreshSession() ([#145](https://github.com/descope/descope-php/issues/145)) ([b1968ce](https://github.com/descope/descope-php/commit/b1968cec0159479a6a905e94ad71d33b24eaf0e5))
+
 ## [0.7.2](https://github.com/descope/descope-php/compare/v0.7.1...v0.7.2) (2026-10-15)
 
 
