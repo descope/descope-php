@@ -22,6 +22,7 @@ final class SDKConfig
     private $jwksCacheTTL;
     private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:v2:';
     private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
+    private const JWKS_REFRESH_COOLDOWN = 30; // minimum seconds between key fetches for forced refreshes
 
     public function __construct(
         array $config,
@@ -68,19 +69,27 @@ final class SDKConfig
     }
 
     /**
-     * Gets the current JWKSet. Fetches a new one if not cached or if explicitly requested.
+     * Gets the current JWKSet. Fetches a new one if not cached, or if a refresh is
+     * requested and no fetch succeeded within the cooldown. A failed fetch keeps
+     * the cached set and does not start the cooldown.
      */
     public function getJWKSets(bool $forceRefresh = false): array
     {
-        if (!$forceRefresh) {
-            $cachedJWKSets = $this->cache->get($this->getCacheKey());
+        $cachedJWKSets = $this->cache->get($this->getCacheKey());
+        if ($cachedJWKSets && (!$forceRefresh || $this->cache->get($this->getCooldownKey()))) {
+            return $cachedJWKSets;
+        }
+
+        try {
+            $jwks = $this->fetchJWKSets();
+        } catch (\Exception $e) {
             if ($cachedJWKSets) {
                 return $cachedJWKSets;
             }
+            throw $e;
         }
-
-        $jwks = $this->fetchJWKSets();
         $this->cache->set($this->getCacheKey(), $jwks, $this->jwksCacheTTL);
+        $this->cache->set($this->getCooldownKey(), true, self::JWKS_REFRESH_COOLDOWN);
         return $jwks;
     }
 
@@ -129,6 +138,11 @@ final class SDKConfig
     private function getCacheKey(): string
     {
         return self::JWKS_CACHE_KEY_PREFIX . hash('sha256', $this->canonicalBaseUrl() . "\0" . $this->projectId);
+    }
+
+    private function getCooldownKey(): string
+    {
+        return $this->getCacheKey() . ':cooldown';
     }
 
     private function canonicalBaseUrl(): string
