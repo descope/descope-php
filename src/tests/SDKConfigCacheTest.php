@@ -131,7 +131,7 @@ final class SDKConfigCacheTest extends TestCase
         $sdkConfig = new SDKConfig($this->config, $mockCache);
         $result = $sdkConfig->getJWKSets();
 
-        $this->assertSame($jwksData['keys'], $result['keys']);
+        $this->assertSame($jwksData, $result);
     }
 
     public function testForceRefreshWithinCooldownDoesNotFetch()
@@ -326,8 +326,8 @@ final class SDKConfigCacheTest extends TestCase
         $configA = new SDKConfig(['projectId' => 'projectA', 'managementKey' => ''], $cacheA);
         $configB = new SDKConfig(['projectId' => 'projectB', 'managementKey' => ''], $cacheB);
 
-        $this->assertSame($jwksA['keys'], $configA->getJWKSets()['keys']);
-        $this->assertSame($jwksB['keys'], $configB->getJWKSets()['keys']);
+        $this->assertSame($jwksA, $configA->getJWKSets());
+        $this->assertSame($jwksB, $configB->getJWKSets());
     }
 
     public function testSameProjectDifferentOriginsDoNotShareJWKS(): void

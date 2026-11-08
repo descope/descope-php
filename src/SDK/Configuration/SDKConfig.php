@@ -81,7 +81,7 @@ final class SDKConfig
         $entry = $this->cache->get($this->getCacheKey());
         // The fetch time is stored next to `keys` so older SDK versions sharing the cache still read the set.
         // Entries without it (written by those versions) are refreshed.
-        $cached = isset($entry['fetchedAt'], $entry['keys']) ? $entry : null;
+        $cached = isset($entry['fetchedAt'], $entry['keys']) ? array_diff_key($entry, ['fetchedAt' => true]) : null;
         $age = $cached ? $now - $entry['fetchedAt'] : PHP_INT_MAX;
         $usable = $age < self::JWKS_MAX_AGE;
 
