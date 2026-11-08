@@ -126,12 +126,12 @@ final class SDKConfigCacheTest extends TestCase
         $mockCache->expects($this->once())
             ->method('get')
             ->with($this->cacheKey('https://api.descope.com', 'test_project_id'))
-            ->willReturn(['jwks' => $jwksData, 'fetchedAt' => time()]);
+            ->willReturn($jwksData + ['fetchedAt' => time()]);
 
         $sdkConfig = new SDKConfig($this->config, $mockCache);
         $result = $sdkConfig->getJWKSets();
 
-        $this->assertSame($jwksData, $result);
+        $this->assertSame($jwksData['keys'], $result['keys']);
     }
 
     public function testForceRefreshWithinCooldownDoesNotFetch()
@@ -202,15 +202,10 @@ final class SDKConfigCacheTest extends TestCase
 
         // One hour after the last successful fetch the cached keys are no longer used.
         $this->age($cache, 100);
-        try {
-            $config->getJWKSets();
-            $this->fail('expected the fetch error');
-        } catch (\Exception $e) {
-            $this->assertCount(4, $requests);
-        } finally {
-            ini_set('error_log', $prevLog === false ? '' : $prevLog);
-            unlink($log);
-        }
+        $this->assertFetchFails($config);
+        $this->assertCount(4, $requests);
+        ini_set('error_log', $prevLog === false ? '' : $prevLog);
+        unlink($log);
     }
 
     public function testFailedRefreshOfStaleKeysIsSpacedBy30Seconds()
@@ -236,12 +231,8 @@ final class SDKConfigCacheTest extends TestCase
 
         $config->getJWKSets();
         $this->age($cache, 3601);
-        try {
-            $config->getJWKSets();
-            $this->fail('expected the fetch error');
-        } catch (\Exception $e) {
-            $this->assertCount(2, $requests);
-        }
+        $this->assertFetchFails($config);
+        $this->assertCount(2, $requests);
 
         // Within 30 seconds: no fetch and no stored keys are used.
         $this->age($cache, 29);
@@ -258,12 +249,8 @@ final class SDKConfigCacheTest extends TestCase
     {
         [$cache, $config, $requests] = $this->jwksFixture([new Response(500), ['a']]);
 
-        try {
-            $config->getJWKSets();
-            $this->fail('expected the fetch error');
-        } catch (\Exception $e) {
-            $this->assertCount(1, $requests);
-        }
+        $this->assertFetchFails($config);
+        $this->assertCount(1, $requests);
 
         $cache->now += 29;
         $this->assertSame([], $this->kids($config->getJWKSets()));
@@ -298,6 +285,16 @@ final class SDKConfigCacheTest extends TestCase
         $this->assertCount(1, $requests);
     }
 
+    public function testStoredEntryKeepsKeysAtTopLevelForOlderReaders()
+    {
+        [$cache, $config] = $this->jwksFixture([['a']]);
+
+        $config->getJWKSets();
+
+        $entry = $cache->get($this->cacheKey('https://api.descope.com', 'test_project_id'));
+        $this->assertSame(['a'], $this->kids($entry));
+    }
+
     public function testFailedFetchWithoutCachedKeysThrows()
     {
         [, $config] = $this->jwksFixture([new Response(500)]);
@@ -318,19 +315,19 @@ final class SDKConfigCacheTest extends TestCase
         $cacheA->expects($this->once())
             ->method('get')
             ->with($this->cacheKey('https://api.descope.com', 'projectA'))
-            ->willReturn(['jwks' => $jwksA, 'fetchedAt' => time()]);
+            ->willReturn($jwksA + ['fetchedAt' => time()]);
 
         // Project B uses a source- and project-scoped key.
         $cacheB->expects($this->once())
             ->method('get')
             ->with($this->cacheKey('https://api.descope.com', 'projectB'))
-            ->willReturn(['jwks' => $jwksB, 'fetchedAt' => time()]);
+            ->willReturn($jwksB + ['fetchedAt' => time()]);
 
         $configA = new SDKConfig(['projectId' => 'projectA', 'managementKey' => ''], $cacheA);
         $configB = new SDKConfig(['projectId' => 'projectB', 'managementKey' => ''], $cacheB);
 
-        $this->assertSame($jwksA, $configA->getJWKSets());
-        $this->assertSame($jwksB, $configB->getJWKSets());
+        $this->assertSame($jwksA['keys'], $configA->getJWKSets()['keys']);
+        $this->assertSame($jwksB['keys'], $configB->getJWKSets()['keys']);
     }
 
     public function testSameProjectDifferentOriginsDoNotShareJWKS(): void
@@ -387,6 +384,13 @@ final class SDKConfigCacheTest extends TestCase
                 unset($this->items[$key]);
                 return true;
             }
+
+            /** Moves the clock forward and back-dates a stored key set; its expiry is unchanged. */
+            public function age(string $key, int $seconds): void
+            {
+                $this->items[$key][0]['fetchedAt'] -= $seconds;
+                $this->now += $seconds;
+            }
         };
         $queue = array_map(function ($r) {
             return $r instanceof Response ? $r : new Response(200, [], json_encode([
@@ -408,13 +412,19 @@ final class SDKConfigCacheTest extends TestCase
         return array_column($jwks['keys'], 'kid');
     }
 
-    /** Moves the clock forward and back-dates the stored key set by the same amount. */
     private function age($cache, int $seconds): void
     {
-        $key = $this->cacheKey('https://api.descope.com', 'test_project_id');
-        $entry = $cache->get($key);
-        $entry['fetchedAt'] -= $seconds;
-        $cache->now += $seconds;
-        $cache->set($key, $entry, 3600);
+        $cache->age($this->cacheKey('https://api.descope.com', 'test_project_id'), $seconds);
+    }
+
+    private function assertFetchFails(SDKConfig $config): void
+    {
+        $thrown = false;
+        try {
+            $config->getJWKSets();
+        } catch (\Exception $e) {
+            $thrown = true;
+        }
+        $this->assertTrue($thrown, 'expected the fetch error');
     }
 }

@@ -79,8 +79,9 @@ final class SDKConfig
     {
         $now = time();
         $entry = $this->cache->get($this->getCacheKey());
-        // Entries without a fetch time (older SDK versions) are refreshed.
-        $cached = isset($entry['fetchedAt'], $entry['jwks']) ? $entry['jwks'] : null;
+        // The fetch time is stored next to `keys` so older SDK versions sharing the cache still read the set.
+        // Entries without it (written by those versions) are refreshed.
+        $cached = isset($entry['fetchedAt'], $entry['keys']) ? $entry : null;
         $age = $cached ? $now - $entry['fetchedAt'] : PHP_INT_MAX;
         $usable = $age < self::JWKS_MAX_AGE;
 
@@ -102,7 +103,7 @@ final class SDKConfig
             }
             throw $e;
         }
-        $this->cache->set($this->getCacheKey(), ['jwks' => $jwks, 'fetchedAt' => $now], self::JWKS_MAX_AGE);
+        $this->cache->set($this->getCacheKey(), $jwks + ['fetchedAt' => $now], self::JWKS_MAX_AGE);
         $this->cache->set($this->getCooldownKey(), true, self::JWKS_REFRESH_COOLDOWN);
         return $jwks;
     }
