@@ -134,27 +134,73 @@ final class SDKConfigCacheTest extends TestCase
         $this->assertSame($jwksData, $result);
     }
 
-    public function testForceRefreshSkipsCacheGet()
+    public function testForceRefreshWithinCooldownDoesNotFetch()
     {
-        $mockCache = $this->createMock(CacheInterface::class);
+        [$cache, $config, $requests] = $this->jwksFixture([['a'], ['a', 'b']]);
 
-        // When forceRefresh is true, get() should NEVER be called
-        $mockCache->expects($this->never())
-            ->method('get');
+        $this->assertSame(['a'], $this->kids($config->getJWKSets()));
 
-        // Allow set() to be called when fresh JWKS is stored
-        $mockCache->expects($this->any())
-            ->method('set');
+        // Unknown kid lookups repeat within the cooldown: no network call.
+        $cache->now += 29;
+        $this->assertSame(['a'], $this->kids($config->getJWKSets(true)));
+        $this->assertSame(['a'], $this->kids($config->getJWKSets(true)));
+        $this->assertCount(1, $requests);
 
-        $sdkConfig = new SDKConfig($this->config, $mockCache);
+        // After the cooldown a forced refresh fetches again and replaces the set.
+        $cache->now += 2;
+        $this->assertSame(['a', 'b'], $this->kids($config->getJWKSets(true)));
+        $this->assertCount(2, $requests);
+    }
 
-        try {
-            $sdkConfig->getJWKSets(true);
-        } catch (\Exception $e) {
-            // Expected: no real API in test. The assertion is that get() was never called.
-            // The actual error message may vary ("Invalid JWK response", "Failed to fetch", etc.)
-            $this->assertTrue(true, 'Expected exception from missing API - primary assertion is that get() was never called');
-        }
+    public function testFailedForceRefreshDoesNotStartCooldown()
+    {
+        [$cache, $config, $requests] = $this->jwksFixture([['a'], new Response(500), ['a', 'b'], ['a', 'b', 'c']]);
+
+        $config->getJWKSets();
+        $cache->now += 31;
+
+        // Failed refresh keeps the cached keys; the next lookup retries right away.
+        $this->assertSame(['a'], $this->kids($config->getJWKSets(true)));
+        $this->assertSame(['a', 'b'], $this->kids($config->getJWKSets(true)));
+        $this->assertCount(3, $requests);
+
+        // The successful refresh starts the cooldown.
+        $this->assertSame(['a', 'b'], $this->kids($config->getJWKSets(true)));
+        $this->assertCount(3, $requests);
+    }
+
+    public function testKeySetIsReplacedAfterTTL()
+    {
+        [$cache, $config, $requests] = $this->jwksFixture([['a', 'b'], ['b'], ['b']]);
+
+        $this->assertSame(['a', 'b'], $this->kids($config->getJWKSets()));
+        $cache->now += 599;
+        $this->assertSame(['a', 'b'], $this->kids($config->getJWKSets()));
+        $this->assertCount(1, $requests);
+
+        // Past the TTL the whole set is refetched and replaced: key "a" is gone.
+        $cache->now += 2;
+        $this->assertSame(['b'], $this->kids($config->getJWKSets()));
+        $this->assertCount(2, $requests);
+    }
+
+    public function testEmptyKeySetReplacesCachedKeys()
+    {
+        [$cache, $config] = $this->jwksFixture([['a'], []]);
+
+        $config->getJWKSets();
+        $cache->now += 31;
+
+        $this->assertSame([], $this->kids($config->getJWKSets(true)));
+        $this->assertSame([], $this->kids($config->getJWKSets()));
+    }
+
+    public function testFailedFetchWithoutCachedKeysThrows()
+    {
+        [, $config] = $this->jwksFixture([new Response(500)]);
+
+        $this->expectException(\Exception::class);
+        $config->getJWKSets();
     }
 
     public function testCacheKeyIsScopedByProjectId()
@@ -214,5 +260,48 @@ final class SDKConfigCacheTest extends TestCase
         $this->assertSame(['keys' => [['kid' => 'trusted-key']]], $trustedConfig->getJWKSets());
         $this->assertCount(1, $requests);
         $this->assertSame('https://api.descope.com/v2/keys/shared-project', (string) $requests[0]['request']->getUri());
+    }
+
+    private function jwksFixture(array $responses): array
+    {
+        $cache = new class implements CacheInterface {
+            public $now = 1000;
+            private $items = [];
+
+            public function get(string $key)
+            {
+                return isset($this->items[$key]) && $this->now < $this->items[$key][1] ? $this->items[$key][0] : null;
+            }
+
+            public function set(string $key, $value, int $ttl = 3600): bool
+            {
+                $this->items[$key] = [$value, $this->now + $ttl];
+                return true;
+            }
+
+            public function delete(string $key): bool
+            {
+                unset($this->items[$key]);
+                return true;
+            }
+        };
+        $queue = array_map(function ($r) {
+            return $r instanceof Response ? $r : new Response(200, [], json_encode([
+                'keys' => array_map(function ($kid) {
+                    return ['kid' => $kid];
+                }, $r),
+            ]));
+        }, $responses);
+        $requests = new \ArrayObject();
+        $stack = HandlerStack::create(new MockHandler($queue));
+        $stack->push(Middleware::history($requests));
+        $config = new SDKConfig($this->config, $cache, null, new Client(['handler' => $stack]));
+
+        return [$cache, $config, $requests];
+    }
+
+    private function kids(array $jwks): array
+    {
+        return array_column($jwks['keys'], 'kid');
     }
 }
