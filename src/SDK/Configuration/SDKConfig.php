@@ -23,6 +23,7 @@ final class SDKConfig
     private const JWKS_CACHE_KEY_PREFIX = 'descope_jwks:v2:';
     private const DEFAULT_JWKS_TTL = 600; // 10 minutes for faster key rotation discovery
     private const JWKS_REFRESH_COOLDOWN = 30; // minimum seconds between key fetches for forced refreshes
+    private const JWKS_MAX_AGE = 3600; // cached keys are not used past one hour since the last successful fetch
 
     public function __construct(
         array $config,
@@ -69,26 +70,40 @@ final class SDKConfig
     }
 
     /**
-     * Gets the current JWKSet. Fetches a new one if not cached, or if a refresh is
-     * requested and no fetch succeeded within the cooldown. A failed fetch keeps
-     * the cached set and does not start the cooldown.
+     * Gets the current JWKSet. The cached set is refreshed after jwksCacheTTL and,
+     * if the fetch fails, kept until one hour after the last successful fetch.
+     * A forced refresh (unknown kid) fetches unless a fetch succeeded within the
+     * cooldown. Once the set is stale, a failed fetch blocks retries for the cooldown.
      */
     public function getJWKSets(bool $forceRefresh = false): array
     {
-        $cachedJWKSets = $this->cache->get($this->getCacheKey());
-        if ($cachedJWKSets && (!$forceRefresh || $this->cache->get($this->getCooldownKey()))) {
-            return $cachedJWKSets;
+        $now = time();
+        $entry = $this->cache->get($this->getCacheKey());
+        // The fetch time is stored next to `keys` so older SDK versions sharing the cache still read the set.
+        // Entries without it (written by those versions) are refreshed.
+        $cached = isset($entry['fetchedAt'], $entry['keys']) ? array_diff_key($entry, ['fetchedAt' => true]) : null;
+        $age = $cached ? $now - $entry['fetchedAt'] : PHP_INT_MAX;
+        $usable = $age < self::JWKS_MAX_AGE;
+
+        if ($usable && $age < $this->jwksCacheTTL) {
+            if (!$forceRefresh || $this->cache->get($this->getCooldownKey())) {
+                return $cached;
+            }
+        } elseif ($this->cache->get($this->getAttemptKey())) {
+            return $usable ? $cached : ['keys' => []];
         }
 
         try {
             $jwks = $this->fetchJWKSets();
         } catch (\Exception $e) {
-            if ($cachedJWKSets) {
-                return $cachedJWKSets;
+            error_log('[Descope SDK] Warning: ' . $e->getMessage());
+            $this->cache->set($this->getAttemptKey(), true, self::JWKS_REFRESH_COOLDOWN);
+            if ($usable) {
+                return $cached;
             }
             throw $e;
         }
-        $this->cache->set($this->getCacheKey(), $jwks, $this->jwksCacheTTL);
+        $this->cache->set($this->getCacheKey(), $jwks + ['fetchedAt' => $now], self::JWKS_MAX_AGE);
         $this->cache->set($this->getCooldownKey(), true, self::JWKS_REFRESH_COOLDOWN);
         return $jwks;
     }
@@ -105,7 +120,7 @@ final class SDKConfig
             ]);
             $jwkSets = json_decode($response->getBody(), true);
 
-            if (!isset($jwkSets['keys']) || !is_array($jwkSets['keys'])) {
+            if (empty($jwkSets['keys']) || !is_array($jwkSets['keys'])) {
                 throw new \Exception('Invalid JWK response');
             }
 
@@ -143,6 +158,11 @@ final class SDKConfig
     private function getCooldownKey(): string
     {
         return $this->getCacheKey() . ':cooldown';
+    }
+
+    private function getAttemptKey(): string
+    {
+        return $this->getCacheKey() . ':attempt';
     }
 
     private function canonicalBaseUrl(): string

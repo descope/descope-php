@@ -398,7 +398,7 @@ final class DescopeSDKTest extends TestCase
 
             public function get(string $key)
             {
-                return ['keys' => [$this->key]];
+                return ['keys' => [$this->key], 'fetchedAt' => time()];
             }
 
             public function set(string $key, $value, int $ttl = 3600): bool
