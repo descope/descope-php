@@ -34,6 +34,8 @@ class SSOSettings
      * Load the SSO settings for a tenant.
      *
      * This method retrieves the current SSO configuration for the given tenant.
+     * For a SAML configuration, `saml.acceptedAudiences` lists the audience
+     * values accepted in place of the tenant's SP entity ID.
      *
      * @param string $tenantId The ID of the tenant whose SSO settings are loaded.
      *
@@ -90,6 +92,15 @@ class SSOSettings
      * @param array       $settings    The SAML settings. Passed through as-is.
      * @param string|null $redirectUrl Optional redirect URL for the SSO flow.
      * @param array       $domains     Optional list of domains associated with the tenant.
+     * @param array|null  $acceptedAudiences Optional list of audience values a SAML
+     *                         assertion may carry in place of the tenant's SP entity ID,
+     *                         for IdPs that send a different audience. Matching is exact
+     *                         (surrounding whitespace is ignored), and an empty-string
+     *                         entry accepts an empty audience. Up to 20 values of up to
+     *                         1000 characters each. Pass null (the default) to keep the
+     *                         stored values. Pass an array to replace them; an empty
+     *                         array clears them. When given, it overrides any
+     *                         acceptedAudiences key in $settings.
      *
      * @return void
      *
@@ -99,11 +110,12 @@ class SSOSettings
         string $tenantId,
         array $settings,
         ?string $redirectUrl = null,
-        array $domains = []
+        array $domains = [],
+        ?array $acceptedAudiences = null
     ): void {
         $body = [
             'tenantId' => $tenantId,
-            'settings' => $settings,
+            'settings' => self::withAcceptedAudiences($settings, $acceptedAudiences),
             'domains' => $domains,
         ];
 
@@ -128,6 +140,15 @@ class SSOSettings
      * @param array       $settings    The SAML metadata settings. Passed through as-is.
      * @param string|null $redirectUrl Optional redirect URL for the SSO flow.
      * @param array       $domains     Optional list of domains associated with the tenant.
+     * @param array|null  $acceptedAudiences Optional list of audience values a SAML
+     *                         assertion may carry in place of the tenant's SP entity ID,
+     *                         for IdPs that send a different audience. Matching is exact
+     *                         (surrounding whitespace is ignored), and an empty-string
+     *                         entry accepts an empty audience. Up to 20 values of up to
+     *                         1000 characters each. Pass null (the default) to keep the
+     *                         stored values. Pass an array to replace them; an empty
+     *                         array clears them. When given, it overrides any
+     *                         acceptedAudiences key in $settings.
      *
      * @return void
      *
@@ -137,11 +158,12 @@ class SSOSettings
         string $tenantId,
         array $settings,
         ?string $redirectUrl = null,
-        array $domains = []
+        array $domains = [],
+        ?array $acceptedAudiences = null
     ): void {
         $body = [
             'tenantId' => $tenantId,
-            'settings' => $settings,
+            'settings' => self::withAcceptedAudiences($settings, $acceptedAudiences),
             'domains' => $domains,
         ];
 
@@ -154,6 +176,30 @@ class SSOSettings
             $body,
             true
         );
+    }
+
+    /**
+     * Add the accepted audiences to the SAML settings sent in a configure request.
+     *
+     * A null list leaves the settings as they are, so the stored values are kept.
+     * Any array, including an empty one, replaces the stored values.
+     *
+     * @param array      $settings          The SAML settings.
+     * @param array|null $acceptedAudiences The accepted audiences, or null to keep the stored values.
+     *
+     * @return array The SAML settings to send.
+     */
+    private static function withAcceptedAudiences(array $settings, ?array $acceptedAudiences): array
+    {
+        if ($acceptedAudiences === null) {
+            return $settings;
+        }
+
+        // array_values keeps the value a JSON array even if the caller's keys are not 0..n-1.
+        $settings['acceptedAudiences'] = array_values($acceptedAudiences);
+        $settings['replaceAcceptedAudiences'] = true;
+
+        return $settings;
     }
 
     /**

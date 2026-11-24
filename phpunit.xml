@@ -14,6 +14,7 @@
             <file>src/tests/EndpointsTest.php</file>
             <file>src/tests/Management/ManagementParityTest.php</file>
             <file>src/tests/Management/UserSearchMockTest.php</file>
+            <file>src/tests/Management/SSOSettingsMockTest.php</file>
             <file>src/tests/Management/UserPasswordEndpointsTest.php</file>
             <file>src/tests/Auth/AuthParityTest.php</file>
         </testsuite>
