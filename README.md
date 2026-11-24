@@ -925,6 +925,21 @@ $descopeSDK->management->sso->configureSAMLSettings("tenantId1", [
     "idpCert" => "-----BEGIN CERTIFICATE----- ...",
 ], "https://example.com/callback", ["example.com"]);
 
+// Accepted audiences: values a SAML assertion may carry in place of the tenant's
+// SP entity ID, for IdPs that send a different audience. Exact match (surrounding
+// whitespace ignored); an empty-string entry accepts an empty audience. Up to 20
+// values of up to 1000 characters. Last argument of configureSAMLSettings() and
+// configureSAMLSettingsByMetadata():
+// - null (the default): keep the stored values
+// - an array: replace the stored values ([] clears them)
+$descopeSDK->management->sso->configureSAMLSettings("tenantId1", [
+    "idpUrl" => "https://idp.example.com/sso",
+    "entityId" => "entityId",
+    "idpCert" => "-----BEGIN CERTIFICATE----- ...",
+], "https://example.com/callback", ["example.com"], ["urn:example:audience"]);
+// The stored values are returned under saml.acceptedAudiences
+$acceptedAudiences = $descopeSDK->management->sso->loadSettings("tenantId1")["saml"]["acceptedAudiences"] ?? [];
+
 $descopeSDK->management->sso->deleteSettings("tenantId1");
 
 // Load every SSO configuration for a tenant (a tenant may have multiple)
