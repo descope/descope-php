@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.4](https://github.com/descope/descope-php/compare/v0.7.3...v0.7.4) (2026-11-26)
+
+
+### Features
+
+* **sso:** support SAML accepted audiences in management SSO settings ([#150](https://github.com/descope/descope-php/issues/150)) ([6959a9a](https://github.com/descope/descope-php/commit/6959a9a588762632749f33d90305240273fb22a2))
+
 ## [0.7.3](https://github.com/descope/descope-php/compare/v0.7.2...v0.7.3) (2026-11-09)
 
 
